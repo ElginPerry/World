@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Suspense} from 'react';
 import logo from './logo.svg';
 import { Canvas } from "react-three-fiber";
 import Cubes from "./components/PlanetDisplay";
@@ -24,13 +24,20 @@ function App() {
     //     </a>
     //   </header>
     // </div>
-    <>
-        <Canvas>
-          <Cubes />
-          <Lights />
-          <Environment />
-        </Canvas>
-    </>
+    <div style={{height:"100%", borderWidth:"2", borderColor:"black"}}>
+      <div style={{height:"50%"}}>
+          <Canvas>
+            <Suspense fallback={<group />}>
+              <Cubes />
+              <Lights />
+              <Environment />
+            </Suspense> 
+          </Canvas>
+      </div>
+      <div>
+          Hello 
+      </div>
+    </div>
   );
 }
 
