@@ -27,7 +27,6 @@ import PlanetTextureBump10 from "../assets/jupitermap.jpg"
 import PlanetTextureURL11 from "../assets/plutomap1k.jpg"
 import PlanetTextureBump11 from "../assets/venusbump.jpg"
 import { Vector3 } from 'three';
-import {useDispatch, useSelector} from 'react-redux' 
 
 function PlanetList() {
     const Textures = [{Texture : PlanetTextureURL1, Bump: PlanetTextureBump1, Position: new Vector3(-1.2,0,0), Radius: .1}
@@ -42,8 +41,6 @@ function PlanetList() {
         ,{Texture :PlanetTextureURL10, Bump: PlanetTextureBump10, Position: new Vector3(.3,-.4,0), Radius: .1}
         ,{Texture :PlanetTextureURL11, Bump: PlanetTextureBump11, Position: new Vector3(.6,-.4,0), Radius: .1}];
 
-    const dispatch = useDispatch(); 
-    
     function SetPlanet(Pid) {        
         var link = "/PlanetDetail/" + Pid;
         window.location.assign(link);

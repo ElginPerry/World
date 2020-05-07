@@ -1,11 +1,8 @@
-    import React, {
-        useRef,
-        useState,
-    } from "react";
+    import React, {useRef} from "react";
     import {
         TextureLoader,
         Vector3
-    } from 'three';
+    } from 'three';    
     import PlanetTextureURL1 from "../assets/gas.jpg"
     import PlanetTextureBump1 from "../assets/gas.jpg"
     import PlanetTextureURL2 from "../assets/gasred.jpg"
@@ -44,9 +41,6 @@
             ,{Texture :PlanetTextureURL11, Bump: PlanetTextureBump11, Position: new Vector3(.2,-.6,0), Radius: .1}];
 
         const mesh = useRef();    
-        const [isHovered, setIsHovered] = useState(false);
-        const [isActive, setIsActive] = useState(false);    
-        const isActiveRef = useRef(isActive);
         const isDetail = props.isDetail ?? false;
         const PlanetType = props.planetType ?? 2;
         const radius = !isDetail ? .1 : .4;
@@ -59,7 +53,7 @@
         };
 
         const [planetTexture, Bump] = useLoader( TextureLoader, [Textures[PlanetType].Texture, Textures[PlanetType].Bump]);
-        useFrame(({ clock }) => (mesh.current.rotation.y = clock.getElapsedTime() / 4) * Math.PI)
+        useFrame(({ clock }) => (mesh.current.rotation.y = clock.getElapsedTime() / 4) * Math.PI);   
     
         return (
                 <group>

@@ -1,11 +1,10 @@
 import * as ActionTypes from '../ActionTypes'
 
-const LoginUser = (abaid, authenticationToken) => {
+const LoginUser = (payload) => {
     return {
         type: ActionTypes.LOGIN_USER,
         payload: {
-            abaid,
-            authenticationToken,
+            payload,
         },
     }
 }

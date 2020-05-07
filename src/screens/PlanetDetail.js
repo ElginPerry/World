@@ -6,28 +6,26 @@ import Environment from "../components/Enviroment";
 import '../App.css';
 import {useSelector, useDispatch} from 'react-redux'
 import * as ActionTypes from '../redux/ActionTypes'
-import axios from 'axios';;
+import axios from 'axios';
 
 function PlanetList(props) {
-    const [posts, setPosts] = useState({});
     const dispatch = useDispatch();
-    const { planetType } =  props.match.params;
-    if (planetType)
-    {
-        dispatch({type: ActionTypes.SET_TEXTUREDETAIL,payload:planetType});
-    }
-    const Pid = useSelector(state => state.planetTypeReducer.textureNo)??2;
+    const [posts, setPosts] = useState({});    
+    var { planetType } =  props.match.params;
+    const StatePT = useSelector(state => state.planetTypeReducer.textureNo);
+    const PTid = planetType ?? StatePT ?? 2;
 
     useEffect(() => {
-        axios.get('http://apicall.starshipfleets.com/Planet/GetPlanetTypeDetailCall/' + Pid)
+        axios.get('http://apicall.starshipfleets.com/Planet/GetPlanetTypeDetailCall/' + PTid)
         .then((response) => {
             setPosts(response.data);
+            dispatch({type: ActionTypes.SET_PLANETDETAIL,payload:response.data});
         })
         .catch(function (error) {
         })
         .finally(function () {  
         });
-    },[Pid]);
+    },[PTid]);
 
     return (
         <div style={{height:"100%", width:"100%"}} >
@@ -39,7 +37,7 @@ function PlanetList(props) {
                     far: 1000
                 }}>
                     <Suspense fallback={<group />}>
-                    <Planet planetType={Pid??2} radius={.3} isDetail={true}/>
+                    <Planet planetType={PTid} radius={.3} isDetail={true}/>
                         <Lights />
                         <Environment />
                     </Suspense> 
@@ -47,7 +45,7 @@ function PlanetList(props) {
             </div> 
             <div style={{display:"inline-block", height:"50%", width:"50%", verticalAlign:"top", padding:"20px", backgroundColor:"lightblue", fontWeight:"bold"}}>
                 <div style={{padding:"5px"}}>
-                    <span style={{color:"blue"}}>TypeID:</span> {posts.typeId}
+                    <span style={{color:"blue"}}>Type Name:</span> {posts.typeName}
                 </div> 
                 <div style={{padding:"5px"}}>
                     <span style={{color:"blue"}}>Intrastructure:</span> {posts.intrastructure}

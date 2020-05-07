@@ -1,7 +1,10 @@
 import React, {useState, useRef, useEffect} from 'react';
 import { Paper, withStyles, Grid, TextField, Button, FormControlLabel, Checkbox, RadioGroup, Radio  } from '@material-ui/core';
 import axios from 'axios';
-import { Face, Fingerprint } from '@material-ui/icons'
+import { useDispatch} from 'react-redux'
+import * as ActionTypes from '../redux/ActionTypes'
+
+
 const styles = theme => ({
     margin: {
         margin: theme.spacing.unit * 2,
@@ -11,9 +14,6 @@ const styles = theme => ({
     }
 });
 
-//class LoginTab extends React.Component {
-
-
 function LoginTab(props) {
         const ButtonGRP = useRef(); 
         const [loginLabel, setLabel] = useState("Login");
@@ -21,9 +21,10 @@ function LoginTab(props) {
         const [UserID, setUserID] = useState('');
         const [Pwd, setPwd] = useState('');
         const { classes } = props;
+        const dispatch = useDispatch();
                
         function setLoginLabel(ev) {
-            if (ev.target.value == "Login")
+            if (ev.target.value === "Login")
             {
                 setLabel("Login");
             }
@@ -45,7 +46,7 @@ function LoginTab(props) {
 
         function LoginClick() {
             var LoginURL = "";
-            if (loginLabel == "Login")
+            if (loginLabel === "Login")
             {
                 LoginURL="http://apicall.starshipfleets.com/User/UserLoginCall";
             }
@@ -59,14 +60,14 @@ function LoginTab(props) {
                 Password: Pwd
             }
             )
-            .then(function (response) {
-                setPosts(response.data);  
+            .then(function (response) {                
+                dispatch({type: ActionTypes.LOGIN_USER,payload:response.data});
+                setPosts(response.data); 
             })
             .catch(function (error) {
                 console.log(error);
             })
             .finally(function () {
-                console.log(posts);      
             });
         }
 
@@ -76,7 +77,7 @@ function LoginTab(props) {
                 if (posts.userID)
                 {
                     alert("Loged In");
-                    window.location.assign("/PlanetList");
+                    //window.location.assign("/PlanetList");
                 }
                 else
                 {
@@ -87,13 +88,8 @@ function LoginTab(props) {
 
 
         return (
-            <div style={{alignItems:"center", width:"60%", margin:"auto"}}>
+            <div style={{alignItems:"center", width:"100%", margin:"auto"}}>
                 LOGIN . CREATE USER
-                <RadioGroup ref={ButtonGRP} row aria-label="AccountType" name="AccountType" onChange={setLoginLabel} value={loginLabel}  >
-                    <FormControlLabel value="Login" control={<Radio />} label="Login" />
-                    <FormControlLabel value="Create Account" control={<Radio />} label="Create Account" />    
-                </RadioGroup>
-
                 <Paper className={classes.padding} >
                     <div className={classes.margin}>
                         <Grid container spacing={8} alignItems="flex-end">
@@ -124,6 +120,14 @@ function LoginTab(props) {
                             <Button variant="outlined" color="primary" style={{ textTransform: "none" }} onClick={LoginClick}>
                                 {loginLabel}
                             </Button>
+                        </Grid>
+                        <Grid container spacing={8} alignItems="flex-end">
+                            <Grid item md={true} sm={true} xs={true}>
+                                <RadioGroup ref={ButtonGRP} row aria-label="AccountType" name="AccountType" onChange={setLoginLabel} value={loginLabel}  >
+                                    <FormControlLabel value="Login" control={<Radio />} label="Login" />
+                                    <FormControlLabel value="Create Account" control={<Radio />} label="Create Account" />    
+                                </RadioGroup>
+                            </Grid>
                         </Grid>
                     </div>
                 </Paper>
