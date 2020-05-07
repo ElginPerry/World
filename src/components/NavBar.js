@@ -7,10 +7,13 @@ function NavBar() {
             <nav>
                 <ul>
                     <li>
-                        <Link to="/">Planet List</Link>
+                        <Link to="/PlanetList">Planet List</Link>
                     </li>
                     <li>
                         <Link to="/PlanetDetail">Planet Detail</Link>
+                    </li>
+                    <li>
+                        <Link to="/">Login</Link>
                     </li>
                 </ul>
             </nav>
