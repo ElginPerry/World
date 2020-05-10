@@ -48,7 +48,7 @@ function PlanetList() {
 
     return (
         <div style={{height:"100%", borderWidth:"2", borderColor:"black"}}> 
-            <div style={{height:"100%", width:"100%"}}>      
+            <div style={{height:"100%", width:"100%", cursor: "pointer"}}>      
                 <Canvas 
                     camera={{fov:25,
                     aspect: window.innerWidth / window.innerHeight,

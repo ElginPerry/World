@@ -15,6 +15,15 @@ function NavBar() {
                     <Link to="/PlanetDetail">Planet Detail</Link>
                 </li>
                 <li>
+                    <Link to="/GalaxyView">Galaxy View</Link>
+                </li>
+                <li>
+                    <Link to="/SectorView">Sector View</Link>
+                </li>
+                <li>
+                    <Link to="/SystemView">System View</Link>
+                </li>
+                <li>
                     <Link to="/">Login</Link>
                 </li>
             </ul>

@@ -62,7 +62,7 @@
                         position={!isDetail ? Textures[PlanetType].Position : new Vector3(0,0,0)}
                         onClick={e => onClick(e)}
                     >                    
-                        <sphereBufferGeometry args={[radius, 128, 128]} attach="geometry" /> 
+                        <sphereBufferGeometry args={[radius, 30, 30]} attach="geometry" /> 
                         <meshStandardMaterial
                             attach='material'
                             metalness={0}
