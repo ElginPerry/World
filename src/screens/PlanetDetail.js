@@ -7,13 +7,16 @@ import '../App.css';
 import {useSelector, useDispatch} from 'react-redux'
 import * as ActionTypes from '../redux/ActionTypes'
 import axios from 'axios';
+import Button from '@material-ui/core/Button';
 
 function PlanetList(props) {
     const dispatch = useDispatch();
-    const [posts, setPosts] = useState({});    
-    var { planetType } =  props.match.params;
+    var { planetType, planetID } =  props.match.params;
     const StatePT = useSelector(state => state.planetTypeReducer.textureNo);
-    const PTid = planetType ?? StatePT ?? 2;
+    const [posts, setPosts] = useState({});    
+    const [planet, setPlanet] = useState({});
+    const [PTid, setPTid] = useState(planetType ?? StatePT ?? 2);        
+    //var PTid = planetType ?? StatePT ?? 2;
 
     useEffect(() => {
         axios.get('http://apicall.starshipfleets.com/Planet/GetPlanetTypeDetailCall/' + PTid)
@@ -26,8 +29,42 @@ function PlanetList(props) {
         .finally(function () {  
         });
     },[PTid]);
+
+    useEffect(() => {
+        if (planetID)
+        {
+            axios.get('http://apicall.starshipfleets.com/Planet/GetPlanet/' + planetID)
+            .then((response) => {
+                setPlanet(response.data);
+                dispatch({type: ActionTypes.SET_PLANET,payload:response.data});
+                setPTid(response.data.planetType);
+            })
+            .catch(function (error) {
+            })
+            .finally(function () {  
+            });
+        }
+    },[planetID]);
+
+    function BacktoSystem(){
+        var link = "/SystemView/" + (planet.galaxy??1) + "/" + (planet.sector??'11') + "/" + (planet.sysPosition??1);
+        window.location.assign(link);
+    }
+
+
     return (
-        <div style={{height:"100%", width:"100%"}} >
+        <div style={{height:"100%", width:"100%", textAlign: "center"}} >
+            <div>
+                <Button
+                    variant="contained"
+                    size="medium"
+                    color="primary"
+                    id="btgBtn"
+                    onClick={()=>BacktoSystem()}
+                >
+                    Back to System
+                </Button>
+            </div>
             <div style={{height:"65%", width:"50%", borderWidth:"2", borderColor:"black", display:"inline-block"}}>        
                 <Canvas 
                     camera={{fov:25,
@@ -42,7 +79,8 @@ function PlanetList(props) {
                     </Suspense> 
                 </Canvas>
             </div> 
-            <div style={{display:"inline-block", height:"65%", width:"50%", verticalAlign:"top", padding:"20px", backgroundColor:"lightblue", fontWeight:"bold", textAlign: "center"}}>
+            <div style={{display:"inline-block", height:"65%", width:"50%", verticalAlign:"top", 
+            padding:"20px", backgroundColor:"lightblue", fontWeight:"bold", textAlign: "center", overflow: "auto"}}>
                 <div style={{padding:"5px",color:"blue"}}>
                     Type Name:                    
                 </div> 
@@ -86,6 +124,26 @@ function PlanetList(props) {
                     {posts.barren ? 'True' : 'False'}
                 </div>                
             </div> 
+            <div style={{width:"100%", verticalAlign:"top", padding:"20px", backgroundColor:"lightblue", fontWeight:"bold", textAlign: "center"}}>
+                <div style={{padding:"5px",color:"blue"}}>
+                    Galaxy: 
+                </div> 
+                <div style={{boxShadow:"2px 2px 0 0 gray" }}>
+                    {planet.galaxy}
+                </div>
+                <div style={{padding:"5px",color:"blue"}}>
+                    Sector: 
+                </div>
+                <div style={{boxShadow:"2px 2px 0 0 gray" }}>
+                    {planet.sector}
+                </div> 
+                <div style={{padding:"5px",color:"blue"}}>
+                    Is a Moon: 
+                </div>
+                <div style={{boxShadow:"2px 2px 0 0 gray" }}>
+                    {planet.moon ? "True" : "False"}
+                </div>      
+            </div>
         </div>
     );
   }

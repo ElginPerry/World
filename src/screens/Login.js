@@ -15,6 +15,7 @@ const styles = theme => ({
 });
 
 function LoginTab(props) {
+        var {logout} = props.match.params;
         const ButtonGRP = useRef(); 
         const [loginLabel, setLabel] = useState("Login");
         const [posts, setPosts] = useState(null);
@@ -62,6 +63,7 @@ function LoginTab(props) {
             )
             .then(function (response) {                
                 dispatch({type: ActionTypes.LOGIN_USER,payload:response.data});
+                console.log(response.data)
                 setPosts(response.data); 
             })
             .catch(function (error) {
@@ -76,8 +78,8 @@ function LoginTab(props) {
             {
                 if (posts.userID)
                 {
-                    alert("Loged In");
-                    //window.location.assign("/PlanetList");
+                    //alert("Loged In");
+                    window.location.assign("/PlanetList");
                 }
                 else
                 {
@@ -85,6 +87,15 @@ function LoginTab(props) {
                 }  
             }
         },[posts]);
+
+        useEffect(() => {
+            if (logout == "lo")
+            {
+                dispatch({type: ActionTypes.LOGOUT_USER,payload:{}});        
+                alert('Logged Out');
+                window.location.assign("/");
+            }
+        },[logout]);
 
 
         return (

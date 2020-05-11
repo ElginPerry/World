@@ -14,6 +14,10 @@ const defaultState = {
 // This is an example
 const user = (state = defaultState, {type, payload}) => {
     switch (type) {
+        case ActionTypes.LOGOUT_USER:
+            return {
+                ...state, ...defaultState
+            }
         case ActionTypes.LOGIN_USER:
             return {
                 ...state,
@@ -24,7 +28,7 @@ const user = (state = defaultState, {type, payload}) => {
                 PremiumExpires: payload.premiumExpires,
                 LastLogin: payload.lastLogin,
                 IPAddress: payload.ipAddress,
-            }
+            }    
         case ActionTypes.LOGIN_FAILED:
             return {...defaultState, errMess: payload}
 

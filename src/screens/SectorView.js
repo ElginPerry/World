@@ -8,6 +8,7 @@ import {useSelector} from 'react-redux';
 import Environment from "../components/Enviroment";
 import { Canvas } from "react-three-fiber";
 import windim from "../components/WindowDimensions";
+import Button from '@material-ui/core/Button';
 
 function SectorView(props){   
     const [posts, setPosts] = useState({});    
@@ -38,10 +39,7 @@ function SectorView(props){
 
     function PlanetClick(sysPosition)
     {
-        //const System = posts.filter(x => x.galaxy==(Galaxy??1) && x.sector === (sectorNumber??'11') && x.sysPosition === sysPosition)[0].system; 
-        //console.log(posts.filter(x => x.galaxy==(Galaxy??1) && x.sector === (sectorNumber??'11') && x.sysPosition === sysPosition))
         var link = "/SystemView/" + (Galaxy??1) + "/" + (sectorNumber??'11') + "/" + sysPosition;
-        //console.log(link)
         window.location.assign(link);
     }
 
@@ -165,8 +163,23 @@ function SectorView(props){
         )
     };
 
+    function BacktoGalaxy(){
+        window.location.assign("/GalaxyView");
+    }
+
     return (
         <div style={{height:"90%", width:"100%", textAlign: "center" }} >
+            <div>
+                <Button
+                    variant="contained"
+                    size="medium"
+                    color="primary"
+                    id="btgBtn"
+                    onClick={()=>BacktoGalaxy()}
+                >
+                    Back to Galaxy
+                </Button>
+            </div>
             <div style={{height:"75%", width:"95%", borderWidth:"2", borderColor:"black", display:"inline-block"}}> 
                 <DisplaySector fov={width<420 ? "45" : "25"} width={width} height={height}/>                  
             </div>

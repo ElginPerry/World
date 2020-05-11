@@ -27,6 +27,7 @@ import PlanetTextureURL10 from "../assets/jupitermap.jpg"
 import PlanetTextureBump10 from "../assets/jupitermap.jpg"
 import PlanetTextureURL11 from "../assets/plutomap1k.jpg"
 import PlanetTextureBump11 from "../assets/venusbump.jpg"
+import Button from '@material-ui/core/Button';
 
 function SectorView(props){ 
     const [posts, setPosts] = useState({});    
@@ -68,7 +69,8 @@ function SectorView(props){
 
     function PlanetClick(PlanetID)
     {
-        alert("hey-" + PlanetID);
+        var link = "/PlanetView/" + PlanetID;
+        window.location.assign(link); 
     }
 
     function GetPosition(pos, sub)
@@ -81,11 +83,11 @@ function SectorView(props){
             case 3:
                 return new Vector3(.8,.8-((sub-1)*.2),0); 
             case 4:
-                return new Vector3(-.8,0-((sub-1)*.2),0);  
+                return new Vector3(-.8,-.2-((sub-1)*.2),0);  
             case 5:
-                return new Vector3(0,0-((sub-1)*.2),0); 
+                return new Vector3(0,-.2-((sub-1)*.2),0); 
             case 6:
-                return new Vector3(.8,0-((sub-1)*.2),0); 
+                return new Vector3(.8,-.2-((sub-1)*.2),0); 
             case 7:
                 return new Vector3(-.8,-.8-((sub-1)*.2),0);  
             case 8:
@@ -164,8 +166,24 @@ function SectorView(props){
             );
     };
 
+    function BacktoSector(){
+        var link = "/SectorView/" + (Galaxy??1) + "/" + (sectorNumber??'11');
+        window.location.assign(link);
+    }
+
     return (
         <div style={{height:"90%", width:"100%", textAlign: "center"}} >
+            <div>
+                <Button
+                variant="contained"
+                size="medium"
+                color="primary"
+                id="btsBtn"
+                onClick={()=>BacktoSector()}
+                >
+                    Back to Sector
+                </Button>
+            </div>
             <div style={{height:"75%", width:"95%", borderWidth:"2", borderColor:"black", display:"inline-block"}}>        
                 <Canvas 
                     camera={{fov:25,
@@ -186,8 +204,8 @@ function SectorView(props){
                                     ); 
                             })
                         }
-                        <ambientLight intensity={0.5} />
-                        <pointLight intensity={1.0} position={[.6, .6, .2]} />
+                        <ambientLight intensity={0.8} />
+                        <pointLight intensity={1.1} position={[.6, .6, .2]} />
                         <Environment />
                     </Suspense> 
                 </Canvas>

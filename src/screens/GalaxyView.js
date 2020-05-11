@@ -41,7 +41,7 @@ function GalaxyView() {
     function DisplaySector(sector, index)
     {     
         const thisSector =  posts.filter((item) => item.sector === sector);
-        if (width < 400)
+        if (width < 400 || height < 700) 
         {
             var sysmycnt = thisSector.filter((item) => item.owner === UserID ).length;
             var sysother = thisSector.filter((item) => item.owner !== UserID && item.owner !== 0).length;
@@ -88,7 +88,7 @@ function GalaxyView() {
     }   
 
     return (
-        <div style={{height:"90%", width:"100%"}} >
+        <div style={{height:"90%", width:"100%", overflow: "auto"}} >
                 <Suspense fallback={<div>Loading....</div>}>
                     {uniqueSectors.length > 0 &&
                         DisplayGalaxy()

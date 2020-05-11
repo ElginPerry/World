@@ -88,8 +88,8 @@ export default function NestedList() {
           <ListItem button className={classes.nested}  onClick={() => MenuClick("/PlanetDetail")}>
             <ListItemText primary="Planet Type" />  
           </ListItem>
-          <ListItem button className={classes.nested}  onClick={() => MenuClick("/")}>
-            <ListItemText primary="Login" />  
+          <ListItem button className={classes.nested}  onClick={() => MenuClick("/Logout/lo")}>
+            <ListItemText primary="Logout" />  
           </ListItem>
         </List>
       </Collapse>
@@ -102,7 +102,7 @@ export default function NestedList() {
         aria-labelledby="nested-list-subheader"
         subheader={
             <ListSubheader component="div" id="nested-list-subheader">
-               {UserEmail}
+               {UserEmail??"Logged Out"}
             </ListSubheader>
         }
         className={classes.root}
