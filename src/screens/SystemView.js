@@ -1,10 +1,10 @@
 import React, {Suspense, useEffect, useState, useRef } from "react";
-import { useLoader, useFrame } from 'react-three-fiber';
+import { useLoader, useFrame, useThree, Canvas } from 'react-three-fiber';
 import {TextureLoader, Vector3} from 'three';
 import axios from 'axios';
 import {useSelector} from 'react-redux';
 import Environment from "../components/Enviroment";
-import { Canvas } from "react-three-fiber";
+import windim from "../components/WindowDimensions";
 import PlanetTextureURL1 from "../assets/gas.jpg"
 import PlanetTextureBump1 from "../assets/gas.jpg"
 import PlanetTextureURL2 from "../assets/gasred.jpg"
@@ -27,12 +27,13 @@ import PlanetTextureURL10 from "../assets/jupitermap.jpg"
 import PlanetTextureBump10 from "../assets/jupitermap.jpg"
 import PlanetTextureURL11 from "../assets/plutomap1k.jpg"
 import PlanetTextureBump11 from "../assets/venusbump.jpg"
-import Button from '@material-ui/core/Button';
+import "../styles/stylesheet.css"
 
 function SectorView(props){ 
     const [posts, setPosts] = useState({});    
     const UserID = useSelector(state => state.user.UserID);
     const [uniqueSystem, setSystems] = useState([]);
+    const { height, width } = windim();
     const Textures = [{Texture : PlanetTextureURL1, Bump: PlanetTextureBump1, Position: new Vector3(-1.2,0,0), Radius: .1}
         ,{Texture :PlanetTextureURL2, Bump: PlanetTextureBump2, Position: new Vector3(-.9,0,0), Radius: .1}
         ,{Texture : PlanetTextureURL3, Bump: PlanetTextureBump3, Position: new Vector3(-.6,0,0), Radius: .1}
@@ -62,7 +63,7 @@ function SectorView(props){
     useEffect(() => {
         if (posts.length > 0)
         {
-            setSystems(posts.filter(x => x.sysPosition == (systemNumber??1)));
+            setSystems(posts.filter(x => x.xSysPosition == (systemNumber??1)));
         }
     },[posts]);
 
@@ -166,23 +167,22 @@ function SectorView(props){
             );
     };
 
-    function BacktoSector(){
-        var link = "/SectorView/" + (Galaxy??1) + "/" + (sectorNumber??'11');
-        window.location.assign(link);
+    function CamComponent() {
+        const { camera } = useThree()
+        camera.aspect = 1;//width/height; 
+        camera.updateProjectionMatrix();
+        return <mesh />
+    }
+
+    function BacktoGalaxy(){
+        var link = "/GalaxyView/" + (Galaxy??1);
+        window.location.assign("/GalaxyView");
     }
 
     return (
         <div style={{height:"90%", width:"100%", textAlign: "center"}} >
-            <div>
-                <Button
-                variant="contained"
-                size="medium"
-                color="primary"
-                id="btsBtn"
-                onClick={()=>BacktoSector()}
-                >
-                    Back to Sector
-                </Button>
+            <div className="button" onClick={BacktoGalaxy} >
+                    Back to Galaxy
             </div>
             <div style={{height:"75%", width:"95%", borderWidth:"2", borderColor:"black", display:"inline-block"}}>        
                 <Canvas 
@@ -206,6 +206,7 @@ function SectorView(props){
                         }
                         <ambientLight intensity={0.8} />
                         <pointLight intensity={1.1} position={[.6, .6, .2]} />
+                        <CamComponent />
                         <Environment />
                     </Suspense> 
                 </Canvas>

@@ -5,19 +5,21 @@ import PlanetDetail from './screens/PlanetDetail';
 import GalaxyView from './screens/GalaxyView';
 import SectorView from './screens/SectorView';
 import SystemView from './screens/SystemView';
-import NavBar2 from './components/NavBar2';
+import NavBar from './components/NavBar';
 import Login from './screens/Login';
+import Header from './components/Header';
 
 const Main = () => {
     return (
         <div style={{height:"100%", borderWidth:"2", borderColor:"black"}}>
+            <Header/>
             <Router >
-            <div style={{height:"15%", minHeight:"50px"}}>
-                <NavBar2/>
+            <div style={{height:"10%", minHeight:"50px"}}>
+                <NavBar/>
             </div>
-            <div style={{height:"85%", minHeight:"300px", overflow:"auto"}}> 
+            <div style={{height:"90%", minHeight:"300px", overflow:"auto"}}> 
                 <Switch>
-                    <Route exact path="/GalaxyView" component={GalaxyView} />
+                    <Route exact path="/GalaxyView/:Galaxy?" component={GalaxyView} />
                     <Route path="/SectorView/:Galaxy?/:sectorNumber?" component={SectorView} />
                     <Route path="/SystemView/:Galaxy?/:sectorNumber?/:systemNumber?" component={SystemView} />
                     <Route exact path="/PlanetList" component={PlanetList} />

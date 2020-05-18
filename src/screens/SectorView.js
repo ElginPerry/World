@@ -1,14 +1,13 @@
 import React, {Suspense, useEffect, useState } from "react";
-import { useLoader } from 'react-three-fiber';
+import { useLoader, Canvas  } from 'react-three-fiber';
 import SunTextureURL from "../assets/Fire2.jpg"
 import SunTextureBump from "../assets/generalroughbump.jpg"
 import {TextureLoader, Vector3} from 'three';
 import axios from 'axios';
 import {useSelector} from 'react-redux';
 import Environment from "../components/Enviroment";
-import { Canvas } from "react-three-fiber";
 import windim from "../components/WindowDimensions";
-import Button from '@material-ui/core/Button';
+import "../styles/stylesheet.css"
 
 function SectorView(props){   
     const [posts, setPosts] = useState({});    
@@ -169,18 +168,10 @@ function SectorView(props){
 
     return (
         <div style={{height:"90%", width:"100%", textAlign: "center" }} >
-            <div>
-                <Button
-                    variant="contained"
-                    size="medium"
-                    color="primary"
-                    id="btgBtn"
-                    onClick={()=>BacktoGalaxy()}
-                >
+            <div className="button" onClick={BacktoGalaxy} >
                     Back to Galaxy
-                </Button>
             </div>
-            <div style={{height:"75%", width:"95%", borderWidth:"2", borderColor:"black", display:"inline-block"}}> 
+            <div style={{height:"90%", width:"95%", borderWidth:"2", borderColor:"black", display:"inline-block"}}> 
                 <DisplaySector fov={width<420 ? "45" : "25"} width={width} height={height}/>                  
             </div>
         </div>  

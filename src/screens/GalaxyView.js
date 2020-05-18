@@ -1,21 +1,30 @@
-import React, {Suspense, useEffect, useState} from 'react';
-import '../App.css';
+import React, {Suspense, useEffect, useState, useRef, useCallback } from "react";
+import { useLoader, Canvas, useThree } from 'react-three-fiber';
+import SunTextureURL from "../assets/Fire2.jpg"
+import SunTextureBump from "../assets/generalroughbump.jpg"
+import {TextureLoader, Vector3} from 'three';
 import axios from 'axios';
 import {useSelector} from 'react-redux';
+import Environment from "../components/Enviroment";
 import windim from "../components/WindowDimensions";
+import "../styles/stylesheet.css"
 
-function GalaxyView() {
-    const Galaxy = 1;
-    const [posts, setPosts] = useState({});
-    const [uniqueSectors, setSectors] = useState([]);
+function GalaxyView(props){   
+    const [posts, setPosts] = useState({});    
+    const [selectSector, setselectSector] = useState(false);    
+    const [selectZoom, setselectZoom] = useState(new Vector3(0,0,5));    
     const UserID = useSelector(state => state.user.UserID);
+    const [uniqueSYSPOS, setSYSPOS] = useState([{}]); 
+    var {Galaxy} = props.match.params;     
     const { height, width } = windim();
-
-  
+    var SYSPOS = ([]); 
+    const cam = useRef();  
+    const panesPoints = [-.9,-.7,-.5,-.3,-.1,.1,.3,.5,.7,.9]; 
+    
     useEffect(() => {
-        axios.get("http://apicall.starshipfleets.com/Planet/GetGalaxy/" + Galaxy)
+        axios.get("http://apicall.starshipfleets.com/Planet/GetGalaxy/" + (Galaxy??1))
         .then((response) => {
-            setPosts(response.data);
+            setPosts(response.data);            
         })
         .catch(function (error) {
             console.log(error);
@@ -26,77 +35,182 @@ function GalaxyView() {
 
     useEffect(() => {
         if (posts.length > 0)
-        {
-            const sectors = posts.map(x => x.sector);
-            setSectors([...new Set(sectors)]);
+        {           
+            posts.map((item,index) => {
+                if (SYSPOS.filter(obj => obj.xSysPosition == item.xSysPosition && obj.sector == item.sector).length == 0)
+                    SYSPOS.push({xSysPosition: item.xSysPosition, ySysPosition: item.ySysPosition, sector: item.sector});
+            })
+            setSYSPOS([...new Set(SYSPOS)]);
         }
     },[posts]);
 
-    function SectorClick(Sector)
+    function GetPosition(xposition, yposition, sector)
     {
-        var link = "/SectorView/" + Galaxy + "/" + Sector;
+        var xpos = ((((('' +sector).substr(0,1)-5) * 10))/100*2) + (xposition/10000);
+        var ypos = ((((('' +sector).substr(1)-5) * 10))/100*2) + (yposition/10000);
+        return new Vector3(xpos,ypos,0);       
+    }
+    
+    const SysSphere = (props) => {        
+        const position = GetPosition(props.xSysPosition, props.ySysPosition, props.sector);        
+        const [SunTexture, Bump] = useLoader( TextureLoader, [SunTextureURL, SunTextureBump]);
+        return (             
+            <mesh   
+                    position={position}  onClick={() => PlanetClick( props.sector, props.xSysPosition )}>  
+                    <sphereBufferGeometry args={[.005, 10, 10]} attach="geometry" />   
+                    <meshStandardMaterial
+                        attach='material'
+                        map={SunTexture}
+                        bumpMap={Bump}
+                        color="white"
+                        bumpScale={0.55}
+                    />   
+            </mesh>
+        );
+    };
+
+    const DrawPane = (props) => {
+        const [isHovered, setIsHovered] = useState(false);
+        const onHover = useCallback(        
+            (e, value) => {
+              e.stopPropagation();
+              setIsHovered(value);
+            },
+            [setIsHovered]        
+          );
+
+        return (             
+            <mesh   
+                    position={props.pos}  
+                    onClick={() => {ZoomClick(new Vector3(props.pos.x, props.pos.y, 5))}}
+                    scale={[1, 1, 1]}       
+                    onPointerOver={e => onHover(e, true)}
+                    onPointerOut={e => onHover(e, false)}>
+                    <boxBufferGeometry attach="geometry" args={[.2, .2, .001]} />
+                    <meshStandardMaterial
+                        attach="material"
+                        opacity={isHovered ? 0.2 : 0.0} 
+                        transparent                  
+                    />
+            </mesh>
+        );
+    };
+
+    const SectorPane = (props) => {
+        var panes = [];
+        panesPoints.map((xpoint, index) => {
+            const xindex = index;
+            panesPoints.map((ypoint, index) => {
+                var panePos = new Vector3(xpoint,ypoint,.1);
+                panes.push(
+                    <DrawPane key={xindex+"S"+index} pos={panePos} />
+                )
+            });
+        });
+        return panes;
+    }
+
+    const Lines = (props) => {   
+        var rows = [];
+        for (var x = 0; x < 11; x++) {
+            rows.push(
+                <mesh key={"c" + x}  
+                position={[1-(x/5),0,.12]} 
+                scale={[1, 1, 1]} transparent>  
+                    <boxBufferGeometry attach="geometry" args={[.001, 2, .00001]} />
+                    <meshStandardMaterial
+                        attach="material"
+                        color="gray"
+                        transparency=".2"
+                    />
+                </mesh>
+            );
+        }
+
+        for (var y = 0; y < 11; y++) {
+            rows.push(
+                <mesh key={"r" + y}  
+                position={[0,1-(y/5),.12]}  
+                scale={[1, 1, 1]} transparent>  
+                    <boxBufferGeometry attach="geometry" args={[2, .001, .00001]} />
+                    <meshStandardMaterial
+                        attach="material"
+                        color="gray"
+                    />
+                </mesh>
+            );
+        }
+        return (                     
+            rows
+        );
+    };
+
+    function CamComponent() {
+        const zoom = selectSector ? 2.5 : 1;
+        const pos = selectSector ? selectZoom : new Vector3(0,0,5);
+        const { camera } = useThree()
+        camera.aspect = 1; 
+        camera.zoom = zoom;
+        camera.position.set(pos.x,pos.y,pos.z);
+        camera.updateProjectionMatrix();
+        return <mesh />
+    }
+
+    function PlanetClick(sector, xSysPosition)
+    {
+        var link = "/SystemView/" + (Galaxy??1) + "/" + (sector??'11') + "/" + xSysPosition;
         window.location.assign(link);
     }
 
-    function DisplaySector(sector, index)
-    {     
-        const thisSector =  posts.filter((item) => item.sector === sector);
-        if (width < 400 || height < 700) 
-        {
-            var sysmycnt = thisSector.filter((item) => item.owner === UserID ).length;
-            var sysother = thisSector.filter((item) => item.owner !== UserID && item.owner !== 0).length;
-            var star = sysmycnt>0 && sysother>0 ? 'orange' : sysmycnt>0 ? 'green' : sysother>0 ? 'red' : 'lightblue';
-            return <div style={{width: "100%", height: "100%", textAlign: "center", color: star}}> {thisSector.length}</div>;  
-        }
-        else
-        {
-
-            var SectorOBJs = [];
-            for (var sys = 1; sys <= 9; sys++) {
-                var syscnt = thisSector.filter((item) => item.sysPosition === sys).length;
-                var sysmycnt = thisSector.filter((item) => item.owner === UserID && item.sysPosition === sys).length;
-                var sysother = thisSector.filter((item) => item.owner !== UserID && item.owner !== 0 && item.sysPosition === sys).length;
-
-                var star = syscnt>0 && sysmycnt>0 && sysother>0 ? 'orange' : syscnt>0 && sysmycnt>0 ? 'green' : 
-                        syscnt>0 && sysmycnt===0 && sysother > 0 ? 'red' : syscnt>0 ? 'lightblue' : 'black';
-                
-                var symbol = syscnt>0 && sysmycnt>0 ? 'w' : syscnt>0 ? 'o' : 'x';
-
-                SectorOBJs.push(
-                    <div key={index+'divS'+sys} style={{width: "30%", height: "30%", display: 'inline-block', textAlign: "center", 
-                backgroundColor: 'black', color: star}}>{symbol}</div>
-                ) 
-            }
-            return <div style={{width: "100%", height: "100%"}}> {SectorOBJs}</div>; 
-        }
-        
+    function ZoomClick(Position)
+    {
+        setselectSector(true)
+        setselectZoom(Position)  
     }
 
-    function DisplayGalaxy()
-    {
-        var SysOBJs = [];
-        {uniqueSectors.map((sector, index) => {
-             SysOBJs.push(                                                                         
-                <div key={index+'div'} style={{ width: "11%", height: "11%", display: 'inline-block', cursor: "pointer",
-                backgroundColor: 'black', borderColor: 'white', borderWidth: "1px", borderStyle: "solid"}}  
-                onClick={() => SectorClick(sector)}> 
-                    {DisplaySector(sector, index)}
-                </div>                     
-            );
-        })}
-        return SysOBJs;
-    }   
+    function BacktoGalaxy(){
+        setselectSector(false);
+    }
 
     return (
-        <div style={{height:"90%", width:"100%", overflow: "auto"}} >
-                <Suspense fallback={<div>Loading....</div>}>
-                    {uniqueSectors.length > 0 &&
-                        DisplayGalaxy()
+        <div style={{height:"90%", width:"100%", textAlign: "center", position: "relative" }} >
+            <div className="button" onClick={BacktoGalaxy} >
+                    Back to Galaxy
+            </div>
+            <div style={{height:"90%", width:"95%", borderWidth:"2", borderColor:"black", display:"inline-block"}}> 
+            <Canvas
+                camera={{fov:25,
+                aspect: 1,
+                near: 0.1,
+                far: 1000,
+                ref: {cam}
+            }}>                
+                <Suspense fallback={<group/>}>
+                    {uniqueSYSPOS.length > 1 &&
+                        uniqueSYSPOS.map((item, index) => { 
+                            return(
+                                    <group key={"g" + index}>
+                                        <SysSphere key={"p" + index} index={index} xSysPosition={item.xSysPosition} ySysPosition={item.ySysPosition} sector={item.sector} />
+                                    </group>                                    
+                                ); 
+                        })
                     }
-                </Suspense>
+                    <ambientLight intensity={0.8} />                    
+                    <Environment />
+                    <CamComponent />
+                    <SectorPane />
+                    <Lines />
+                </Suspense> 
+            </Canvas>
+            </div>
+            {/* <div style={{position: "absolute", display: "block", zindex: "99", left: "5%", top: "5%", height:"10%", width:"10%", backgroundColor:"yellow"}}>
+            </div> */} 
         </div>  
     );
-  }
-  
-  export default GalaxyView;
-  
+};
+
+export default GalaxyView;
+
+
+
+

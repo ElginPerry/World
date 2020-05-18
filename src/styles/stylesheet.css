@@ -1,23 +1,203 @@
-ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background-color: #333333;
-  }
-  
-  li {
-    float: left;
-  }
-  
-  li a {
-    display: block;
-    color: white;
-    text-align: center;
-    padding: 16px;
-    text-decoration: none;
-  }
-  
-  li a:hover {
-    background-color: #111111;
-  }
+#menu {
+  background: #343434;
+  color: #eee;
+  height: 35px;
+  border-bottom: 4px solid #eeeded
+}
+
+#menu ul,
+#menu li {
+  margin: 0 0;
+  padding: 0 0;
+  list-style: none
+}
+
+#menu ul {
+  height: 35px
+}
+
+#menu li {
+  float: left;
+  display: inline;
+  position: relative;
+  font: bold 12px Arial;
+  text-shadow: 0 -1px 0 #000;
+  border-right: 1px solid #444;
+  border-left: 1px solid #111;
+  text-transform: uppercase
+}
+
+#menu li:first-child {
+  border-left: none
+}
+
+#menu a {
+  display: block;
+  line-height: 35px;
+  padding: 0 14px;
+  text-decoration: none;
+  color: #eee;
+}
+
+#menu li:hover > a,
+#menu li a:hover {
+  background: #111
+}
+
+#menu input {
+  display: none;
+  margin: 0 0;
+  padding: 0 0;
+  width: 80px;
+  height: 35px;
+  opacity: 0;
+  cursor: pointer
+}
+
+#menu label {
+  font: bold 30px Arial;
+  display: none;
+  width: 35px;
+  height: 36px;
+  line-height: 36px;
+  text-align: center
+}
+
+#menu label span {
+  font-size: 12px;
+  position: absolute;
+  left: 35px
+}
+
+#menu ul.menus {
+  height: auto;
+  width: 100px;
+  background: #111;
+  position: absolute;
+  z-index: 99;
+  display: none;
+  border: 0;
+}
+
+#menu ul.menus li {
+  display: block;
+  width: 100%;
+  font: 12px Arial;
+  text-transform: none;
+}
+
+#menu li:hover ul.menus {
+  display: block
+}
+
+#menu a.home {
+  background: #c00;
+}
+
+#menu a.prett {
+  padding: 0 27px 0 14px;
+  width: 90px;
+}
+
+#menu a.prett::after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-width: 6px 5px;
+  border-style: solid;
+  border-color: #eee transparent transparent transparent;
+  position: absolute;
+  top: 15px;
+  right: 9px
+}
+
+#menu ul.menus a:hover {
+  background: #333;
+}
+
+#menu ul.menus .submenu {
+  display: none;
+  position: absolute;
+  left: 100px;
+  background: #111;
+  top: 0;
+  width: 100px;
+}
+
+#menu ul.menus .submenu li {
+  background: #111;
+}
+
+#menu ul.menus .has-submenu:hover .submenu {
+  display: block;
+}
+
+.button {
+  position: relative;
+  background-color: #228B22;
+  border: none;
+  color: #FFFFFF;
+  padding: 5px;
+  width: 200px;
+  height: 30px;
+  margin: auto;
+  vertical-align: top;
+  text-align: center;
+  -webkit-transition-duration: 0.4s; /* Safari */
+  transition-duration: 0.4s;
+  text-decoration: none;
+  overflow: hidden;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.button:after {
+  content: "";
+  background: #90EE90;
+  display: block;
+  position: absolute;
+  padding-top: 300%;
+  padding-left: 350%;
+  margin-left: -20px!important;
+  margin-top: -120%;
+  opacity: 0;
+  transition: all 0.8s
+}
+
+.button:active:after {
+  padding: 0;
+  margin: 0;
+  opacity: 1;
+  transition: 0s
+}
+
+.tab-button-Active {
+  width: 25%;
+  background-color: darkgreen;
+  padding: 5px;
+  text-align: center;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.tab-button-Inactive {
+  width: 25%;
+  background-color: #228B22;
+  padding: 5px;
+  text-align: center;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.planetDetalImg {
+  width: 25px;
+  height: 20px;
+  padding-right: 3px;
+  padding-left: 3px;
+}
+
+.planetDetalStats {
+  display: inline-block;
+  min-width: 50px;
+  box-shadow: 2px 2px 0 0 dimgray;
+}

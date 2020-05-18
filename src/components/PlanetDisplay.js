@@ -10,7 +10,7 @@
     import PlanetTextureURL3 from "../assets/Earth-hires.jpg"
     import PlanetTextureBump3 from "../assets/earthBump.jpg"
     import PlanetTextureURL4 from "../assets/generalrock.jpg"
-    import PlanetTextureBump4 from "../assets/generalroughbump.jpg"
+    import PlanetTextureBump4 from "../assets/RockBump3.jpg"
     import PlanetTextureURL5 from "../assets/lava.jpg"
     import PlanetTextureBump5 from "../assets/lavabump.jpg"
     import PlanetTextureURL6 from "../assets/jungle.jpg"
@@ -24,7 +24,7 @@
     import PlanetTextureURL10 from "../assets/jupitermap.jpg"
     import PlanetTextureBump10 from "../assets/jupitermap.jpg"
     import PlanetTextureURL11 from "../assets/plutomap1k.jpg"
-    import PlanetTextureBump11 from "../assets/venusbump.jpg"
+    import PlanetTextureBump11 from "../assets/plutomap1k.jpg"
     import { useLoader, useFrame } from 'react-three-fiber'
 
     const PlanetDisplay = (props) => {   
@@ -43,7 +43,7 @@
         const mesh = useRef();    
         const isDetail = props.isDetail ?? false;
         const PlanetType = props.planetType ?? 2;
-        const radius = !isDetail ? .1 : .4;
+        const radius = !isDetail ? .1 : .7;
         
         function onClick(e) {
             if (!isDetail)

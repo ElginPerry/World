@@ -26,7 +26,7 @@ function Lights(){
     return (
         <group>
             <FakeSphere />
-            <ambientLight intensity={0.1} />
+            <ambientLight intensity={0.4} />
             <pointLight intensity={1.2} position={[.8, .8, .2]} />    
         </group>
     );
