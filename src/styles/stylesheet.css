@@ -137,9 +137,10 @@
   background-color: #228B22;
   border: none;
   color: #FFFFFF;
-  padding: 5px;
-  width: 200px;
-  height: 30px;
+  padding-bottom: 5px;
+  width: 150px;
+  height: 20px;
+  font-size: 12px;
   margin: auto;
   vertical-align: top;
   text-align: center;
@@ -189,15 +190,24 @@
   cursor: pointer;
 }
 
-.planetDetalImg {
+.planetDetailImg {
   width: 25px;
   height: 20px;
   padding-right: 3px;
   padding-left: 3px;
 }
 
-.planetDetalStats {
+.planetDetailStats {
   display: inline-block;
   min-width: 50px;
   box-shadow: 2px 2px 0 0 dimgray;
+  padding: 5px;
+}
+
+.planetDetailData {
+  color: orange;
+}
+
+.sliderText {
+  color: orange;
 }

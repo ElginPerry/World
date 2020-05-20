@@ -11,7 +11,7 @@ import CountdownTimer from '../components/CountdownTimer'
 import "../styles/stylesheet.css"
 
 var buildno = 1;
-function BuildDispaly(props) {
+function BuildDisplay(props) {
 
     function BuildThing(){
         buildno = buildno+1;
@@ -57,12 +57,12 @@ function BuildDispaly(props) {
         <div style={{display:"inline-block", height:"65%", width:"65%", verticalAlign:"top", 
         padding:"20px", backgroundColor:"lightblue", fontWeight:"bold", textAlign: "center", overflow: "auto"}}>
 
-            <select onChange={onDropdownSelected} label="Multiple Select" multiple>
+            {/* <select onChange={onDropdownSelected} label="Multiple Select" multiple>
                 {createSelectItems()}
             </select>
             <select onChange={onDropdownSelected} label="Multiple Select" >
                 {createSelectItems()}
-            </select>
+            </select> */}
         
             <div className="button" onClick={() => BuildThing()} >
                 Build 
@@ -71,7 +71,7 @@ function BuildDispaly(props) {
             {Builds.length > 0 &&                    
                 <CountdownTimer key={"p" + Builds[0].buildno} item={Builds[0].buildno} timeUp={RemoveBuild} Date={Builds[0].Complete} />
             }
-            {
+            {/* {
                 Builds.map((item, index) => {
                     if (index > 0)
                     { 
@@ -83,7 +83,9 @@ function BuildDispaly(props) {
                         ); 
                     }
                 })
-            }
+            } */}
+            
+
         </div>
     )
 
@@ -92,4 +94,4 @@ function BuildDispaly(props) {
 
 }
 
-export default BuildDispaly;
+export default BuildDisplay;

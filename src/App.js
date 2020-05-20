@@ -5,6 +5,7 @@ import ConfigureStore from './redux/configureStore';
 import './App.css';
 import {loadState, saveState} from './redux/localStorage';
 import throttle from 'lodash/throttle';
+import coverbg from './assets/coverbg.jpg'
 
 const persistedState = loadState();
 
@@ -17,8 +18,8 @@ store.subscribe(throttle(
 
 function App() {
   return (
-    <div style={{height:"100%", width: "100%", backgroundColor:"blue"}} >
-      <div style={{height:"100%", maxWidth:"700px", width: "90%", borderWidth:"2", borderColor:"black", margin:"auto", backgroundColor:"white", padding: "10px"}}>
+    <div style={{height:"100%", width: "100%", backgroundColor:"blue", backgroundImage: 'url(' + coverbg + ')'}} >
+      <div style={{height:"90%", maxWidth:"700px", width: "90%", borderWidth:"2", borderColor:"black", margin:"auto", backgroundColor:"black", padding: "10px"}}>
         <Provider store={store}>
           <Main />
         </Provider>

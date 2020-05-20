@@ -11,7 +11,7 @@ import Header from './components/Header';
 
 const Main = () => {
     return (
-        <div style={{height:"100%", borderWidth:"2", borderColor:"black"}}>
+        <div style={{height:"100%"}}>
             <Header/>
             <Router >
             <div style={{height:"10%", minHeight:"50px"}}>

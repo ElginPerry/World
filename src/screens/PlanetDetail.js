@@ -1,23 +1,16 @@
 import React, {Suspense, useEffect, useState} from 'react';
-import { Canvas } from "react-three-fiber";
-import Planet from "../components/PlanetDisplay";
-import Lights from "../components/Lights";
-import Environment from "../components/Enviroment";
+import PlanetDetailDisplay from "../components/Planet/PlanetDetailDisplay";
+import FocusDisplay from "../components/Planet/FocusDisplay";
 import '../App.css';
 import {useSelector, useDispatch} from 'react-redux'
 import * as ActionTypes from '../redux/ActionTypes'
 import axios from 'axios';
 import windim from "../components/WindowDimensions";
-import imgMetal from '../assets/Metals.png'
 import imgResearch from '../assets/Research.png'
-import imgFood from '../assets/Food.png'
-import imgEnergy from '../assets/Energy.png'
-import imgPopulation from '../assets/Population.png'
-import imgMaterials from '../assets/Materials.png'
-import imgIndustry from '../assets/Industry.png'
 import imgBuildings from '../assets/Buildings.png'
 import imgShips from '../assets/Ships.png'
 import imgWorld from '../assets/World.png'
+import imgBackArrow from '../assets/backarrow.png'
 import "../styles/stylesheet.css"
 
 var buildno = 1;
@@ -29,21 +22,12 @@ function PlanetDetail(props) {
     const UserID = useSelector(state => state.user.UserID);
     const [tab, setTab] = useState(1);    
     const [planet, setPlanet] = useState({});
-    const [posts, setPosts] = useState({}); 
+    const [PlanetOwner, setPlanetOwner] = useState(); 
+    const [Barren, setBarren] = useState(true); 
     const [PTid, setPTid] = useState(planetType ?? StatePT ?? 2);
     const { height, width } = windim();
-
-    useEffect(() => {
-        axios.get('http://apicall.starshipfleets.com/Planet/GetPlanetTypeDetailCall/' + PTid)
-        .then((response) => {
-            setPosts(response.data);
-            dispatch({type: ActionTypes.SET_PLANETDETAIL,payload:response.data});
-        })
-        .catch(function (error) {
-        })
-        .finally(function () {  
-        });
-    },[PTid]);
+    const [PlanetStats, setPlanetStats] = useState({Metals:0, Research:0, Food:0, Energy:0, Infrastructure:0, InfrastructureMetal:0}); 
+    const [PlanetPop, setPlanetPop] = useState({metalsPop:0, researchPop:0, foodPop:0, energyPop:0, infrastructurePop:0, infrastructureMetalPop:0})
 
     useEffect(() => {
         if (planetID)
@@ -52,7 +36,9 @@ function PlanetDetail(props) {
             .then((response) => {
                 setPlanet(response.data);
                 dispatch({type: ActionTypes.SET_PLANET,payload:response.data});
+                setPlanetOwner(response.data.owner);
                 setPTid(response.data.planetType);
+                setBarren(response.data.barren);  
                 console.log(response.data);
             })
             .catch(function (error) {
@@ -62,6 +48,40 @@ function PlanetDetail(props) {
         }
     },[planetID]);
 
+    useEffect(() => {
+        if (planetID)
+        {
+            setPlanetStats(
+            {
+                Metals: Math.round(((planet.metals*planet.ptMining)+((PlanetPop.metalsPop/100)*(planet.metals*planet.ptMining)))*100)/100
+                ,Research: Math.round(((planet.research*planet.ptResearch)+((PlanetPop.researchPop/100)*(planet.research*planet.ptResearch)))*100)/100
+                ,Food:  Math.round(((planet.food*planet.ptFood)+((PlanetPop.foodPop/100)*(planet.food*planet.ptFood)))*100)/100
+                ,Energy: Math.round(((planet.energy*planet.ptEnergy)+((PlanetPop.energyPop/100)*(planet.energy*planet.ptEnergy)))*100)/100
+                ,Infrastructure: Math.round(((planet.factories*planet.ptInfrastructure)+((PlanetPop.infrastructurePop/100)*(planet.factories*planet.ptInfrastructure)))*100)/100
+                ,InfrastructureMetal: Math.round(
+                    ((planet.factories*planet.ptInfrastructure)+((PlanetPop.infrastructurePopMetal/100)*(planet.factories*planet.ptInfrastructure)))*
+                    (Math.round(((planet.metals*planet.ptMining)+((PlanetPop.metalsPop/100)*(planet.metals*planet.ptMining)))*100)/100)
+                    *100)/100
+            });
+        }
+    },[PlanetPop]); 
+    
+    useEffect(() => {
+        if (planetID)
+        {
+            console.log(planet.metalsPop)
+            setPlanetPop(
+                {
+                    metalsPop: planet.metalsPop
+                    ,researchPop: planet.researchPop
+                    ,foodPop: planet.foodPop
+                    ,energyPop: planet.energyPop
+                    ,infrastructurePop: planet.infrastructurePop
+                    ,infrastructurePopMetal: planet.infrastructurePopMetal
+                });
+        }
+    },[planet]);  
+  
     function BacktoSystem(){
         var link = "/SystemView/" + (planet.galaxy??1) + "/" + (planet.sector??'11') + "/" + (planet.xSysPosition??1);
         window.location.assign(link);
@@ -72,142 +92,76 @@ function PlanetDetail(props) {
         setTab(t);
     }
 
+    function ChangeName()
+    {
+        alert(planet.planetName);
+    }
+
+    function Colonize()
+    {
+        axios.post('http://apicall.starshipfleets.com/Planet/ColonizePlanet', 
+        { 
+            Owner: UserID,
+            PlanetID: planet.planetID,
+            Population: 3,
+            Materials: 25
+        })
+        .then((response) => {
+            setPlanet(response.data);
+            dispatch({type: ActionTypes.SET_PLANET,payload:response.data});
+            setPlanetOwner(response.data.owner);            
+            console.log(response.data);
+        })
+        .catch(function (error) {
+        })
+        .finally(function () {  
+        });
+
+    }
+    
     return (
         <div style={{height:"100%", width:"100%", textAlign: "center", color: "white"}} >
-            <div className="button" onClick={BacktoSystem} >
-                    Back to System
-            </div>   
-            <div style={{display:"inline-block", height:"85%", width:"100%", verticalAlign:"top", 
-            padding:"10px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", overflow: "auto"}}>
-                <div style={{padding: "5PX"}}>{planet.planetName}</div>
+            <div style={{ height:"90%", width:"100%", verticalAlign:"top", 
+                padding:"10px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", overflow: "auto"}}>
+                <div style={{padding: "5px"}}>
+                    <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "#228B22", cursor: "pointer"}} onClick={() => BacktoSystem()}>Back</div>
+                    <div style={{width:"100px", padding: "5px", fontSize: "12px", display: "inline-block", cursor: "pointer", title: "Back to System"}} onClick={ChangeName}>
+                        {planet.planetName}
+                    </div>
+                    {PlanetOwner == UserID &&
+                        <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "mediumblue", cursor: "pointer"}} onClick={() => ChangeTab(5)}>Focus</div>
+                    }
+                    {PlanetOwner == 0 && !Barren &&
+                        <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "mediumblue", cursor: "pointer"}} onClick={() => Colonize()}>Colonize</div>
+                    }
+                </div>
                 <div className={tab==1?"tab-button-Active":"tab-button-Inactive"} onClick={() => ChangeTab(1)}>
-                    <img className="planetDetalImg" src={imgWorld} alt="Planet" title="Planet" />
+                    <img className="planetDetailImg" src={imgWorld} alt="Planet" title="Planet" />
                     {width>500 ? 'Planet' : ''}
                 </div>
                 <div className={tab==2?"tab-button-Active":"tab-button-Inactive"} onClick={() => ChangeTab(2)}>
-                    <img className="planetDetalImg" src={imgBuildings} alt="Buildings" title="Buildings" />                    
+                    <img className="planetDetailImg" src={imgBuildings} alt="Buildings" title="Buildings" />                    
                     {width>500 ? 'Buildings' : ''}
                 </div>
                 <div className={tab==3?"tab-button-Active":"tab-button-Inactive"} onClick={() => ChangeTab(3)}>
-                    <img className="planetDetalImg" src={imgResearch} alt="Research" title="Research" />
+                    <img className="planetDetailImg" src={imgResearch} alt="Research" title="Research" />
                     {width>500 ? 'Research' : ''}
                 </div>
                 <div className={tab==4?"tab-button-Active":"tab-button-Inactive"} onClick={() => ChangeTab(4)}>
-                    <img className="planetDetalImg" src={imgShips} alt="Ships" title="Ships" />
+                    <img className="planetDetailImg" src={imgShips} alt="Ships" title="Ships" />
                     {width>500 ? 'Ships' : ''}
                 </div>
-
-
                 <div>
-                    {tab==1 && 
-                        <div>
-                            <div style={{height:"50%", width:"100%", borderWidth:"2", borderColor:"black", display:"inline-block"}}>
-                                <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black"}}>            
-                                    <Canvas 
-                                        camera={{fov:25,
-                                        aspect: window.innerWidth / window.innerHeight,
-                                        near: 0.1,
-                                        far: 1000
-                                    }}>
-                                        <Suspense fallback={<group />}>
-                                            <Planet planetType={PTid} radius={.3} isDetail={true} />
-                                            <Lights />
-                                            <Environment />
-                                        </Suspense> 
-                                    </Canvas>
-                                </div>
-                                <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", fontSize:"12px"}}>
-                                    <div style={{display:"inline-block"}}>
-                                        <div style={{padding:"5px",color:"blue"}}>
-                                            Galaxy
-                                        </div> 
-                                        <div style={{boxShadow:"2px 2px 0 0 gray" }}>
-                                            {planet.galaxy}
-                                        </div>
-                                    </div>
-                                    <div style={{display:"inline-block"}}>
-                                        <div style={{padding:"5px",color:"blue"}}>
-                                            Sector 
-                                        </div>
-                                        <div style={{boxShadow:"2px 2px 0 0 gray" }}>
-                                            {planet.sector}
-                                        </div> 
-                                    </div>
-                                    <div style={{display:"inline-block"}}>
-                                        <div style={{padding:"5px",color:"blue"}}>
-                                            Moon 
-                                        </div>
-                                        <div style={{boxShadow:"2px 2px 0 0 gray" }}>
-                                            {planet.moon ? "True" : "False"}
-                                        </div> 
-                                    </div>
-                                </div>
-                                <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", fontSize:"12px"}}>
-                                    <div className="planetDetalStats">
-                                        <div>
-                                            <img className="planetDetalImg" src={imgMetal} alt="Metals" title="Metals" />
-                                        </div>
-                                        <div>
-                                            {planet.metals ?? 'NA'}
-                                        </div>
-                                    </div>
-                                    <div className="planetDetalStats">
-                                        <div>
-                                            <img className="planetDetalImg" src={imgResearch} alt="Research" title="Research" />
-                                        </div>
-                                        <div>
-                                            {planet.research ?? 'NA'}
-                                        </div>
-                                    </div>
-                                    <div className="planetDetalStats">
-                                        <div>
-                                            <img className="planetDetalImg" src={imgFood} alt="Food" title="Food" />
-                                        </div>
-                                        <div>
-                                            {planet.food ?? 'NA'}
-                                        </div>
-                                    </div>                                        
-                                    <div className="planetDetalStats">
-                                        <div>
-                                            <img className="planetDetalImg" src={imgEnergy} alt="Energy" title="Energy" />
-                                        </div>
-                                        <div>
-                                            {planet.energy ?? '99.9'}
-                                        </div>
-                                    </div>                                        
-                                </div>
-                                <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", fontSize:"12px"}}>
-                                    <div className="planetDetalStats">
-                                        <div>
-                                            <img className="planetDetalImg" src={imgPopulation} alt="Population" title="Population" />
-                                        </div>
-                                        <div>
-                                            {planet.population ?? '999999'}
-                                        </div>
-                                    </div>
-                                    <div className="planetDetalStats">
-                                        <div>
-                                            <img className="planetDetalImg" src={imgMaterials} alt="Materials" title="Materials" />
-                                        </div>
-                                        <div>
-                                            {planet.materials ?? '999999'}
-                                        </div>
-                                    </div>
-                                    <div className="planetDetalStats">
-                                        <div>
-                                            <img className="planetDetalImg" src={imgIndustry} alt="Industry" title="Industry" />
-                                        </div>
-                                        <div>
-                                            {planet.industry ?? '99.9'}
-                                        </div>
-                                    </div>          
-                                </div>                
-                            </div>     
-                        </div>}
-                    {tab==2 && <div>Buildings</div>}
-                    {tab==3 && <div>Research</div>}
-                    {tab==4 && <div>Ships</div>}
-                </div>                    
+                    <div style={{position:tab==1?'relative':'absolute', top:tab==1?0:-3000}}>
+                        <PlanetDetailDisplay planet={planet} PlanetStats={PlanetStats} PTid={PTid} />
+                    </div>
+                    <div style={{display:tab==5?'block':'none'}}>    
+                        <FocusDisplay PlanetPop={PlanetPop} planetID={planetID} UserID={UserID} save={setPlanetPop} />
+                    </div>
+                    <div style={{display:tab==2?'block':'none'}}>Buildings</div>
+                    <div style={{display:tab==3?'block':'none'}}>Research</div>
+                    <div style={{display:tab==4?'block':'none'}}>Ships</div>
+                </div>                 
             </div>            
         </div>
     );

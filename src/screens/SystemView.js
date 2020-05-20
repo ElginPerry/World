@@ -49,7 +49,7 @@ function SectorView(props){
     var {sectorNumber, Galaxy, systemNumber} = props.match.params; 
 
     useEffect(() => {
-        axios.get("http://apicall.starshipfleets.com/Planet/GetSector/" + (Galaxy??1) + "/" + (sectorNumber??'11'))
+        axios.get("http://apicall.starshipfleets.com/Planet/GetSystem/" + (Galaxy??1) + "/" + (sectorNumber??'11') + '/' + (systemNumber??-222))
         .then((response) => {
             setPosts(response.data);            
         })

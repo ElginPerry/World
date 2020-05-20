@@ -146,7 +146,8 @@ function GalaxyView(props){
     };
 
     function CamComponent() {
-        const zoom = selectSector ? 2.5 : 1;
+        var zoomSet = width<400 ? 6 : 3;
+        const zoom = selectSector ? zoomSet : 1;
         const pos = selectSector ? selectZoom : new Vector3(0,0,5);
         const { camera } = useThree()
         camera.aspect = 1; 
@@ -195,7 +196,7 @@ function GalaxyView(props){
                                 ); 
                         })
                     }
-                    <ambientLight intensity={0.8} />                    
+                    <ambientLight intensity={2.8} />                    
                     <Environment />
                     <CamComponent />
                     <SectorPane />
