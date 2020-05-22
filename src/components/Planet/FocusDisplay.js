@@ -57,10 +57,10 @@ const FocusDisplay = (props) => {
             energyPop:pops.energyPop, infrastructurePop:pops.infrastructurePop, infrastructurePopMetal:pops.infrastructurePopMetal});
     }
 
-    const InfrastructureMetalPopChange = (event, newValue) => {        
-        newValue = TotalPops(newValue, pops.infrastructurePopMetal);
-        setpops({metalsPop:pops.metalsPop, researchPop:pops.researchPop, foodPop:pops.foodPop, 
-            energyPop:pops.energyPop, infrastructurePop:pops.infrastructurePop, infrastructurePopMetal:newValue});
+    const MetalPopChange = (event, newValue) => {        
+        newValue = TotalPops(newValue, pops.metalsPop);
+        setpops({metalsPop:newValue, researchPop:pops.researchPop, foodPop:pops.foodPop, 
+            energyPop:pops.energyPop, infrastructurePop:pops.infrastructurePop, infrastructurePopMetal:pops.infrastructurePopMetal});
     }
 
     const InfrastructurePopChange = (event, newValue) => {        
@@ -135,13 +135,13 @@ const FocusDisplay = (props) => {
                 </Grid>
             </Grid>
             <Grid container spacing={2} alignItems="center">
-                Material Production
+                Metal
             </Grid>
             <Grid container spacing={2} alignItems="center">
                 <Grid style={{width:"80%"}}>
                     <Slider
-                        value={typeof pops.infrastructurePopMetal === 'number' ? pops.infrastructurePopMetal : 0}
-                        onChange={InfrastructureMetalPopChange}                       
+                        value={typeof pops.metalsPop === 'number' ? pops.metalsPop : 0}
+                        onChange={MetalPopChange}                       
                         min={0}
                         step={1}
                         max={100}

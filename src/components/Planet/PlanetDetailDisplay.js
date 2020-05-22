@@ -20,10 +20,9 @@ import "../../styles/stylesheet.css"
 const PlanetDetailDisplay = (props) => { 
     const [planet, setPlanet] = useState(props.planet);
     const [PlanetStats, setPlanetStats] = useState(props.PlanetStats);
-    const [bomeYD, setbomeYD] = useState(0);
-    const [energyUsed, setenergyUsed] = useState(0);
     const PTid = props.PTid;
-    const [BuildingStats, setBuildingStats] = useState(props.BuildingStats);
+    const [bomeYD, setbomeYD] = useState(props.bomeYD);
+    const [energyUsed, setenergyUsed] = useState(props.energyUsed); 
     const { width } = windim();
     const [bldName, setbldName] = useState('');
     const [researchName, setresearchName] = useState('');
@@ -32,6 +31,14 @@ const PlanetDetailDisplay = (props) => {
     const [resduration, setResDuration] = useState(new Date());
     const [shpduration, setShpDuration] = useState(new Date());
 
+    useEffect(() => {
+        setbomeYD(props.bomeYD);
+    }, [props.bomeYD]);
+    
+    useEffect(() => {
+        setenergyUsed(props.energyUsed);
+    }, [props.energyUsed]);      
+ 
     useEffect(() => {
         setshipName(props.shipName);
       }, [props.shipName]);
@@ -64,24 +71,6 @@ const PlanetDetailDisplay = (props) => {
         setPlanetStats(props.PlanetStats);
       }, [props.PlanetStats]);
 
-    useEffect(() => {
-        setBuildingStats(props.BuildingStats);
-      }, [props.BuildingStats]);
-
-    useEffect(() => {
-        if (props.BuildingStats.length> 0)
-        {
-            setbomeYD(BuildingStats.filter(x => x.name == "Biodome")[0].populationMax);
-            setenergyUsed(
-                planet.energy*BuildingStats.filter(x => x.name == "Power Plant")[0].energyCost +
-                planet.research*BuildingStats.filter(x => x.name == "Research Lab")[0].energyCost +
-                planet.metals*BuildingStats.filter(x => x.name == "Mine")[0].energyCost +
-                planet.food*BuildingStats.filter(x => x.name == "Farm")[0].energyCost +
-                planet.factories*BuildingStats.filter(x => x.name == "Factory")[0].energyCost +
-                planet.bioDomes*BuildingStats.filter(x => x.name == "Biodome")[0].energyCost 
-            ); 
-        }
-    }, [BuildingStats, planet]) 
 
     function RemoveBuilding(item)
     {
@@ -188,10 +177,10 @@ const PlanetDetailDisplay = (props) => {
                     <div className="planetDetailStats">
                         <div>
                             <img className="planetDetailImg" src={imgEnergy} alt="Energy Remaining" title="Energy Remaining" />
-                            {width>500 && 'Energy Remaining'}
+                            {width>450 && 'Energy'}
                         </div>
                         <div className="planetDetailData">
-                            {Math.round((PlanetStats.Energy-energyUsed)*100)/100?? 'NA'}
+                            {(Math.round((PlanetStats.Energy/energyUsed)*100)/100 > 1 ? 100+'%' : Math.round((PlanetStats.Energy/energyUsed)*100)+'%')?? 'NA'}
                         </div>
                     </div>                                        
                 </div>

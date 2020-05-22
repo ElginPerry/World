@@ -33,7 +33,7 @@ function ResearchDisplay(props) {
         setBuildingStats(props.BuildingStats);
       }, [props.BuildingStats]);
 
-    function BuildThing(prod, mat, name){
+    function BuildThing(prod, name, buildingID){
         setbuildingName(name);
         setDuration(Getduration(prod));
         props.setresearchName(name);
@@ -154,8 +154,8 @@ function ResearchDisplay(props) {
                                     </div>
                                     <div style={{textAlign: "center", display: "inline-block", backgroundColor:'#228B22', width: "15%", 
                                         fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} 
-                                        onClick={() => BuildThing(Math.round(((building.productionCost+(getLevel(building.name)*2.5*building.productionCost))/PlanetStats.Infrastructure)*10),
-                                            building.productionCost+(getLevel(building.name)*building.materialCost), building.name )}>
+                                        onClick={() => BuildThing(Math.round(((building.productionCost+(getLevel(building.name)*2.5*building.productionCost))/PlanetStats.Infrastructure)*10)
+                                            , building.name, building.buildingID )}>
                                         {width>450 ? 'Build' : ' + '}
                                     </div>                                         
                                 </div>

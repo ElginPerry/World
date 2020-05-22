@@ -34,11 +34,12 @@ function BuildDisplay(props) {
         setBuildingStats(props.BuildingStats);
       }, [props.BuildingStats]);
 
-    function BuildThing(prod, mat, name){
+    function BuildThing(prod, name, buildingID){
         setbuildingName(name);
         setDuration(Getduration(prod));
         props.setbldName(name);
         props.setBldDuration(Getduration(prod));
+        console.log(name + ":" + userID + ":" + planetID)
     }
   
     function RemoveBuild(item){
@@ -120,7 +121,7 @@ function BuildDisplay(props) {
                                         {width>450 ? 'Level' : 'L'}
                                     </div>
                                     <div style={{display: "inline-block", width: "10%", borderBottom: '1px solid red'}}>
-                                        {width>450 ? 'Production' : 'P'}
+                                        {width>450 ? 'Population' : 'P'}
                                     </div> 
                                     <div style={{display: "inline-block", width: "10%", borderBottom: '1px solid red'}}>
                                         {width>450 ? 'Materials' : 'M'}
@@ -140,12 +141,11 @@ function BuildDisplay(props) {
                                         {getLevel(building.name)}
                                     </div>
                                     <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px"}}>
-                                        {!isNaN(getLevel(building.name)) && 
-                                        building.productionCost+(getLevel(building.name)*2.5*building.productionCost)}
+                                        {!isNaN(getLevel(building.name)) && building.populationCost}
                                     </div> 
                                     <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px"}}>
                                         {!isNaN(getLevel(building.name)) &&
-                                        building.materialCost+(getLevel(building.name)*building.materialCost)}
+                                        building.materialCost+(getLevel(building.name)*building.materialCost*2.5)}
                                     </div>  
                                     <div style={{display: "inline-block", width: "25%", fontSize: width>450 ? "12px" : "10px", paddingRight: "5px"}}>
                                         {!isNaN(getLevel(building.name)) &&
@@ -154,8 +154,9 @@ function BuildDisplay(props) {
                                     </div>
                                     <div style={{textAlign: "center", display: "inline-block", backgroundColor:'#228B22', width: "15%", 
                                         fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} 
-                                        onClick={() => BuildThing(Math.round(((building.productionCost+(getLevel(building.name)*2.5*building.productionCost))/PlanetStats.Infrastructure)*10),
-                                            building.productionCost+(getLevel(building.name)*building.materialCost), building.name )}>
+                                        onClick={() => 
+                                            BuildThing(Math.round(((building.productionCost+(getLevel(building.name)*2.5*building.productionCost))/PlanetStats.Infrastructure)*10)
+                                            , building.name, building.buildingID )}>
                                         {width>450 ? 'Build' : ' + '}
                                     </div>                                         
                                 </div>
