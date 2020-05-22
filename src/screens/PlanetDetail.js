@@ -14,7 +14,6 @@ import imgBuildings from '../assets/Buildings.png'
 import imgShips from '../assets/Ships.png'
 import imgWorld from '../assets/World.png'
 import "../styles/stylesheet.css"
-import { log } from 'three';
 
 function PlanetDetail(props) {
     const dispatch = useDispatch();
@@ -25,12 +24,10 @@ function PlanetDetail(props) {
     const [planet, setPlanet] = useState({});
     const [PlanetOwner, setPlanetOwner] = useState(); 
     const [BuildingStats, setBuildingStats] = useState([]); 
-    const [bomeYD, setbomeYD] = useState(0);
-    const [energyUsed, setenergyUsed] = useState(0); 
     const [Barren, setBarren] = useState(true); 
     const [PTid, setPTid] = useState(planetType ?? StatePT ?? 2);
     const { width } = windim();
-    const [PlanetStats, setPlanetStats] = useState({Metals:0, Research:0, Food:0, Energy:0, Infrastructure:0, InfrastructureMetal:0}); 
+    const [PlanetStats, setPlanetStats] = useState({energy: 0, energyCost: 1, food: 0, infrastructure: 0, mining: 0, populationMax: 0, research: 0}); 
     const [PlanetPop, setPlanetPop] = useState({metalsPop:0, researchPop:0, foodPop:0, energyPop:0, infrastructurePop:0, infrastructureMetalPop:0})
     const [bldduration, setBldDuration] = useState(new Date());
     const [resduration, setResDuration] = useState(new Date());
@@ -46,7 +43,6 @@ function PlanetDetail(props) {
             axios.get('http://apicall.starshipfleets.com/Planet/GetBuildingTypes')
             .then((response) => {
                 setBuildingStats(response.data);
-                console.log(response.data)
                 //dispatch({type: ActionTypes.SET_PLANET,payload:response.data});  
             })
             .catch(function (error) {
@@ -57,72 +53,38 @@ function PlanetDetail(props) {
     },[planetID]);
 
     useEffect(() => {
-        if (planetID && BuildingStats.length > 0)
-        {
-            setPlanetPop(
-                {
-                    metalsPop: planet.metalsPop
-                    ,researchPop: planet.researchPop
-                    ,foodPop: planet.foodPop
-                    ,energyPop: planet.energyPop
-                    ,infrastructurePop: planet.infrastructurePop
-                    ,infrastructurePopMetal: planet.infrastructurePopMetal
-                });
-            setbomeYD(BuildingStats.filter(x => x.name == "Biodome")[0].populationMax);
-            setenergyUsed(
-                planet.energy*BuildingStats.filter(x => x.name == "Power Plant")[0].energyCost +
-                planet.research*BuildingStats.filter(x => x.name == "Research Lab")[0].energyCost +
-                planet.metals*BuildingStats.filter(x => x.name == "Mine")[0].energyCost +
-                planet.food*BuildingStats.filter(x => x.name == "Farm")[0].energyCost +
-                planet.factories*BuildingStats.filter(x => x.name == "Factory")[0].energyCost +
-                planet.bioDomes*BuildingStats.filter(x => x.name == "Biodome")[0].energyCost +
-                planet.shipYards*BuildingStats.filter(x => x.name == "ShipYard")[0].energyCost 
-            ); 
-        }
-    },[planet,BuildingStats]);  
-
-    useEffect(() => {
-        if (planetID && BuildingStats.length > 0)
-        {
-            const mineYD = BuildingStats.filter(x => x.name == "Mine")[0].mining;
-            const farmYD = BuildingStats.filter(x => x.name == "Farm")[0].food;
-            const factoryYD = BuildingStats.filter(x => x.name == "Factory")[0].infrastructure;
-            const plantYD = BuildingStats.filter(x => x.name == "Power Plant")[0].energy;            
-            const labYD = BuildingStats.filter(x => x.name == "Research Lab")[0].research;
-            const bioYD = BuildingStats.filter(x => x.name == "Biodome")[0].infrastructure;
-            const shipYD = BuildingStats.filter(x => x.name == "ShipYard")[0].infrastructure;
-
-            const infraYD = (((planet.shipYards*shipYD)+(planet.food*planet.ptInfrastructure*bioYD)+(planet.factories*planet.ptInfrastructure*factoryYD))+
-                (((planet.shipYards*shipYD)+(planet.food*planet.ptInfrastructure*bioYD)+(planet.factories*planet.ptInfrastructure*factoryYD))*(PlanetPop.infrastructurePop/100)))
- 
-            const infraMetalYD = (((planet.shipYards*shipYD)+(planet.food*planet.ptInfrastructure*bioYD)+(planet.factories*planet.ptInfrastructure*factoryYD))+
-                (((planet.shipYards*shipYD)+(planet.food*planet.ptInfrastructure*bioYD)+(planet.factories*planet.ptInfrastructure*factoryYD))*(PlanetPop.infrastructurePopMetal/100)))
-
-            const energySupply = (Math.round((planet.energy*planet.ptEnergy*plantYD)*((PlanetPop.energyPop/100)+1)*100)/100)/energyUsed > 1 ? 1 :
-                (Math.round((planet.energy*planet.ptEnergy*plantYD)*((PlanetPop.energyPop/100)+1)*100)/100)/energyUsed    
-            
-            setPlanetStats(
-            {
-                Metals: (Math.round((planet.metals*planet.ptMining*mineYD)*100*energySupply)/100)
-                ,Research: (Math.round((planet.research*planet.ptResearch*labYD)*((PlanetPop.researchPop/100)+1)*100*energySupply)/100)
-                ,Food:  (Math.round((planet.food*planet.ptFood*farmYD)*((PlanetPop.foodPop/100)+1)*100*energySupply)/100)
-                ,Energy: (Math.round((planet.energy*planet.ptEnergy*plantYD)*((PlanetPop.energyPop/100)+1)*100*energySupply)/100)
-                ,Infrastructure: (Math.round((infraYD)*100*energySupply)/100)
-                ,InfrastructureMetal: (Math.round((infraMetalYD)*(planet.metals*planet.ptMining*mineYD)*100*energySupply)/100)
+        if (planet.planetID > 0)
+        {  
+            axios.get('http://apicall.starshipfleets.com/Planet/GetPlanetStats/' + planetID )
+            .then((response) => {
+                setPlanetStats(response.data);
+                console.log('gg')
+            })
+            .catch(function (error) {
+            })
+            .finally(function () {  
             });
         }
-    },[PlanetPop]); 
+    },[planet]); 
   
     function GetPlanet()
     {            
         axios.get('http://apicall.starshipfleets.com/Planet/GetPlanet/' + planetID + '/' + UserID)
         .then((response) => {
             setPlanet(response.data);
-            console.log(response.data)
             dispatch({type: ActionTypes.SET_PLANET,payload:response.data});
             setPlanetOwner(response.data.owner);
             setPTid(response.data.planetType);
             setBarren(response.data.barren); 
+            setPlanetPop(
+                {
+                    metalsPop: response.data.metalsPop
+                    ,researchPop: response.data.researchPop
+                    ,foodPop: response.data.foodPop
+                    ,energyPop: response.data.energyPop
+                    ,infrastructurePop: response.data.infrastructurePop
+                    ,infrastructurePopMetal: response.data.infrastructurePopMetal
+                });
         })
         .catch(function (error) {
         })
@@ -213,13 +175,13 @@ function PlanetDetail(props) {
                 }
                 <div style={{width:"100%"}}>
                     <div style={{position:tab==1?'relative':'absolute', top:tab==1?0:-3000}}>
-                        <PlanetDetailDisplay planet={planet} PlanetStats={PlanetStats} PTid={PTid} BuildingStats={BuildingStats} 
+                        <PlanetDetailDisplay planet={planet} PlanetStats={PlanetStats} PTid={PTid} BuildingStats={BuildingStats} PlanetPop={PlanetPop}
                         bldName={bldName} bldduration={bldduration} researchName={researchName} resduration={resduration} shpduration={shpduration} shipName={shipName} 
-                        setshipName={setshipName} setresearchName={setresearchName} setbldName={setbldName} bomeYD={bomeYD} energyUsed={energyUsed}/>
+                        setshipName={setshipName} setresearchName={setresearchName} setbldName={setbldName}/>
                     </div>
                     <div style={{display:tab==5?'block':'none'}}>    
-                        <FocusDisplay PlanetPop={PlanetPop} planetID={planetID} UserID={UserID} save={setPlanetPop} setTab={setTab}
-                        bldName={bldName} researchName={researchName} shipName={shipName}/>
+                        <FocusDisplay PlanetPop={PlanetPop} planetID={planetID} UserID={UserID} save={setPlanetPop} setTab={setTab} setPlanetStats={setPlanetStats}
+                        bldName={bldName} researchName={researchName} shipName={shipName} PlanetStats={PlanetStats}/>
                     </div>
                     <div style={{display:tab==2?'block':'none'}}>
                         <BuildDisplay planet={planet} PlanetStats={PlanetStats} PTid={PTid} BuildingStats={BuildingStats} UserID={UserID} PlanetID={planetID}
