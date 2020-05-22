@@ -2,12 +2,11 @@ import React, {Suspense, useEffect, useState, useRef} from 'react';
 import {useSelector, useDispatch} from 'react-redux'
 import * as ActionTypes from '../../redux/ActionTypes'
 import axios from 'axios';
-import CountdownTimer from './BuildTimer'
+import CountdownTimer from './BuildTimer';
 import windim from "../WindowDimensions";
-import "../../styles/stylesheet.css"
+import "../../styles/stylesheet.css";
 
-
-function BuildDisplay(props) {
+function ResearchDisplay(props) {
     const [planet, setPlanet] = useState(props.planet);
     const [PlanetStats, setPlanetStats] = useState(props.PlanetStats);
     const [userID, setUserID] = useState(props.UserID);
@@ -20,7 +19,7 @@ function BuildDisplay(props) {
     const [BuildingStats, setBuildingStats] = useState(props.BuildingStats);
     const [duration, setDuration] = useState(new Date());
     const { width } = windim();
-    const [bg, setBg] = useState({});
+    const [bg, setBg] = useState({});  
 
     useEffect(() => {
         setPlanet(props.planet);
@@ -37,8 +36,8 @@ function BuildDisplay(props) {
     function BuildThing(prod, mat, name){
         setbuildingName(name);
         setDuration(Getduration(prod));
-        props.setbldName(name);
-        props.setBldDuration(Getduration(prod));
+        props.setresearchName(name);
+        props.setResDuration(Getduration(prod));
     }
   
     function RemoveBuild(item){
@@ -56,6 +55,7 @@ function BuildDisplay(props) {
     {
         setBg(BuildingStats.filter(x => x.name == name));
         setPopup(true)
+        console.log(BuildingStats.filter(x => x.name == name)[0])
     }
 
     function HideInfo()
@@ -102,7 +102,7 @@ function BuildDisplay(props) {
         <div style={{display:"inline-block", height:"90%", width:"100%", verticalAlign:"top", 
         padding:"20px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", overflow: "auto"}}>
             <div style={{margin:"auto", width:"100%", paddingTop: "10px", paddingBottom: "10px"}}>
-                <div style={{textAlign: "right", width:"100%", paddingLeft: "5px", fontSize: width>450 ? "14px" : "12px"}}>    
+                <div style={{textAlign: "right", width:"100%", paddingLeft: "5px", fontSize: width>450 ? "14px" : "12px"}}>
                     <CountdownTimer timeUp={RemoveBuild} Date={duration} buildingName={buildingName} />   
                 </div>       
             </div>
@@ -252,4 +252,4 @@ function BuildDisplay(props) {
     )
 }
 
-export default BuildDisplay;
+export default ResearchDisplay;

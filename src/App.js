@@ -19,7 +19,7 @@ store.subscribe(throttle(
 function App() {
   return (
     <div style={{height:"100%", width: "100%", backgroundColor:"blue", backgroundImage: 'url(' + coverbg + ')'}} >
-      <div style={{height:"90%", maxWidth:"700px", width: "90%", borderWidth:"2", borderColor:"black", margin:"auto", backgroundColor:"black", padding: "10px"}}>
+      <div style={{height:"95%", maxWidth:"700px", width: "95%", borderWidth:"2", borderColor:"black", margin:"auto", backgroundColor:'rgba(0, 0, 0, 0.95)', padding: "10px"}}>
         <Provider store={store}>
           <Main />
         </Provider>

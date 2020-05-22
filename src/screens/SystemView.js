@@ -3,7 +3,7 @@ import { useLoader, useFrame, useThree, Canvas } from 'react-three-fiber';
 import {TextureLoader, Vector3} from 'three';
 import axios from 'axios';
 import {useSelector} from 'react-redux';
-import Environment from "../components/Enviroment";
+import Environment from "../components/Planet/Enviroment";
 import windim from "../components/WindowDimensions";
 import PlanetTextureURL1 from "../assets/gas.jpg"
 import PlanetTextureBump1 from "../assets/gas.jpg"
@@ -49,9 +49,9 @@ function SectorView(props){
     var {sectorNumber, Galaxy, systemNumber} = props.match.params; 
 
     useEffect(() => {
-        axios.get("http://apicall.starshipfleets.com/Planet/GetSystem/" + (Galaxy??1) + "/" + (sectorNumber??'11') + '/' + (systemNumber??-222))
+        axios.get("http://apicall.starshipfleets.com/Planet/GetSystem/" + (Galaxy??1) + "/" + (sectorNumber??'11') + '/' + (systemNumber??1))
         .then((response) => {
-            setPosts(response.data);            
+            setPosts(response.data);                        
         })
         .catch(function (error) {
             console.log(error);
@@ -63,7 +63,7 @@ function SectorView(props){
     useEffect(() => {
         if (posts.length > 0)
         {
-            setSystems(posts.filter(x => x.xSysPosition == (systemNumber??1)));
+            setSystems(posts.filter(x => x.system == (systemNumber??1)));
         }
     },[posts]);
 
@@ -175,8 +175,7 @@ function SectorView(props){
     }
 
     function BacktoGalaxy(){
-        var link = "/GalaxyView/" + (Galaxy??1);
-        window.location.assign("/GalaxyView");
+        window.location.assign("/GalaxyView/"+ (Galaxy??1));
     }
 
     return (
@@ -187,7 +186,7 @@ function SectorView(props){
             <div style={{height:"75%", width:"95%", borderWidth:"2", borderColor:"black", display:"inline-block"}}>        
                 <Canvas 
                     camera={{fov:25,
-                    aspect: window.innerWidth / window.innerHeight,
+                    aspect: 1, //window.innerWidth / window.innerHeight,
                     near: 0.1,
                     far: 1000
                 }}>

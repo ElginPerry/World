@@ -1,4 +1,4 @@
-import React, {Suspense, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Slider from '@material-ui/core/Slider';
 import Grid from '@material-ui/core/Grid';
 import windim from "../WindowDimensions";
@@ -6,16 +6,29 @@ import axios from 'axios';
 import "../../styles/stylesheet.css"
 
 const FocusDisplay = (props) => { 
-    const PlanetPop = props.PlanetPop;
-    const PTid = props.PTid;
     const PlanetID = props.planetID;
     const UserID = props.UserID;
     const [pops, setpops] = useState(props.PlanetPop);
-    const { height, width } = windim();
+    const [bldName, setbldName] = useState(props.bldName);
+    const [researchName, setresearchName] = useState(props.researchName);
+    const [shipName, setshipName] = useState(props.shipName);
+    const { width } = windim();
    
     useEffect(() => {
+        setbldName(props.bldName);
+    }, [props.bldName]);
+ 
+    useEffect(() => {
+        setresearchName(props.researchName);
+    }, [props.researchName]);
+
+    useEffect(() => {
+        setshipName(props.shipName);
+    }, [props.shipName]);       
+
+    useEffect(() => {
         setpops(props.PlanetPop);
-      }, [props.PlanetPop]);
+    }, [props.PlanetPop]);
 
     function TotalPops(newValue, oldValue)
     {
@@ -68,14 +81,14 @@ const FocusDisplay = (props) => {
             energyPop:newValue, infrastructurePop:pops.infrastructurePop, infrastructurePopMetal:pops.infrastructurePopMetal});
     }
 
-    const MetalPopChange = (event, newValue) => {        
-        newValue = TotalPops(newValue, pops.metalsPop);
-        setpops({metalsPop:newValue, researchPop:pops.researchPop, foodPop:pops.foodPop, 
-            energyPop:pops.energyPop, infrastructurePop:pops.infrastructurePop, infrastructurePopMetal:pops.infrastructurePopMetal});
-    }
-
     function Save()
     {
+        var totals =pops.metalsPop+pops.researchPop+pops.foodPop+pops.energyPop+pops.infrastructurePop+pops.infrastructurePopMetal;
+        if (totals!= 100)
+        {
+            alert("Total focus should be 100.");
+            return;
+        }
         props.save(pops);
         axios.post('http://apicall.starshipfleets.com/Planet/UpdatePlanetPop',
         {
@@ -89,13 +102,13 @@ const FocusDisplay = (props) => {
             Owner:UserID
         })
         .then((response) => {
-            //dispatch({type: ActionTypes.SET_PLANET,payload:response.data});
             console.log(response.data);
         })
         .catch(function (error) {
         })
         .finally(function () {  
         });
+        props.setTab(1);        
     }
 
     return (
@@ -155,6 +168,7 @@ const FocusDisplay = (props) => {
                         max={100}
                         valueLabelDisplay="auto"
                         aria-labelledby="non-linear-slider"
+                        disabled={bldName + shipName + researchName == '' ? false : true }
                     />
                 </Grid>
                 <Grid item style={{width:"20%"}}>
@@ -205,27 +219,6 @@ const FocusDisplay = (props) => {
                     </div>
                 </Grid>
             </Grid>
-            <Grid container spacing={2} alignItems="center">
-                Metal Production
-            </Grid>
-            <Grid container spacing={2} alignItems="center">
-                <Grid style={{width:"80%"}}>
-                    <Slider
-                        value={typeof pops.metalsPop === 'number' ? pops.metalsPop : 0}
-                        onChange={MetalPopChange}                       
-                        min={0}
-                        step={1}
-                        max={100}
-                        valueLabelDisplay="auto"
-                        aria-labelledby="non-linear-slider"
-                    />
-                </Grid>
-                <Grid item style={{width:"20%"}}>
-                    <div className="sliderText">
-                        {typeof pops.metalsPop === 'number' ? pops.metalsPop : 0}                        
-                    </div>
-                </Grid>
-            </Grid> 
             <div style={{width: "30%", padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "#228B22", cursor: "pointer"}} onClick={() => Save()}>
                 SAVE
             </div>                                         

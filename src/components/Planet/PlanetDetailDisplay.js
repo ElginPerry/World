@@ -1,8 +1,8 @@
 import React, {Suspense, useEffect, useState} from 'react';
 import { Canvas } from "react-three-fiber";
-import Planet from "../PlanetDisplay";
-import Lights from "../Lights";
-import Environment from "../Enviroment";
+import Planet from "./PlanetDisplay";
+import Lights from "./Lights";
+import Environment from "./Enviroment";
 import windim from "../WindowDimensions";
 import imgMetal from '../../assets/Metals.png'
 import imgResearch from '../../assets/Research.png'
@@ -12,35 +12,116 @@ import imgPopulation from '../../assets/Population.png'
 import imgMaterials from '../../assets/Materials.png'
 import imgIndustry from '../../assets/Industry.png'
 import imgProdMetals from '../../assets/ProdMetals.png'
+import BuildTimer from './BuildTimer'
+import ResearchTimer from './BuildTimer'
+import ShipTimer from './BuildTimer'
 import "../../styles/stylesheet.css"
 
 const PlanetDetailDisplay = (props) => { 
-    const planet = props.planet;
+    const [planet, setPlanet] = useState(props.planet);
     const [PlanetStats, setPlanetStats] = useState(props.PlanetStats);
+    const [bomeYD, setbomeYD] = useState(0);
+    const [energyUsed, setenergyUsed] = useState(0);
     const PTid = props.PTid;
-    const { height, width } = windim();
+    const [BuildingStats, setBuildingStats] = useState(props.BuildingStats);
+    const { width } = windim();
+    const [bldName, setbldName] = useState('');
+    const [researchName, setresearchName] = useState('');
+    const [shipName, setshipName] = useState(''); 
+    const [bldduration, setBldDuration] = useState(new Date());
+    const [resduration, setResDuration] = useState(new Date());
+    const [shpduration, setShpDuration] = useState(new Date());
+
+    useEffect(() => {
+        setshipName(props.shipName);
+      }, [props.shipName]);
+
+    useEffect(() => {
+        setShpDuration(props.shpduration);
+    }, [props.shpduration]);
+
+    useEffect(() => {
+        setresearchName(props.researchName);
+      }, [props.researchName]);
+
+    useEffect(() => {
+        setResDuration(props.resduration);
+    }, [props.resduration]);
+
+    useEffect(() => {
+        setbldName(props.bldName);
+      }, [props.bldName]);
+
+    useEffect(() => {
+        setBldDuration(props.bldduration);
+    }, [props.bldduration]);
+
+    useEffect(() => {
+        setPlanet(props.planet);
+      }, [props.planet]);
 
     useEffect(() => {
         setPlanetStats(props.PlanetStats);
       }, [props.PlanetStats]);
 
+    useEffect(() => {
+        setBuildingStats(props.BuildingStats);
+      }, [props.BuildingStats]);
+
+    useEffect(() => {
+        if (props.BuildingStats.length> 0)
+        {
+            setbomeYD(BuildingStats.filter(x => x.name == "Biodome")[0].populationMax);
+            setenergyUsed(
+                planet.energy*BuildingStats.filter(x => x.name == "Power Plant")[0].energyCost +
+                planet.research*BuildingStats.filter(x => x.name == "Research Lab")[0].energyCost +
+                planet.metals*BuildingStats.filter(x => x.name == "Mine")[0].energyCost +
+                planet.food*BuildingStats.filter(x => x.name == "Farm")[0].energyCost +
+                planet.factories*BuildingStats.filter(x => x.name == "Factory")[0].energyCost +
+                planet.bioDomes*BuildingStats.filter(x => x.name == "Biodome")[0].energyCost 
+            ); 
+        }
+    }, [BuildingStats, planet]) 
+
+    function RemoveBuilding(item)
+    {
+        props.setbldName('');
+    }
+
+    function RemoveResearch(item)
+    {
+        props.setresearchName('');
+    }
+
+    function RemoveShip(item)
+    {
+        props.setshipName('');     
+    }
+
     return (
-        <div>
+        <div style={{height:"100%"}}>
             {!isNaN(PlanetStats.Metals) &&
-            <div style={{height:"50%", width:"100%", borderWidth:"2", borderColor:"black", display:"inline-block"}}>
-                <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black"}}>            
-                    <Canvas 
-                        camera={{fov:25,
-                        aspect: window.innerWidth / window.innerHeight,
-                        near: 0.1,
-                        far: 1000
-                    }}>
-                        <Suspense fallback={<group />}>
-                            <Planet planetType={PTid} radius={.3} isDetail={true} />
-                            <Lights />
-                            <Environment />
-                        </Suspense> 
-                    </Canvas>
+            <div style={{height:"100%", width:"100%", display:"inline-block"}}>
+                <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black"}}>
+                    <div style={{width:"50%", height:"120px", display:"inline-block"}}>           
+                        <Canvas 
+                            camera={{fov:25,
+                            aspect: window.innerWidth / window.innerHeight,
+                            near: 0.1,
+                            far: 1000
+                        }}>
+                            <Suspense fallback={<group />}>
+                                <Planet planetType={PTid} radius={.3} isDetail={true} />
+                                <Lights />
+                                <Environment />
+                            </Suspense> 
+                        </Canvas>
+                    </div>
+                    <div style={{width:"50%", display:"inline-block", verticalAlign:"top"}}>
+                        <div style={{padding:"5px"}}><BuildTimer timeUp={RemoveBuilding} Date={bldduration} buildingName={bldName} /> </div>
+                        <div style={{padding:"5px"}}><ResearchTimer timeUp={RemoveResearch} Date={resduration} buildingName={researchName} /></div>
+                        <div style={{padding:"5px"}}><ShipTimer timeUp={RemoveShip} Date={shpduration} buildingName={shipName} /></div>
+                    </div>
                 </div>
                 <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", fontSize:"12px"}}>
                     <div style={{display:"inline-block"}}>
@@ -106,11 +187,11 @@ const PlanetDetailDisplay = (props) => {
                     </div>                                        
                     <div className="planetDetailStats">
                         <div>
-                            <img className="planetDetailImg" src={imgEnergy} alt="Energy" title="Energy" />
-                            {width>450 && 'Energy'}
+                            <img className="planetDetailImg" src={imgEnergy} alt="Energy Remaining" title="Energy Remaining" />
+                            {width>500 && 'Energy Remaining'}
                         </div>
                         <div className="planetDetailData">
-                            {PlanetStats.Energy?? 'NA'}
+                            {Math.round((PlanetStats.Energy-energyUsed)*100)/100?? 'NA'}
                         </div>
                     </div>                                        
                 </div>
@@ -121,7 +202,7 @@ const PlanetDetailDisplay = (props) => {
                             {width>500 && 'Population'}
                         </div>
                         <div className="planetDetailData">
-                            {planet.population ? planet.population + "/" + (planet.bioDomes*10) : 'NA'}
+                            {planet.population ? planet.population + "/" + (planet.bioDomes*bomeYD) : 'NA'}
                         </div>
                     </div>
                     <div className="planetDetailStats">

@@ -76,9 +76,6 @@ export default function NestedList() {
           <ListItem button className={classes.nested} onClick={() => MenuClick("/GalaxyView")}>
              <ListItemText primary="Galaxy" />
           </ListItem>
-          <ListItem button className={classes.nested} onClick={() => MenuClick("/SectorView")}>
-            <ListItemText primary="Sector" />
-          </ListItem>
           <ListItem button className={classes.nested} onClick={() => MenuClick("/SystemView")}>
             <ListItemText primary="System" />
           </ListItem>
@@ -118,9 +115,6 @@ export default function NestedList() {
         <List component="div" disablePadding>
         <ListItem button className={classes.nested} onClick={() => MenuClick("/GalaxyView")}>
             <ListItemText primary="Galaxy" />
-        </ListItem>
-        <ListItem button className={classes.nested} onClick={() => MenuClick("/SectorView")}>
-            <ListItemText primary="Sector" />
         </ListItem>
         <ListItem button className={classes.nested} onClick={() => MenuClick("/SystemView")}>
             <ListItemText primary="System" />

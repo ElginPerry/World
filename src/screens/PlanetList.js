@@ -1,8 +1,8 @@
 import React, {Suspense} from 'react';
 import { Canvas } from "react-three-fiber";
-import Planet from "../components/PlanetDisplay";
-import Lights from "../components/Lights";
-import Environment from "../components/Enviroment";
+import Planet from "../components/Planet/PlanetDisplay";
+import Lights from "../components/Planet/Lights";
+import Environment from "../components/Planet/Enviroment";
 import '../App.css';
 import PlanetTextureURL1 from "../assets/gas.jpg"
 import PlanetTextureBump1 from "../assets/gas.jpg"

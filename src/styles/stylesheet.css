@@ -174,7 +174,8 @@
 
 .tab-button-Active {
   width: 25%;
-  background-color: darkgreen;
+  font-size: 12px;
+  background-color: teal;
   padding: 5px;
   text-align: center;
   display: inline-block;
@@ -183,6 +184,7 @@
 
 .tab-button-Inactive {
   width: 25%;
+  font-size: 12px;
   background-color: #228B22;
   padding: 5px;
   text-align: center;
@@ -192,7 +194,7 @@
 
 .planetDetailImg {
   width: 25px;
-  height: 20px;
+  height: 15px;
   padding-right: 3px;
   padding-left: 3px;
 }
@@ -210,4 +212,14 @@
 
 .sliderText {
   color: orange;
+}
+
+.popup {
+  width:200px;
+  height:250px;
+  position:absolute;
+  top:30%;
+  left:50%;
+  margin:-50px 0 0 -100px; /* [-(height/2)px 0 0 -(width/2)px] */
+  display:none;
 }

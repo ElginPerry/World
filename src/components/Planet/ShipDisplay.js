@@ -2,12 +2,11 @@ import React, {Suspense, useEffect, useState, useRef} from 'react';
 import {useSelector, useDispatch} from 'react-redux'
 import * as ActionTypes from '../../redux/ActionTypes'
 import axios from 'axios';
-import CountdownTimer from './BuildTimer'
+import CountdownTimer from './BuildTimer';
 import windim from "../WindowDimensions";
-import "../../styles/stylesheet.css"
+import "../../styles/stylesheet.css";
 
-
-function BuildDisplay(props) {
+function ShipDisplay(props) {
     const [planet, setPlanet] = useState(props.planet);
     const [PlanetStats, setPlanetStats] = useState(props.PlanetStats);
     const [userID, setUserID] = useState(props.UserID);
@@ -37,8 +36,8 @@ function BuildDisplay(props) {
     function BuildThing(prod, mat, name){
         setbuildingName(name);
         setDuration(Getduration(prod));
-        props.setbldName(name);
-        props.setBldDuration(Getduration(prod));
+        props.setshipName(name);
+        props.setShpDuration(Getduration(prod));
     }
   
     function RemoveBuild(item){
@@ -56,6 +55,7 @@ function BuildDisplay(props) {
     {
         setBg(BuildingStats.filter(x => x.name == name));
         setPopup(true)
+        console.log(BuildingStats.filter(x => x.name == name)[0])
     }
 
     function HideInfo()
@@ -252,4 +252,4 @@ function BuildDisplay(props) {
     )
 }
 
-export default BuildDisplay;
+export default ShipDisplay;

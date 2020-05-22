@@ -2,24 +2,30 @@ import React, {Suspense, useEffect, useState, useRef, useCallback } from "react"
 import { useLoader, Canvas, useThree } from 'react-three-fiber';
 import SunTextureURL from "../assets/Fire2.jpg"
 import SunTextureBump from "../assets/generalroughbump.jpg"
+import BlueSunTextureURL from "../assets/gas.jpg"
 import {TextureLoader, Vector3} from 'three';
 import axios from 'axios';
 import {useSelector} from 'react-redux';
-import Environment from "../components/Enviroment";
+import Environment from "../components/Planet/Enviroment";
 import windim from "../components/WindowDimensions";
 import "../styles/stylesheet.css"
 
 function GalaxyView(props){   
     const [posts, setPosts] = useState({});    
     const [selectSector, setselectSector] = useState(false);    
-    const [selectZoom, setselectZoom] = useState(new Vector3(0,0,5));    
-    const UserID = useSelector(state => state.user.UserID);
+    const [selectZoom, setselectZoom] = useState(new Vector3(0,0,5)); 
     const [uniqueSYSPOS, setSYSPOS] = useState([{}]); 
     var {Galaxy} = props.match.params;     
-    const { height, width } = windim();
+    const { width } = windim();
     var SYSPOS = ([]); 
     const cam = useRef();  
     const panesPoints = [-.9,-.7,-.5,-.3,-.1,.1,.3,.5,.7,.9]; 
+    var SunTexture = new TextureLoader().load( SunTextureURL );
+    var Bump = new TextureLoader().load( SunTextureBump );
+    var BlueSunTexture = new TextureLoader().load( BlueSunTextureURL );
+    const UserID = useSelector(state => state.user.UserID);
+
+
     
     useEffect(() => {
         axios.get("http://apicall.starshipfleets.com/Planet/GetGalaxy/" + (Galaxy??1))
@@ -35,12 +41,25 @@ function GalaxyView(props){
 
     useEffect(() => {
         if (posts.length > 0)
-        {           
+        {         
             posts.map((item,index) => {
-                if (SYSPOS.filter(obj => obj.xSysPosition == item.xSysPosition && obj.sector == item.sector).length == 0)
-                    SYSPOS.push({xSysPosition: item.xSysPosition, ySysPosition: item.ySysPosition, sector: item.sector});
+                if (item.owner == UserID)
+                {                    
+                    if (SYSPOS.filter(obj => obj.xSysPosition == item.xSysPosition && obj.sector == item.sector ).length == 0)
+                    {                        
+                        SYSPOS.push({xSysPosition: item.xSysPosition, ySysPosition: item.ySysPosition, sector: item.sector, System: item.system, Owner: item.owner});
+                    }
+                    else if (SYSPOS.filter(obj => obj.xSysPosition == item.xSysPosition && obj.sector == item.sector).Owner != UserID) 
+                    {
+                        const mySystem = SYSPOS.find(obj => obj.xSysPosition == item.xSysPosition && obj.sector == item.sector);
+                        mySystem.Owner = UserID
+                    }   
+                }
+                else if (SYSPOS.filter(obj => obj.xSysPosition == item.xSysPosition && obj.sector == item.sector ).length == 0)
+                    SYSPOS.push({xSysPosition: item.xSysPosition, ySysPosition: item.ySysPosition, sector: item.sector, System: item.system, Owner: item.owner});
             })
             setSYSPOS([...new Set(SYSPOS)]);
+            console.log(SYSPOS)
         }
     },[posts]);
 
@@ -52,15 +71,15 @@ function GalaxyView(props){
     }
     
     const SysSphere = (props) => {        
-        const position = GetPosition(props.xSysPosition, props.ySysPosition, props.sector);        
-        const [SunTexture, Bump] = useLoader( TextureLoader, [SunTextureURL, SunTextureBump]);
+        const position = GetPosition(props.xSysPosition, props.ySysPosition, props.sector); 
+        const UseTexture = props.Owner == UserID ? BlueSunTexture : SunTexture;
         return (             
             <mesh   
-                    position={position}  onClick={() => PlanetClick( props.sector, props.xSysPosition )}>  
+                    position={position}  onClick={() => PlanetClick( props.sector, props.System )}>  
                     <sphereBufferGeometry args={[.005, 10, 10]} attach="geometry" />   
                     <meshStandardMaterial
                         attach='material'
-                        map={SunTexture}
+                        map={UseTexture}
                         bumpMap={Bump}
                         color="white"
                         bumpScale={0.55}
@@ -157,9 +176,9 @@ function GalaxyView(props){
         return <mesh />
     }
 
-    function PlanetClick(sector, xSysPosition)
+    function PlanetClick(sector, System)
     {
-        var link = "/SystemView/" + (Galaxy??1) + "/" + (sector??'11') + "/" + xSysPosition;
+        var link = "/SystemView/" + (Galaxy??1) + "/" + (sector??'11') + "/" + System;
         window.location.assign(link);
     }
 
@@ -191,7 +210,7 @@ function GalaxyView(props){
                         uniqueSYSPOS.map((item, index) => { 
                             return(
                                     <group key={"g" + index}>
-                                        <SysSphere key={"p" + index} index={index} xSysPosition={item.xSysPosition} ySysPosition={item.ySysPosition} sector={item.sector} />
+                                        <SysSphere key={"p" + index} index={index} xSysPosition={item.xSysPosition} ySysPosition={item.ySysPosition} sector={item.sector} System={item.System} Owner={item.Owner} />
                                     </group>                                    
                                 ); 
                         })

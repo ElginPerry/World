@@ -3,7 +3,6 @@ import {BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import PlanetList from './screens/PlanetList';
 import PlanetDetail from './screens/PlanetDetail';
 import GalaxyView from './screens/GalaxyView';
-import SectorView from './screens/SectorView';
 import SystemView from './screens/SystemView';
 import NavBar from './components/NavBar';
 import Login from './screens/Login';
@@ -20,7 +19,6 @@ const Main = () => {
             <div style={{height:"90%", minHeight:"300px", overflow:"auto"}}> 
                 <Switch>
                     <Route exact path="/GalaxyView/:Galaxy?" component={GalaxyView} />
-                    <Route path="/SectorView/:Galaxy?/:sectorNumber?" component={SectorView} />
                     <Route path="/SystemView/:Galaxy?/:sectorNumber?/:systemNumber?" component={SystemView} />
                     <Route exact path="/PlanetList" component={PlanetList} />
                     <Route path="/PlanetDetail/:planetType?" component={PlanetDetail} />

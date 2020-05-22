@@ -1,7 +1,7 @@
 import React, {useRef } from "react";
 import { useLoader } from 'react-three-fiber';
-import SunTextureURL from "../assets/Fire2.jpg"
-import SunTextureBump from "../assets/generalroughbump.jpg"
+import SunTextureURL from "../../assets/Fire2.jpg"
+import SunTextureBump from "../../assets/generalroughbump.jpg"
 import {TextureLoader, Vector3} from 'three';
 
 function Lights(){  
