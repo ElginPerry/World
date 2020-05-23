@@ -14,18 +14,28 @@ function BuildDisplay(props) {
     const [planetID, setPlanetID] = useState(props.PlanetID);
     const [popup, setPopup] = useState(false);
     const [buildingName, setbuildingName] = useState('');    
-    const [energyUsed, setenergyUsed] = useState(0);
+    const [PlanetPop, setPlanetPop] = useState(props.PlanetPop);
     const [popUsed, setpopUsed] = useState(0);
     const PTid = props.PTid;
     const [BuildingStats, setBuildingStats] = useState(props.BuildingStats);
     const [duration, setDuration] = useState(new Date());
     const { width } = windim();
     const [bg, setBg] = useState({});
+    const BuildingQue = useSelector(state => state.planetReducer.buildingQue);
+    const [BuildingQueList, setBuildingQueList] = useState(props.BuildingQueList)
 
     useEffect(() => {
         setPlanet(props.planet);
       }, [props.planet]);
 
+    useEffect(() => {
+        setBuildingQueList(props.BuildingQueList);
+    }, [props.BuildingQueList]);
+
+    useEffect(() => {
+        setPlanetPop(props.PlanetPop);
+      }, [props.PlanetPop]);
+      
     useEffect(() => {
         setPlanetStats(props.PlanetStats);
       }, [props.PlanetStats]);
@@ -33,25 +43,6 @@ function BuildDisplay(props) {
     useEffect(() => {
         setBuildingStats(props.BuildingStats);
       }, [props.BuildingStats]);
-
-    function BuildThing(prod, name, buildingID){
-        setbuildingName(name);
-        setDuration(Getduration(prod));
-        props.setbldName(name);
-        props.setBldDuration(Getduration(prod));
-        console.log(name + ":" + userID + ":" + planetID)
-    }
-  
-    function RemoveBuild(item){
-        console.log(item + ":" + userID + ":" + planetID)
-      }
-
-    function Getduration(s)
-    {
-        var d = new Date();
-        d.setTime(d.getTime()  + (s*1000))
-        return d;
-    }
 
     function ShowInfo(name)
     {
@@ -62,26 +53,6 @@ function BuildDisplay(props) {
     function HideInfo()
     {
         setPopup(false)
-    }
-
-
-    function getLevel(building)
-    {
-        switch(building){
-            case "Biodome":
-                return planet.bioDomes
-            case "Power Plant": 
-                return planet.energy
-            case "Research Lab": 
-                return planet.research
-            case "Mine": 
-                return planet.metals
-            case "Farm": 
-                return planet.food
-            case "Factory": 
-                return planet.factories
-            default: return 8;    
-        }
     }
 
     function pad(num) {
@@ -102,11 +73,6 @@ function BuildDisplay(props) {
     return (
         <div style={{display:"inline-block", height:"90%", width:"100%", verticalAlign:"top", 
         padding:"20px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", overflow: "auto"}}>
-            <div style={{margin:"auto", width:"100%", paddingTop: "10px", paddingBottom: "10px"}}>
-                <div style={{textAlign: "right", width:"100%", paddingLeft: "5px", fontSize: width>450 ? "14px" : "12px"}}>    
-                    <CountdownTimer timeUp={RemoveBuild} Date={duration} buildingName={buildingName} />   
-                </div>       
-            </div>
             <div style={{width:"100%", paddingLeft: "5px"}}>
                 {BuildingStats.length > 0 &&
                     BuildingStats.map((building, index) => { 
@@ -138,25 +104,32 @@ function BuildDisplay(props) {
                                         {building.name}
                                     </div> 
                                     <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px"}}>
-                                        {getLevel(building.name)}
+                                        {building.bldLevel}
                                     </div>
                                     <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px"}}>
-                                        {!isNaN(getLevel(building.name)) && building.populationCost}
+                                        {building.populationCost}
                                     </div> 
                                     <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px"}}>
-                                        {!isNaN(getLevel(building.name)) &&
-                                        building.materialCost+(getLevel(building.name)*building.materialCost*2.5)}
+                                        {building.materialCost+((building.bldLevel+building.quedLevel)*building.materialCost*2.5)}
                                     </div>  
                                     <div style={{display: "inline-block", width: "25%", fontSize: width>450 ? "12px" : "10px", paddingRight: "5px"}}>
-                                        {!isNaN(getLevel(building.name)) &&
-                                            durDisplay(Math.round(((building.productionCost+(getLevel(building.name)*2.5*building.productionCost))/PlanetStats.Infrastructure)*10))
+                                        {
+                                            durDisplay(
+                                                Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())<30?30:
+                                                Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())
+                                            )
                                         }
                                     </div>
                                     <div style={{textAlign: "center", display: "inline-block", backgroundColor:'#228B22', width: "15%", 
                                         fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} 
                                         onClick={() => 
-                                            BuildThing(Math.round(((building.productionCost+(getLevel(building.name)*2.5*building.productionCost))/PlanetStats.Infrastructure)*10)
-                                            , building.name, building.buildingID )}>
+                                            props.BuildThing(
+                                                Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())<30?30:
+                                                Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())
+                                            , building.name
+                                            , building.buildingID
+                                            ,building.materialCost+((building.bldLevel+building.quedLevel)*building.materialCost*2.5))
+                                            }>
                                         {width>450 ? 'Build' : ' + '}
                                     </div>                                         
                                 </div>

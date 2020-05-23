@@ -229,6 +229,7 @@ const FocusDisplay = (props) => {
                         max={100}
                         valueLabelDisplay="auto"
                         aria-labelledby="non-linear-slider"
+                        disabled={bldName + shipName + researchName == '' ? false : true }
                     />
                 </Grid>
                 <Grid item style={{width:"20%"}}>
@@ -240,87 +241,83 @@ const FocusDisplay = (props) => {
             <div style={{width: "100%", textAlign:"left"}}>
                 <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", fontSize:"12px"}}>
                     <div style={{width:"200px", display:"inline-block"}}>
-                    <div className="planetDetailStats">
-                        <div>
-                            <img className="planetDetailImg" src={imgMetal} alt="Metals" title="Metals" /> 
-                            {width>450 && 'Metals'}                               
+                        <div className="planetDetailStats">
+                            <div>
+                                <img className="planetDetailImg" src={imgMetal} alt="Metals" title="Metals" /> 
+                                {width>450 && 'Metals'}                               
+                            </div>
+                            <div className="planetDetailData">
+                                {(Math.round(
+                                    (PlanetStats.mining+(PlanetStats.mining*(pops.metalsPop/100)))                                
+                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
+                                    *100)/100)?? 'NA'}
+                            </div>
                         </div>
-                        <div className="planetDetailData">
-                            {(Math.round(
-                                (PlanetStats.mining+(PlanetStats.mining*(pops.metalsPop/100)))                                
-                                *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                *100)/100)?? 'NA'}
+                        <div className="planetDetailStats">
+                            <div>
+                                <img className="planetDetailImg" src={imgResearch} alt="Research" title="Research" />
+                                {width>450 && 'Res'}                                
+                            </div>
+                            <div className="planetDetailData">
+                                {(Math.round(
+                                    (PlanetStats.research+(PlanetStats.research*(pops.researchPop/100)))
+                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
+                                    *100)/100)?? 'NA'}
+                            </div>
                         </div>
-                    </div>
-                    <div className="planetDetailStats">
-                        <div>
-                            <img className="planetDetailImg" src={imgResearch} alt="Research" title="Research" />
-                            {width>450 && 'Res'}                                
-                        </div>
-                        <div className="planetDetailData">
-                            {(Math.round(
-                                (PlanetStats.research+(PlanetStats.research*(pops.researchPop/100)))
-                                *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                *100)/100)?? 'NA'}
-                        </div>
-                    </div>
-                    <div className="planetDetailStats">
-                        <div>
-                            <img className="planetDetailImg" src={imgFood} alt="Food" title="Food" />
-                            {width>450 && 'Food'}                               
-                        </div>
-                        <div className="planetDetailData">
-                            {(Math.round(
-                                (PlanetStats.food+(PlanetStats.food*(pops.foodPop/100)))
-                                *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)    
-                                *100)/100)?? 'NA'}
-                        </div>
-                    </div>
-                    </div>                
-                    
-                    <div style={{width:"200px", display:"inline-block"}}>
-                    <div className="planetDetailStats">
-                        <div>
-                            <img className="planetDetailImg" src={imgEnergy} alt="Energy Remaining" title="Energy Remaining" />
-                            {width>450 && 'Energy'}
-                        </div>
-                        <div className="planetDetailData">
-                            {(Math.round(                                
-                                (PlanetStats.energy+(PlanetStats.energy*(pops.energyPop/100)))  
-                                /PlanetStats.energyCost)*100) +'%' ?? 'NA'}
-                        </div>
-                    </div> 
-                    <div className="planetDetailStats">
-                        <div>
-                            <img className="planetDetailImg" src={imgIndustry} alt="Construction" title="Construction" />
-                            {width>500 && 'Con'}
-                        </div>
-                        <div className="planetDetailData">
-                            {(Math.round(
-                                (PlanetStats.infrastructure+(PlanetStats.infrastructure*(pops.infrastructurePop/100)))
-                                *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                *100)/100)?? 'NA'}
+                        <div className="planetDetailStats">
+                            <div>
+                                <img className="planetDetailImg" src={imgFood} alt="Food" title="Food" />
+                                {width>450 && 'Food'}                               
+                            </div>
+                            <div className="planetDetailData">
+                                {(Math.round(
+                                    (PlanetStats.food+(PlanetStats.food*(pops.foodPop/100)))
+                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)    
+                                    *100)/100)?? 'NA'}
+                            </div>
                         </div>
                     </div>  
-                    <div className="planetDetailStats">
-                        <div>
-                            <img className="planetDetailImg" src={imgProdMetals} alt="Material Production" title="Material Production" />
-                            {width>500 && 'Prod'}
-                        </div>
-                        <div className="planetDetailData">
-                            {(Math.round(
-                                (PlanetStats.infrastructure)
-                                *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                *
-                                (PlanetStats.mining+(PlanetStats.mining*(pops.metalsPop/100)))                                
-                                *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)                                
-                                *100)/100) ?? 'NA'}
-                        </div>
-                    </div> 
-                    </div>            
-
-
-
+                    <div style={{width:"200px", display:"inline-block"}}>
+                        <div className="planetDetailStats">
+                            <div>
+                                <img className="planetDetailImg" src={imgEnergy} alt="Energy Remaining" title="Energy Remaining" />
+                                {width>450 && 'Energy'}
+                            </div>
+                            <div className="planetDetailData">
+                                {(Math.round(                                
+                                    (PlanetStats.energy+(PlanetStats.energy*(pops.energyPop/100)))  
+                                    /PlanetStats.energyCost)*100) +'%' ?? 'NA'}
+                            </div>
+                        </div> 
+                        <div className="planetDetailStats">
+                            <div>
+                                <img className="planetDetailImg" src={imgIndustry} alt="Construction" title="Construction" />
+                                {width>500 && 'Con'}
+                            </div>
+                            <div className="planetDetailData">
+                                {(Math.round(
+                                    (PlanetStats.infrastructure+(PlanetStats.infrastructure*(pops.infrastructurePop/100)))
+                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
+                                    *100)/100)?? 'NA'}
+                            </div>
+                        </div>  
+                        <div className="planetDetailStats">
+                            <div>
+                                <img className="planetDetailImg" src={imgProdMetals} alt="Material Production" title="Material Production" />
+                                {width>500 && 'Prod'}
+                            </div>
+                            <div className="planetDetailData">
+                                {(Math.round(
+                                    (PlanetStats.infrastructure)
+                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
+                                    *
+                                    (PlanetStats.mining+(PlanetStats.mining*(pops.metalsPop/100)))                                
+                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)                                
+                                    *100)/100) ?? 'NA'}
+                            </div>
+                        </div> 
+                    </div>  
                 </div>
                 {(props.PlanetPop.energyPop!=pops.energyPop || props.PlanetPop.foodPop!=pops.foodPop || props.PlanetPop.infrastructurePop!=pops.infrastructurePop 
                 || props.PlanetPop.metalsPop!=pops.metalsPop || props.PlanetPop.researchPop!=pops.researchPop ) &&

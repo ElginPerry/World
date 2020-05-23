@@ -10,7 +10,10 @@ const defaultState = {
     system: null,
     sysPosition: null,
     moon: null,
-    owner: null      
+    owner: null,
+    buildingQue: [],
+    shipQue: [],
+    researchQue: [],      
 }
 
 // This is where you manipulate the state. The state is immutable so you need to return a new state vs changing the state directly.
@@ -30,7 +33,12 @@ const planetReducer = (state = defaultState, {type, payload}) => {
                 sysPosition: payload.sysPosition,
                 moon: payload.moon,
                 owner: payload.owner
-            }    
+            }  
+            case ActionTypes.SET_PLANETBUILDQUE:
+                return {
+                    ...state,
+                    buildingQue: payload
+                }       
         default:
             return state
     }

@@ -24,7 +24,9 @@ function PlanetDetail(props) {
     const [planet, setPlanet] = useState({});
     const [PlanetOwner, setPlanetOwner] = useState(); 
     const [BuildingStats, setBuildingStats] = useState([]); 
+    const [BuildingQueList, setBuildingQueList] = useState([]); 
     const [Barren, setBarren] = useState(true); 
+    const [RunBldQueList, setRunBldQueList] = useState(true); 
     const [PTid, setPTid] = useState(planetType ?? StatePT ?? 2);
     const { width } = windim();
     const [PlanetStats, setPlanetStats] = useState({energy: 0, energyCost: 1, food: 0, infrastructure: 0, mining: 0, populationMax: 0, research: 0}); 
@@ -40,17 +42,40 @@ function PlanetDetail(props) {
         if (planetID )
         {
             GetPlanet(planetID);
-            axios.get('http://apicall.starshipfleets.com/Planet/GetBuildingTypes')
+        }
+    },[planetID]);
+
+    useEffect(() => {
+        if (planet.planetID > 0 && RunBldQueList)
+        {  
+            axios.get('http://apicall.starshipfleets.com/Planet/GetBuildingQueue/' + planetID )
             .then((response) => {
-                setBuildingStats(response.data);
-                //dispatch({type: ActionTypes.SET_PLANET,payload:response.data});  
+                setBuildingQueList(response.data);
+                setRunBldQueList(false);
+                console.log(response.data)
+                dispatch({type: ActionTypes.SET_PLANETBUILDQUE,payload:response.data});                
             })
             .catch(function (error) {
             })
             .finally(function () {  
             });
         }
-    },[planetID]);
+    },[planet, RunBldQueList]); 
+
+    useEffect(() => {
+        if (planetID )
+        {
+            setBuildingDisplay();            
+            axios.get('http://apicall.starshipfleets.com/Planet/GetBuildingTypes/' + planetID)
+            .then((response) => {
+                setBuildingStats(response.data);
+            })
+            .catch(function (error) {
+            })
+            .finally(function () {  
+            });
+        }
+    },[BuildingQueList]);
 
     useEffect(() => {
         if (planet.planetID > 0)
@@ -58,15 +83,25 @@ function PlanetDetail(props) {
             axios.get('http://apicall.starshipfleets.com/Planet/GetPlanetStats/' + planetID )
             .then((response) => {
                 setPlanetStats(response.data);
-                console.log('gg')
             })
             .catch(function (error) {
             })
             .finally(function () {  
             });
         }
-    },[planet]); 
+    },[BuildingStats]);   
+
   
+    function setBuildingDisplay()
+    {
+        if (BuildingQueList.length > 0)
+        {
+            const name = BuildingStats.filter(x => x.buildingID == BuildingQueList[0].buildingID)[0].name;
+            setbldName(name);
+            setBldDuration(Getduration(BuildingQueList[0].seconds));
+        }
+    }
+
     function GetPlanet()
     {            
         axios.get('http://apicall.starshipfleets.com/Planet/GetPlanet/' + planetID + '/' + UserID)
@@ -92,6 +127,58 @@ function PlanetDetail(props) {
         });
     }
 
+    function AddBuildingQue(prod, name, buildingID, mats)
+    {            
+        axios.post('http://apicall.starshipfleets.com/Planet/AddBuildingQueue',
+        {
+            PlanetID: planetID,
+            UserID: UserID,
+            BuildingID: buildingID,
+            Seconds: prod,
+            MaterialCost: mats
+        })
+        .then((response) => {            
+            setPlanet(response.data);
+            dispatch({type: ActionTypes.SET_PLANET,payload:response.data});
+            setRunBldQueList(true);
+            setPlanetOwner(response.data.owner);
+            setPTid(response.data.planetType);
+            setBarren(response.data.barren); 
+            setPlanetPop(
+                {
+                    metalsPop: response.data.metalsPop
+                    ,researchPop: response.data.researchPop
+                    ,foodPop: response.data.foodPop
+                    ,energyPop: response.data.energyPop
+                    ,infrastructurePop: response.data.infrastructurePop
+                    ,infrastructurePopMetal: response.data.infrastructurePopMetal
+                });
+        })
+        .catch(function (error) {
+        })
+        .finally(function () {  
+        });
+    }
+
+    function Getduration(s)
+    {
+        var d = new Date();
+        d.setTime(d.getTime()  + (s*1000))
+        return d;
+    }
+
+    function BuildThing(prod, name, buildingID, mats){
+        console.log(prod + ":" + name + ":" + UserID + ":" + planetID + ":" + mats + ":" + buildingID)
+        AddBuildingQue(prod, name, buildingID, mats);
+    }
+
+    function BuildingQue(item)
+    {
+        //const buildingID = BuildingStats.filter(x => x.name == item)[0].buildingID;
+        console.log(item + ":" + UserID + ":" + planetID )
+        setRunBldQueList(true);
+    } 
+
     function BacktoSystem(){
         var link = "/SystemView/" + (planet.galaxy??1) + "/" + (planet.sector??'11') + "/" + (planet.system??1);
         window.location.assign(link);
@@ -108,6 +195,14 @@ function PlanetDetail(props) {
         {
             alert(planet.planetName);
         }
+    }
+
+    function GetCon()
+    {
+        return(Math.round(
+                (PlanetStats.infrastructure+(PlanetStats.infrastructure*(PlanetPop.infrastructurePop/100)))
+                *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
+                *100)/100);
     }
 
     function Colonize()
@@ -133,7 +228,7 @@ function PlanetDetail(props) {
     
     return (
         <div style={{height:"100%", width:"100%", textAlign: "center", color: "white"}} >
-            <div style={{ height:"80%", width:"100%", verticalAlign:"top", backgroundColor:'black',
+            <div style={{ height:"90%", width:"100%", verticalAlign:"top", backgroundColor:'black',
                 padding:"10px", fontWeight:"bold", textAlign: "center", overflow: "auto"}}>
                 <div style={{padding: "5px"}}>
                     <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "#228B22", cursor: "pointer"}} onClick={() => BacktoSystem()}>Back</div>
@@ -174,10 +269,10 @@ function PlanetDetail(props) {
                     </div>
                 }
                 <div style={{width:"100%"}}>
-                    <div style={{position:tab==1?'relative':'absolute', top:tab==1?0:-3000}}>
+                    <div>
                         <PlanetDetailDisplay planet={planet} PlanetStats={PlanetStats} PTid={PTid} BuildingStats={BuildingStats} PlanetPop={PlanetPop}
                         bldName={bldName} bldduration={bldduration} researchName={researchName} resduration={resduration} shpduration={shpduration} shipName={shipName} 
-                        setshipName={setshipName} setresearchName={setresearchName} setbldName={setbldName}/>
+                        setshipName={setshipName} setresearchName={setresearchName} setbldName={setbldName} tab={tab} BuildingQue={BuildingQue}/>
                     </div>
                     <div style={{display:tab==5?'block':'none'}}>    
                         <FocusDisplay PlanetPop={PlanetPop} planetID={planetID} UserID={UserID} save={setPlanetPop} setTab={setTab} setPlanetStats={setPlanetStats}
@@ -185,7 +280,7 @@ function PlanetDetail(props) {
                     </div>
                     <div style={{display:tab==2?'block':'none'}}>
                         <BuildDisplay planet={planet} PlanetStats={PlanetStats} PTid={PTid} BuildingStats={BuildingStats} UserID={UserID} PlanetID={planetID}
-                        setBldDuration={setBldDuration} setbldName={setbldName}/>
+                        BuildThing={BuildThing} PlanetPop={PlanetPop} GetCon={GetCon} BuildingQueList={BuildingQueList} />
                     </div>
                     <div style={{display:tab==3?'block':'none'}}>
                         <ResearchDisplay planet={planet} PlanetStats={PlanetStats} PTid={PTid} BuildingStats={BuildingStats} UserID={UserID} PlanetID={planetID}
