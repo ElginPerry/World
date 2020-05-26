@@ -1,48 +1,32 @@
-import React, {Suspense, useEffect, useState, useRef} from 'react';
-import {useSelector, useDispatch} from 'react-redux'
-import * as ActionTypes from '../../redux/ActionTypes'
-import axios from 'axios';
-import CountdownTimer from './BuildTimer'
+import React, {useEffect, useState} from 'react';
 import windim from "../WindowDimensions";
 import "../../styles/stylesheet.css"
 
 
 function BuildDisplay(props) {
-    const [planet, setPlanet] = useState(props.planet);
-    const [PlanetStats, setPlanetStats] = useState(props.PlanetStats);
-    const [userID, setUserID] = useState(props.UserID);
-    const [planetID, setPlanetID] = useState(props.PlanetID);
     const [popup, setPopup] = useState(false);
-    const [buildingName, setbuildingName] = useState('');    
-    const [PlanetPop, setPlanetPop] = useState(props.PlanetPop);
-    const [popUsed, setpopUsed] = useState(0);
-    const PTid = props.PTid;
     const [BuildingStats, setBuildingStats] = useState(props.BuildingStats);
-    const [duration, setDuration] = useState(new Date());
+    const [PlanetStats, setPlanetStats] = useState(props.PlanetStats);
+    const [planet, setplanet] = useState(props.planet);
     const { width } = windim();
     const [bg, setBg] = useState({});
-    const BuildingQue = useSelector(state => state.planetReducer.buildingQue);
-    const [BuildingQueList, setBuildingQueList] = useState(props.BuildingQueList)
-
-    useEffect(() => {
-        setPlanet(props.planet);
-      }, [props.planet]);
+    const [BuildingQueList, setBuildingQueList] = useState(props.BuildingQueList); 
 
     useEffect(() => {
         setBuildingQueList(props.BuildingQueList);
     }, [props.BuildingQueList]);
 
     useEffect(() => {
-        setPlanetPop(props.PlanetPop);
-      }, [props.PlanetPop]);
-      
-    useEffect(() => {
         setPlanetStats(props.PlanetStats);
-      }, [props.PlanetStats]);
+    }, [props.PlanetStats]);
+
+    useEffect(() => {
+        setplanet(props.planet);
+    }, [props.planet]);
 
     useEffect(() => {
         setBuildingStats(props.BuildingStats);
-      }, [props.BuildingStats]);
+    }, [props.BuildingStats]);
 
     function ShowInfo(name)
     {
@@ -68,6 +52,29 @@ function BuildDisplay(props) {
         var minutes = Math.floor(totalSeconds / 60);
         var seconds = totalSeconds % 60;
         return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
+    }
+
+    function canBuild(building)
+    {
+        if (
+        building.materialCost+((building.bldLevel+building.quedLevel)*building.materialCost*2.5)
+        <
+        Math.round(planet.materials*100)/100
+        &&
+        building.populationCost
+        <
+        planet.population
+        )
+        {    
+            if (BuildingQueList.length >= 4)
+            {
+                return false
+            }
+            else
+                return true
+        }
+        else
+            return false    
     }
 
     return (
@@ -120,18 +127,31 @@ function BuildDisplay(props) {
                                             )
                                         }
                                     </div>
-                                    <div style={{textAlign: "center", display: "inline-block", backgroundColor:'#228B22', width: "15%", 
-                                        fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} 
-                                        onClick={() => 
-                                            props.BuildThing(
-                                                Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())<30?30:
-                                                Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())
-                                            , building.name
-                                            , building.buildingID
-                                            ,building.materialCost+((building.bldLevel+building.quedLevel)*building.materialCost*2.5))
-                                            }>
-                                        {width>450 ? 'Build' : ' + '}
-                                    </div>                                         
+                                    {
+                                         canBuild(building)
+                                         &&
+                                         <div style={{textAlign: "center", display: "inline-block", backgroundColor:'#228B22', width: "15%", 
+                                         fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} 
+                                         onClick={() => 
+                                             props.BuildingStart(
+                                                 Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())<30?30:
+                                                 Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())
+                                             , building.buildingID
+                                             ,building.materialCost+((building.bldLevel+building.quedLevel)*building.materialCost*2.5)
+                                             )
+                                             }>
+                                            {width>450 ? 'Build' : ' + '}
+                                        </div> 
+                                    } 
+                                    {
+                                         !canBuild(building)
+                                         &&
+                                         <div style={{textAlign: "center", display: "inline-block", backgroundColor:'red', width: "15%", 
+                                         fontSize: width>450 ? "12px" : "10px"}} 
+                                         >
+                                            {width>450 ? 'Not Avaulable' : ' ! '}
+                                        </div> 
+                                    }                                                                            
                                 </div>
                             </div>
                         ); 

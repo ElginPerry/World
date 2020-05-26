@@ -7,8 +7,6 @@ import imgMetal from '../../assets/Metals.png'
 import imgResearch from '../../assets/Research.png'
 import imgFood from '../../assets/Food.png'
 import imgEnergy from '../../assets/Energy.png'
-import imgPopulation from '../../assets/Population.png'
-import imgMaterials from '../../assets/Materials.png'
 import imgIndustry from '../../assets/Industry.png'
 import imgProdMetals from '../../assets/ProdMetals.png'
 import "../../styles/stylesheet.css"

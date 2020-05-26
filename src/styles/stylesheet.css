@@ -223,3 +223,25 @@
   margin:-50px 0 0 -100px; /* [-(height/2)px 0 0 -(width/2)px] */
   display:none;
 }
+
+.harvesttimer {
+  width:100px;
+  height:50px;
+  position:absolute;
+  top: 145px;
+  left:20%;
+  margin:-50px 0 0 -100px; /* [-(height/2)px 0 0 -(width/2)px] */
+  display:block;
+  cursor: pointer;
+}
+
+.harvesttimerSmall {
+  width:100px;
+  height:50px;
+  position:absolute;
+  top: 145px;
+  left: 35%;
+  margin:-50px 0 0 -100px; /* [-(height/2)px 0 0 -(width/2)px] */
+  display:block;
+  cursor: pointer;
+}

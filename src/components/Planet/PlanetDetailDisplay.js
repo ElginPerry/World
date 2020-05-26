@@ -16,6 +16,7 @@ import imgProdMetals from '../../assets/ProdMetals.png'
 import BuildTimer from './BuildTimer'
 import ResearchTimer from './BuildTimer'
 import ShipTimer from './BuildTimer'
+import HarvestTimer from './HarvestTimer'
 import "../../styles/stylesheet.css"
 
 const PlanetDetailDisplay = (props) => { 
@@ -31,14 +32,40 @@ const PlanetDetailDisplay = (props) => {
     const [bldduration, setBldDuration] = useState(new Date());
     const [resduration, setResDuration] = useState(new Date());
     const [shpduration, setShpDuration] = useState(new Date());
+    const [harvestduration, setharvestduration] = useState(new Date());
+    const [ShowHarvestButton, setShowHarvestButton] = useState(false);
+    const [ShowBuildingQue, setShowBuildingQue] = useState(false);
+    const [BuildingQueList, setBuildingQueList] = useState(props.BuildingQueList)
+    const [ShipQueList, setShipQueList] = useState(props.ShipQueList)
+    const [ResearchQueList, setResearchQueList] = useState(props.ResearchQueList)
 
     useEffect(() => {
         settab(props.tab);
-      }, [props.tab]);
+    }, [props.tab]);
 
     useEffect(() => {
         setshipName(props.shipName);
-      }, [props.shipName]);
+    }, [props.shipName]);
+
+    useEffect(() => {
+        setBuildingQueList(props.BuildingQueList);
+    }, [props.BuildingQueList]);
+
+    useEffect(() => {
+        setShipQueList(props.ShipQueList);
+    }, [props.ShipQueList]);
+
+    useEffect(() => {
+        setResearchQueList(props.ResearchQueList);
+    }, [props.ResearchQueList]);
+
+    useEffect(() => {
+        setharvestduration(props.harvestduration);
+    }, [props.harvestduration]);
+
+    useEffect(() => {
+        HarvestButtonDisplay();
+    })
 
     useEffect(() => {
         setShpDuration(props.shpduration);
@@ -46,7 +73,7 @@ const PlanetDetailDisplay = (props) => {
 
     useEffect(() => {
         setresearchName(props.researchName);
-      }, [props.researchName]);
+    }, [props.researchName]);
 
     useEffect(() => {
         setResDuration(props.resduration);
@@ -54,7 +81,7 @@ const PlanetDetailDisplay = (props) => {
 
     useEffect(() => {
         setbldName(props.bldName);
-      }, [props.bldName]);
+    }, [props.bldName]);
 
     useEffect(() => {
         setBldDuration(props.bldduration);
@@ -62,17 +89,31 @@ const PlanetDetailDisplay = (props) => {
 
     useEffect(() => {
         setPlanet(props.planet);
-      }, [props.planet]);
+    }, [props.planet]);
 
     useEffect(() => {
         setPlanetStats(props.PlanetStats);
-      }, [props.PlanetStats]);
+    }, [props.PlanetStats]);
 
     useEffect(() => {
         setPlanetPop(props.PlanetPop);
-      }, [props.PlanetPop]); 
+    }, [props.PlanetPop]); 
 
-    
+    function HarvestButtonDisplay()
+    {
+        if (+harvestduration - +new Date()>0)
+        {
+            setShowHarvestButton(false)
+        }
+        else
+            setShowHarvestButton(true)
+    }
+
+    function BuildingQueDisplay()
+    {
+        setShowBuildingQue(!ShowBuildingQue);
+    }
+
     function RemoveBuilding(item)
     {
         props.setbldName('');
@@ -89,9 +130,22 @@ const PlanetDetailDisplay = (props) => {
         props.setshipName('');     
     }
 
+    function FormatDate(CompleteDate)
+    {
+        var ts_hms = new Date(Date.parse(CompleteDate));
+        return ts_hms.getFullYear() + '-' + 
+        ("0" + (ts_hms.getMonth() + 1)).slice(-2) + '-' + 
+        ("0" + (ts_hms.getDate())).slice(-2) + ' ' +
+        ("0" + ts_hms.getHours()).slice(-2) + ':' +
+        ("0" + ts_hms.getMinutes()).slice(-2) + ':' +
+        ("0" + ts_hms.getSeconds()).slice(-2);
+    }
+
+
+
     return (
         <div >            
-            <div style={{height:"100%", width:"100%", display:"inline-block"}}>
+            <div style={{height:"100%", width:"100%", display:"inline-block", position: "relative"}}>
                 <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black"}}>
                     <div style={{width:"30%", height:"120px", display:"inline-block"}}>           
                         <Canvas 
@@ -108,10 +162,131 @@ const PlanetDetailDisplay = (props) => {
                         </Canvas>
                     </div>
                     <div style={{width:"60%", display:"inline-block", verticalAlign:"top"}}>
-                        <div style={{padding:"5px"}}><BuildTimer timeUp={RemoveBuilding} Date={bldduration} buildingName={bldName} /> </div>
-                        <div style={{padding:"5px"}}><ResearchTimer timeUp={RemoveResearch} Date={resduration} buildingName={researchName} /></div>
-                        <div style={{padding:"5px"}}><ShipTimer timeUp={RemoveShip} Date={shpduration} buildingName={shipName} /></div>
+                        <div style={{padding:"5px",display:tab == 1 || tab == 2? "block" : "none"}} ><BuildTimer timeUp={RemoveBuilding} Date={bldduration} buildingName={bldName} /> </div>
+
+
+                        <div style={{display:tab == 2? "block" : "none", width:"95%", border:"1px solid gray" }}>
+                            {BuildingQueList.length > 0 &&
+                                BuildingQueList.map((building, index) => { 
+                                return(
+                                    <div key={"g" + index} style={{width:"100%", textAlign:"center" }}>
+                                        {index==0 &&
+                                        <div style={{fontSize: "10px", paddingBottom: "3px", width:"95%"}}>
+                                            <div style={{ width: "30%", borderBottom: '1px solid red', display:"inline-block"}}>
+                                                Name
+                                            </div>   
+                                            <div style={{ width: "70%", borderBottom: '1px solid red', display:"inline-block"}}>
+                                                Completed
+                                            </div>                                       
+                                        </div>
+                                        }
+                                        {index>0 &&
+                                        <div style={{width:"95%", paddingBottom: "2px" }}>
+                                            <div style={{fontSize: "10px", display:"inline-block",  width: "30%"}}>                                       
+                                                    {building.buildingName}                                          
+                                            </div>
+                                            <div style={{fontSize: "10px", display:"inline-block",  width: "60%"}}>
+                                                    {FormatDate(building.completetionDate)}                                       
+                                            </div> 
+                                            <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"red"}}>
+                                                    {width>450 ? 'Cancel' : 'C'}                                       
+                                            </div>
+                                        </div>
+                                        }                                                              
+                                    </div>    
+                                    ); 
+                                })
+                            }                    
+                        </div>
+
+                        <div style={{padding:"5px",display:tab == 1 || tab == 3? "block" : "none"}}><ResearchTimer timeUp={RemoveResearch} Date={resduration} buildingName={researchName} /></div>
+                        <div style={{display:tab == 3? "block" : "none", width:"95%", border:"1px solid gray" }}>
+                            {ResearchQueList.length > 0 &&
+                                ResearchQueList.map((research, index) => { 
+                                return(
+                                    <div key={"g" + index} style={{width:"100%", textAlign:"center" }}>
+                                        {index==0 &&
+                                        <div style={{fontSize: "10px", paddingBottom: "3px", width:"95%"}}>
+                                            <div style={{ width: "30%", borderBottom: '1px solid red', display:"inline-block"}}>
+                                                Name
+                                            </div>   
+                                            <div style={{ width: "70%", borderBottom: '1px solid red', display:"inline-block"}}>
+                                                Completed
+                                            </div>                                       
+                                        </div>
+                                        }
+                                        {index>0 &&
+                                        <div style={{width:"95%", paddingBottom: "2px" }}>
+                                            <div style={{fontSize: "10px", display:"inline-block",  width: "30%"}}>                                       
+                                                    {research.buildingName}                                          
+                                            </div>
+                                            <div style={{fontSize: "10px", display:"inline-block",  width: "60%"}}>
+                                                    {FormatDate(research.completetionDate)}                                       
+                                            </div> 
+                                            <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"red"}}>
+                                                    {width>450 ? 'Cancel' : 'C'}                                       
+                                            </div>
+                                        </div>
+                                        }                                                              
+                                    </div>    
+                                    ); 
+                                })
+                            }
+                        </div>
+
+                        <div style={{padding:"5px",display:tab == 1 || tab == 4? "block" : "none"}}><ShipTimer timeUp={RemoveShip} Date={shpduration} buildingName={shipName} /></div>                    
+                        <div style={{display:tab == 4? "block" : "none", width:"95%", border:"1px solid gray" }}>
+                            {ShipQueList.length > 0 &&
+                                ShipQueList.map((ship, index) => { 
+                                return(
+                                    <div key={"g" + index} style={{width:"100%", textAlign:"center" }}>
+                                        {index==0 &&
+                                        <div style={{fontSize: "10px", paddingBottom: "3px", width:"95%"}}>
+                                            <div style={{ width: "30%", borderBottom: '1px solid red', display:"inline-block"}}>
+                                                Name
+                                            </div>   
+                                            <div style={{ width: "70%", borderBottom: '1px solid red', display:"inline-block"}}>
+                                                Completed
+                                            </div>                                       
+                                        </div>
+                                        }
+                                        {index>0 &&
+                                        <div style={{width:"95%", paddingBottom: "2px" }}>
+                                            <div style={{fontSize: "10px", display:"inline-block",  width: "30%"}}>                                       
+                                                    {ship.buildingName}                                          
+                                            </div>
+                                            <div style={{fontSize: "10px", display:"inline-block",  width: "60%"}}>
+                                                    {FormatDate(ship.completetionDate)}                                       
+                                            </div> 
+                                            <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"red"}}>
+                                                    {width>450 ? 'Cancel' : 'C'}                                       
+                                            </div>
+                                        </div>
+                                        }                                                              
+                                    </div>    
+                                    ); 
+                                })
+                            }                     
+                        </div>
                     </div>
+                </div>
+                <div className={width>450?"harvesttimer":"harvesttimerSmall"}>
+                    <div style={{padding:"5px",display:ShowHarvestButton? "block" : "none", color:"gold"}}  onClick={() => props.UpdatePlanetHarvest(
+                        (Math.round(
+                            (PlanetStats.food+(PlanetStats.food*(PlanetPop.foodPop/100)))
+                            *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)    
+                            ))>planet.population?1:-1                           
+                        ,
+                        (Math.round(
+                            (PlanetStats.infrastructure)
+                            *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
+                            *
+                            (PlanetStats.mining+(PlanetStats.mining*(PlanetPop.metalsPop/100)))                                
+                            *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)                                
+                            *100)/100)
+                        )} >Harvest
+                    </div>
+                    <div style={{padding:"5px",display:!ShowHarvestButton? "block" : "none"}}><HarvestTimer timeUp={HarvestButtonDisplay} Date={harvestduration} buildingName="" /></div>                    
                 </div>               
                 <div style={{display:tab == 1? "block" : "none" }}>
                     <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", fontSize:"12px"}}>
@@ -213,7 +388,7 @@ const PlanetDetailDisplay = (props) => {
                                 {width>500 && 'Materials'}
                             </div>
                             <div className="planetDetailData">
-                                {planet.materials ?? 'NA'}
+                                {!isNaN(Math.round(planet.materials*100)/100) ? Math.round(planet.materials*100)/100 :'NA'}
                             </div>
                         </div>
                         <div className="planetDetailStats">
@@ -245,6 +420,47 @@ const PlanetDetailDisplay = (props) => {
                         </div> 
                     </div>
                 </div>
+
+
+                <div className="popup" style={{display:ShowBuildingQue ? 'block' : 'none', backgroundColor:'gray', border: '1px solid blue', 
+                overflow:"auto", fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} >
+                    <div>
+                    {BuildingQueList.length > 0 &&
+                        BuildingQueList.map((building, index) => { 
+                        return(
+                            <div key={"g" + index}>
+                                {index==0 &&
+                                <div style={{fontSize: "10px", paddingBottom: "10px"}}>
+                                    <div style={{ width: "30%", borderBottom: '1px solid red'}}>
+                                        Name
+                                    </div>                                         
+                                </div>
+                                }
+                                 <div style={{fontSize: "10px", paddingBottom: "10px"}}>
+                                    <div style={{ width: "30%"}}>
+                                        {building.buildingName}
+                                    </div>                                         
+                                </div>
+                                <div style={{fontSize: "10px", paddingBottom: "10px"}}>
+                                    <div style={{ width: "50%"}}>
+                                        {FormatDate(building.completetionDate)}
+                                    </div>                                         
+                                </div>                                                               
+                            </div>    
+                            ); 
+                        })
+                    }                    
+                    </div>
+                    <div>
+                        <div style={{textAlign: "center", width:"100%", padding: "15px"}} onClick={() => BuildingQueDisplay()}>
+                            CLOSE
+                        </div>
+                    </div>
+                </div>           
+
+
+
+
             </div> 
         </div>    
     )};

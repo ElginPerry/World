@@ -1,86 +1,42 @@
-import React, {Suspense, useEffect, useState, useRef} from 'react';
-import {useSelector, useDispatch} from 'react-redux'
-import * as ActionTypes from '../../redux/ActionTypes'
-import axios from 'axios';
-import CountdownTimer from './BuildTimer';
+import React, {useEffect, useState} from 'react';
 import windim from "../WindowDimensions";
-import "../../styles/stylesheet.css";
+import "../../styles/stylesheet.css"
+
 
 function ResearchDisplay(props) {
-    const [planet, setPlanet] = useState(props.planet);
-    const [PlanetStats, setPlanetStats] = useState(props.PlanetStats);
-    const [userID, setUserID] = useState(props.UserID);
-    const [planetID, setPlanetID] = useState(props.PlanetID);
     const [popup, setPopup] = useState(false);
-    const [buildingName, setbuildingName] = useState('');    
-    const [energyUsed, setenergyUsed] = useState(0);
-    const [popUsed, setpopUsed] = useState(0);
-    const PTid = props.PTid;
     const [BuildingStats, setBuildingStats] = useState(props.BuildingStats);
-    const [duration, setDuration] = useState(new Date());
+    const [PlanetStats, setPlanetStats] = useState(props.PlanetStats);
+    const [planet, setplanet] = useState(props.planet);
     const { width } = windim();
-    const [bg, setBg] = useState({});  
+    const [bg, setBg] = useState({});
+    const [BuildingQueList, setBuildingQueList] = useState(props.BuildingQueList); 
 
     useEffect(() => {
-        setPlanet(props.planet);
-      }, [props.planet]);
+        setBuildingQueList(props.BuildingQueList);
+    }, [props.BuildingQueList]);
 
     useEffect(() => {
         setPlanetStats(props.PlanetStats);
-      }, [props.PlanetStats]);
+    }, [props.PlanetStats]);
+
+    useEffect(() => {
+        setplanet(props.planet);
+    }, [props.planet]);
 
     useEffect(() => {
         setBuildingStats(props.BuildingStats);
-      }, [props.BuildingStats]);
-
-    function BuildThing(prod, name, buildingID){
-        setbuildingName(name);
-        setDuration(Getduration(prod));
-        props.setresearchName(name);
-        props.setResDuration(Getduration(prod));
-    }
-  
-    function RemoveBuild(item){
-        console.log(item + ":" + userID + ":" + planetID)
-      }
-
-    function Getduration(s)
-    {
-        var d = new Date();
-        d.setTime(d.getTime()  + (s*1000))
-        return d;
-    }
+    }, [props.BuildingStats]);
 
     function ShowInfo(name)
     {
         setBg(BuildingStats.filter(x => x.name == name));
         setPopup(true)
-        console.log(BuildingStats.filter(x => x.name == name)[0])
     }
 
     function HideInfo()
     {
         setPopup(false)
-    }
-
-
-    function getLevel(building)
-    {
-        switch(building){
-            case "Biodome":
-                return planet.bioDomes
-            case "Power Plant": 
-                return planet.energy
-            case "Research Lab": 
-                return planet.research
-            case "Mine": 
-                return planet.metals
-            case "Farm": 
-                return planet.food
-            case "Factory": 
-                return planet.factories
-            default: return 8;    
-        }
     }
 
     function pad(num) {
@@ -98,14 +54,32 @@ function ResearchDisplay(props) {
         return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
     }
 
+    function canBuild(building)
+    {
+        if (
+        building.materialCost+((building.bldLevel+building.quedLevel)*building.materialCost*2.5)
+        <
+        Math.round(planet.materials*100)/100
+        &&
+        building.populationCost
+        <
+        planet.population
+        )
+        {    
+            if (BuildingQueList.length >= 4)
+            {
+                return false
+            }
+            else
+                return true
+        }
+        else
+            return false    
+    }
+
     return (
         <div style={{display:"inline-block", height:"90%", width:"100%", verticalAlign:"top", 
         padding:"20px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", overflow: "auto"}}>
-            <div style={{margin:"auto", width:"100%", paddingTop: "10px", paddingBottom: "10px"}}>
-                <div style={{textAlign: "right", width:"100%", paddingLeft: "5px", fontSize: width>450 ? "14px" : "12px"}}>
-                    <CountdownTimer timeUp={RemoveBuild} Date={duration} buildingName={buildingName} />   
-                </div>       
-            </div>
             <div style={{width:"100%", paddingLeft: "5px"}}>
                 {BuildingStats.length > 0 &&
                     BuildingStats.map((building, index) => { 
@@ -120,7 +94,7 @@ function ResearchDisplay(props) {
                                         {width>450 ? 'Level' : 'L'}
                                     </div>
                                     <div style={{display: "inline-block", width: "10%", borderBottom: '1px solid red'}}>
-                                        {width>450 ? 'Production' : 'P'}
+                                        {width>450 ? 'Population' : 'P'}
                                     </div> 
                                     <div style={{display: "inline-block", width: "10%", borderBottom: '1px solid red'}}>
                                         {width>450 ? 'Materials' : 'M'}
@@ -137,27 +111,47 @@ function ResearchDisplay(props) {
                                         {building.name}
                                     </div> 
                                     <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px"}}>
-                                        {getLevel(building.name)}
+                                        {building.bldLevel}
                                     </div>
                                     <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px"}}>
-                                        {!isNaN(getLevel(building.name)) && 
-                                        building.productionCost+(getLevel(building.name)*2.5*building.productionCost)}
+                                        {building.populationCost}
                                     </div> 
                                     <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px"}}>
-                                        {!isNaN(getLevel(building.name)) &&
-                                        building.materialCost+(getLevel(building.name)*building.materialCost)}
+                                        {building.materialCost+((building.bldLevel+building.quedLevel)*building.materialCost*2.5)}
                                     </div>  
                                     <div style={{display: "inline-block", width: "25%", fontSize: width>450 ? "12px" : "10px", paddingRight: "5px"}}>
-                                        {!isNaN(getLevel(building.name)) &&
-                                            durDisplay(Math.round(((building.productionCost+(getLevel(building.name)*2.5*building.productionCost))/PlanetStats.Infrastructure)*10))
+                                        {
+                                            durDisplay(
+                                                Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())<30?30:
+                                                Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())
+                                            )
                                         }
                                     </div>
-                                    <div style={{textAlign: "center", display: "inline-block", backgroundColor:'#228B22', width: "15%", 
-                                        fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} 
-                                        onClick={() => BuildThing(Math.round(((building.productionCost+(getLevel(building.name)*2.5*building.productionCost))/PlanetStats.Infrastructure)*10)
-                                            , building.name, building.buildingID )}>
-                                        {width>450 ? 'Build' : ' + '}
-                                    </div>                                         
+                                    {
+                                         canBuild(building)
+                                         &&
+                                         <div style={{textAlign: "center", display: "inline-block", backgroundColor:'#228B22', width: "15%", 
+                                         fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} 
+                                         onClick={() => 
+                                             props.BuildingStart(
+                                                 Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())<30?30:
+                                                 Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())
+                                             , building.buildingID
+                                             ,building.materialCost+((building.bldLevel+building.quedLevel)*building.materialCost*2.5)
+                                             )
+                                             }>
+                                            {width>450 ? 'Build' : ' + '}
+                                        </div> 
+                                    } 
+                                    {
+                                         !canBuild(building)
+                                         &&
+                                         <div style={{textAlign: "center", display: "inline-block", backgroundColor:'red', width: "15%", 
+                                         fontSize: width>450 ? "12px" : "10px"}} 
+                                         >
+                                            {width>450 ? 'Not Avaulable' : ' ! '}
+                                        </div> 
+                                    }                                                                            
                                 </div>
                             </div>
                         ); 
