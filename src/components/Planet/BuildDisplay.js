@@ -6,19 +6,20 @@ import "../../styles/stylesheet.css"
 function BuildDisplay(props) {
     const [popup, setPopup] = useState(false);
     const [BuildingStats, setBuildingStats] = useState(props.BuildingStats);
-    const [PlanetStats, setPlanetStats] = useState(props.PlanetStats);
     const [planet, setplanet] = useState(props.planet);
     const { width } = windim();
     const [bg, setBg] = useState({});
     const [BuildingQueList, setBuildingQueList] = useState(props.BuildingQueList); 
+    const [ResearchTypes, setResearchTypes] = useState(props.ResearchTypes);
+    
 
     useEffect(() => {
         setBuildingQueList(props.BuildingQueList);
     }, [props.BuildingQueList]);
-
+ 
     useEffect(() => {
-        setPlanetStats(props.PlanetStats);
-    }, [props.PlanetStats]);
+        setResearchTypes(props.ResearchTypes);
+    }, [props.ResearchTypes]);
 
     useEffect(() => {
         setplanet(props.planet);
@@ -57,13 +58,13 @@ function BuildDisplay(props) {
     function canBuild(building)
     {
         if (
-        building.materialCost+((building.bldLevel+building.quedLevel)*building.materialCost*2.5)
-        <
-        Math.round(planet.materials*100)/100
-        &&
-        building.populationCost
-        <
-        planet.population
+            building.materialCost+((building.bldLevel+building.quedLevel)*building.materialCost*2.5)
+            <
+            Math.round(planet.materials*100)/100
+            &&
+            building.populationCost
+            <=
+            planet.population
         )
         {    
             if (BuildingQueList.length >= 4)
@@ -75,6 +76,13 @@ function BuildDisplay(props) {
         }
         else
             return false    
+    }
+
+    function getTechName(techID)
+    {
+        var TechName
+        const NeededTech = ResearchTypes.filter(x => x.technologyID == techID).map(x => (TechName=x.name )); 
+        return TechName;
     }
 
     return (
@@ -160,81 +168,109 @@ function BuildDisplay(props) {
             </div> 
             <div className="popup" style={{display:popup ? 'block' : 'none', backgroundColor:'gray', border: '1px solid blue', overflow:"auto", fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} 
             onClick={() => HideInfo()}>
-                <div>
+                <div style={{textAlign: "center", display: "inline-block", width:"100%", paddingBottom: "10px", borderBottom: '1px solid red'}}>
                     {bg.length> 0 && bg[0].name}
                 </div>
-                <div>
-                    <div style={{textAlign: "left", display: "inline-block", width:"50%", paddingLeft: "5px", borderBottom: '1px solid red'}}>
-                        Name:
-                    </div>
-                    <div style={{textAlign: "center", display: "inline-block", width:"50%", color:"gold", borderBottom: '1px solid red'}}>
-                        {bg.length> 0 && bg[0].name}
-                    </div>
-                </div>
+                {bg.length> 0 && bg[0].energy>0 &&
                 <div>
                     <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
                         Energy:
                     </div>
                     <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg.length> 0 && bg[0].energy}
+                        {bg[0].energy}
                     </div>
                 </div>
-                <div>
-                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Energy Cost:
-                    </div>
-                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg.length> 0 && bg[0].energyCost}
-                    </div>
-                </div>
+                }
+                {bg.length> 0 && bg[0].food>0 &&
                 <div>
                     <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
                         Food:
                     </div>
                     <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg.length> 0 && bg[0].food}
+                        {bg[0].food}
                     </div>
                 </div>
+                }
+                {bg.length> 0 && bg[0].infrastructure>0 &&
                 <div>
                     <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
                         Infrastructure:
                     </div>
                     <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg.length> 0 && bg[0].infrastructure}
+                        {bg[0].infrastructure}
                     </div>
                 </div>
+                }
+                {bg.length> 0 && bg[0].mining>0 &&
                 <div>
                     <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
                         Mining:
                     </div>
                     <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg.length> 0 && bg[0].mining}
+                        {bg[0].mining}
                     </div>
                 </div>
-                <div>
-                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Population Cost:
-                    </div>
-                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg.length> 0 && bg[0].populationCost}
-                    </div>
-                </div>
+                }
+                {bg.length> 0 && bg[0].populationMax>0 &&
                 <div>
                     <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
                         Population Max:
                     </div>
                     <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg.length> 0 && bg[0].populationMax}
+                        {bg[0].populationMax}
                     </div>
                 </div>
+                }
+                {bg.length> 0 && bg[0].research>0 &&
                 <div>
                     <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
                         Research:
                     </div>
                     <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg.length> 0 && bg[0].research}
+                        {bg[0].research}
                     </div>
                 </div>
+                }
+                {bg.length> 0 && bg[0].energyCost>0 &&
+                <div>
+                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
+                        Energy Cost:
+                    </div>
+                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
+                        {bg[0].energyCost}
+                    </div>
+                </div>
+                }
+                {bg.length> 0 && bg[0].populationCost>0 &&
+                <div>
+                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
+                        Population Cost:
+                    </div>
+                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
+                        {bg[0].populationCost}
+                    </div>
+                </div>
+                }                       
+                {bg.length> 0 && bg[0].techID>0 &&
+                <div>
+                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
+                        Research Needed:
+                    </div>
+                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
+                        {getTechName(bg[0].techID)}
+                    </div>
+                </div>
+                }
+                {bg.length> 0 && bg[0].techLevel>0 &&
+                <div>
+                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
+                        Research Level:
+                    </div>
+                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
+                        {bg.length> 0 && bg[0].techLevel}
+                    </div>
+                </div>
+                }
                 <div>
                     <div style={{textAlign: "center", width:"100%", padding: "15px"}} onClick={() => HideInfo()}>
                         CLOSE

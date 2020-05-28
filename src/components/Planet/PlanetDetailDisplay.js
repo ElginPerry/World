@@ -1,6 +1,5 @@
 import React, {Suspense, useEffect, useState} from 'react';
 import { Canvas } from "react-three-fiber";
-import {useSelector, useDispatch} from 'react-redux'
 import Planet from "./PlanetDisplay";
 import Lights from "./Lights";
 import Environment from "./Enviroment";
@@ -13,16 +12,18 @@ import imgPopulation from '../../assets/Population.png'
 import imgMaterials from '../../assets/Materials.png'
 import imgIndustry from '../../assets/Industry.png'
 import imgProdMetals from '../../assets/ProdMetals.png'
+import imgMilitary from '../../assets/military.png'
+import imgTradeRoutes from '../../assets/traderoutes.png'
 import BuildTimer from './BuildTimer'
 import ResearchTimer from './BuildTimer'
 import ShipTimer from './BuildTimer'
 import HarvestTimer from './HarvestTimer'
 import "../../styles/stylesheet.css"
+import { useSelector } from 'react-redux';
 
 const PlanetDetailDisplay = (props) => { 
     const [planet, setPlanet] = useState(props.planet);
     const [PlanetPop, setPlanetPop] = useState(props.PlanetPop);
-    const [PlanetStats, setPlanetStats] = useState(props.PlanetStats);
     const [tab, settab] = useState(props.tab);
     const PTid = props.PTid; 
     const { width } = windim();
@@ -33,11 +34,13 @@ const PlanetDetailDisplay = (props) => {
     const [resduration, setResDuration] = useState(new Date());
     const [shpduration, setShpDuration] = useState(new Date());
     const [harvestduration, setharvestduration] = useState(new Date());
-    const [ShowHarvestButton, setShowHarvestButton] = useState(false);
-    const [ShowBuildingQue, setShowBuildingQue] = useState(false);
-    const [BuildingQueList, setBuildingQueList] = useState(props.BuildingQueList)
-    const [ShipQueList, setShipQueList] = useState(props.ShipQueList)
-    const [ResearchQueList, setResearchQueList] = useState(props.ResearchQueList)
+    const [ShowHarvestButton, setShowHarvestButton] = useState(false);    
+
+    const BuildingQueList = useSelector(state => state.planetReducer.buildingQue)
+    const ResearchQueList = useSelector(state => state.planetReducer.researchQue)
+    const ShipQueList = useSelector(state => state.planetReducer.shipQue)
+    const PlanetStats = useSelector(state => state.planetReducer.planetStats ?? {energy: 0, energyCost: 1, food: 0, infrastructure: 0, mining: 0, populationMax: 0, research: 0} )
+    const UserID = useSelector(state => state.user.UserID);
 
     useEffect(() => {
         settab(props.tab);
@@ -46,18 +49,6 @@ const PlanetDetailDisplay = (props) => {
     useEffect(() => {
         setshipName(props.shipName);
     }, [props.shipName]);
-
-    useEffect(() => {
-        setBuildingQueList(props.BuildingQueList);
-    }, [props.BuildingQueList]);
-
-    useEffect(() => {
-        setShipQueList(props.ShipQueList);
-    }, [props.ShipQueList]);
-
-    useEffect(() => {
-        setResearchQueList(props.ResearchQueList);
-    }, [props.ResearchQueList]);
 
     useEffect(() => {
         setharvestduration(props.harvestduration);
@@ -92,10 +83,6 @@ const PlanetDetailDisplay = (props) => {
     }, [props.planet]);
 
     useEffect(() => {
-        setPlanetStats(props.PlanetStats);
-    }, [props.PlanetStats]);
-
-    useEffect(() => {
         setPlanetPop(props.PlanetPop);
     }, [props.PlanetPop]); 
 
@@ -109,11 +96,6 @@ const PlanetDetailDisplay = (props) => {
             setShowHarvestButton(true)
     }
 
-    function BuildingQueDisplay()
-    {
-        setShowBuildingQue(!ShowBuildingQue);
-    }
-
     function RemoveBuilding(item)
     {
         props.setbldName('');
@@ -123,11 +105,13 @@ const PlanetDetailDisplay = (props) => {
     function RemoveResearch(item)
     {
         props.setresearchName('');
+        props.BuildingQue(item);
     }
 
     function RemoveShip(item)
     {
-        props.setshipName('');     
+        props.setshipName(''); 
+        props.BuildingQue(item);    
     }
 
     function FormatDate(CompleteDate)
@@ -140,8 +124,6 @@ const PlanetDetailDisplay = (props) => {
         ("0" + ts_hms.getMinutes()).slice(-2) + ':' +
         ("0" + ts_hms.getSeconds()).slice(-2);
     }
-
-
 
     return (
         <div >            
@@ -180,7 +162,7 @@ const PlanetDetailDisplay = (props) => {
                                             </div>                                       
                                         </div>
                                         }
-                                        {index>0 &&
+                                        {index>=0 &&
                                         <div style={{width:"95%", paddingBottom: "2px" }}>
                                             <div style={{fontSize: "10px", display:"inline-block",  width: "30%"}}>                                       
                                                     {building.buildingName}                                          
@@ -215,10 +197,10 @@ const PlanetDetailDisplay = (props) => {
                                             </div>                                       
                                         </div>
                                         }
-                                        {index>0 &&
+                                        {index>=0 &&
                                         <div style={{width:"95%", paddingBottom: "2px" }}>
                                             <div style={{fontSize: "10px", display:"inline-block",  width: "30%"}}>                                       
-                                                    {research.buildingName}                                          
+                                                    {research.techName}                                          
                                             </div>
                                             <div style={{fontSize: "10px", display:"inline-block",  width: "60%"}}>
                                                     {FormatDate(research.completetionDate)}                                       
@@ -270,6 +252,7 @@ const PlanetDetailDisplay = (props) => {
                         </div>
                     </div>
                 </div>
+                {planet.owner == UserID &&
                 <div className={width>450?"harvesttimer":"harvesttimerSmall"}>
                     <div style={{padding:"5px",display:ShowHarvestButton? "block" : "none", color:"gold"}}  onClick={() => props.UpdatePlanetHarvest(
                         (Math.round(
@@ -285,10 +268,12 @@ const PlanetDetailDisplay = (props) => {
                             *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)                                
                             *100)/100)
                         )} >Harvest
-                    </div>
+                    </div>                    
                     <div style={{padding:"5px",display:!ShowHarvestButton? "block" : "none"}}><HarvestTimer timeUp={HarvestButtonDisplay} Date={harvestduration} buildingName="" /></div>                    
-                </div>               
+                </div> 
+                }              
                 <div style={{display:tab == 1? "block" : "none" }}>
+                    {planet.owner != UserID && 
                     <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", fontSize:"12px"}}>
                         <div style={{display:"inline-block"}}>
                             <div style={{padding:"5px",color:"blue"}}>
@@ -323,144 +308,128 @@ const PlanetDetailDisplay = (props) => {
                             </div> 
                         </div>                                   
                     </div>
-                    <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", fontSize:"12px"}}>
-                        <div className="planetDetailStats">
-                            <div>
-                                <img className="planetDetailImg" src={imgMetal} alt="Metals" title="Metals" />
-                                {width>450 && 'Metals'}
+                    }
+                    {planet.owner == UserID && PlanetStats.mining &&
+                    <div>
+                        <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", fontSize:"12px"}}>
+                            <div className="planetDetailStats">
+                                <div>
+                                    <img className="planetDetailImg" src={imgMetal} alt="Metals" title="Metals" />
+                                    {width>450 && 'Metals'}
+                                </div>
+                                <div className="planetDetailData">
+                                    {(Math.round(
+                                        (PlanetStats.mining+(PlanetStats.mining*(PlanetPop.metalsPop/100)))                                
+                                        *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
+                                        *100)/100)?? 'NA'}
+                                </div>
                             </div>
-                            <div className="planetDetailData">
-                                {(Math.round(
-                                    (PlanetStats.mining+(PlanetStats.mining*(PlanetPop.metalsPop/100)))                                
-                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                    *100)/100)?? 'NA'}
+                            <div className="planetDetailStats">
+                                <div>
+                                    <img className="planetDetailImg" src={imgResearch} alt="Research" title="Research" />
+                                    {width>450 && 'Research'}
+                                </div>
+                                <div className="planetDetailData">
+                                    {(Math.round(
+                                        (PlanetStats.research+(PlanetStats.research*(PlanetPop.researchPop/100)))
+                                        *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
+                                        *100)/100)?? 'NA'}
+                                </div>
                             </div>
+                            <div className="planetDetailStats">
+                                <div>
+                                    <img className="planetDetailImg" src={imgFood} alt="Food" title="Food" />
+                                    {width>450 && 'Food'}
+                                </div>
+                                <div className="planetDetailData">
+                                    {(Math.round(
+                                        (PlanetStats.food+(PlanetStats.food*(PlanetPop.foodPop/100)))
+                                        *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)    
+                                        *100)/100)?? 'NA'}
+                                </div>
+                            </div>                                        
+                            <div className="planetDetailStats">
+                                <div>
+                                    <img className="planetDetailImg" src={imgEnergy} alt="Energy Remaining" title="Energy Remaining" />
+                                    {width>450 && 'Energy'}
+                                </div>
+                                <div className="planetDetailData">
+                                    {(Math.round(                                
+                                        (PlanetStats.energy+(PlanetStats.energy*(PlanetPop.energyPop/100)))  
+                                        /PlanetStats.energyCost)*100) +'%' ?? 'NA'}
+                                </div>
+                            </div>                                        
                         </div>
-                        <div className="planetDetailStats">
-                            <div>
-                                <img className="planetDetailImg" src={imgResearch} alt="Research" title="Research" />
-                                {width>450 && 'Research'}
+                        <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", fontSize:"12px"}}>
+                            <div className="planetDetailStats">
+                                <div>
+                                    <img className="planetDetailImg" src={imgPopulation} alt="Population" title="Population" />
+                                    {width>500 && 'Population'}
+                                </div>
+                                <div className="planetDetailData">
+                                    {planet.population > -1 ? planet.population + '/' + PlanetStats.populationMax : 'NA'}
+                                </div>
                             </div>
-                            <div className="planetDetailData">
-                                {(Math.round(
-                                    (PlanetStats.research+(PlanetStats.research*(PlanetPop.researchPop/100)))
-                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                    *100)/100)?? 'NA'}
+                            <div className="planetDetailStats">
+                                <div>
+                                    <img className="planetDetailImg" src={imgMaterials} alt="Materials" title="Materials" />
+                                    {width>500 && 'Materials'}
+                                </div>
+                                <div className="planetDetailData">
+                                    {!isNaN(Math.round(planet.materials*100)/100) ? Math.round(planet.materials*100)/100 :'NA'}
+                                </div>
                             </div>
-                        </div>
-                        <div className="planetDetailStats">
-                            <div>
-                                <img className="planetDetailImg" src={imgFood} alt="Food" title="Food" />
-                                {width>450 && 'Food'}
-                            </div>
-                            <div className="planetDetailData">
-                                {(Math.round(
-                                    (PlanetStats.food+(PlanetStats.food*(PlanetPop.foodPop/100)))
-                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)    
-                                    *100)/100)?? 'NA'}
-                            </div>
-                        </div>                                        
-                        <div className="planetDetailStats">
-                            <div>
-                                <img className="planetDetailImg" src={imgEnergy} alt="Energy Remaining" title="Energy Remaining" />
-                                {width>450 && 'Energy'}
-                            </div>
-                            <div className="planetDetailData">
-                                {(Math.round(                                
-                                    (PlanetStats.energy+(PlanetStats.energy*(PlanetPop.energyPop/100)))  
-                                    /PlanetStats.energyCost)*100) +'%' ?? 'NA'}
-                            </div>
-                        </div>                                        
-                    </div>
-                    <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", fontSize:"12px"}}>
-                        <div className="planetDetailStats">
-                            <div>
-                                <img className="planetDetailImg" src={imgPopulation} alt="Population" title="Population" />
-                                {width>500 && 'Population'}
-                            </div>
-                            <div className="planetDetailData">
-                                {planet.population ? planet.population + '/' + PlanetStats.populationMax : 'NA'}
-                            </div>
-                        </div>
-                        <div className="planetDetailStats">
-                            <div>
-                                <img className="planetDetailImg" src={imgMaterials} alt="Materials" title="Materials" />
-                                {width>500 && 'Materials'}
-                            </div>
-                            <div className="planetDetailData">
-                                {!isNaN(Math.round(planet.materials*100)/100) ? Math.round(planet.materials*100)/100 :'NA'}
-                            </div>
-                        </div>
-                        <div className="planetDetailStats">
-                            <div>
-                                <img className="planetDetailImg" src={imgIndustry} alt="Construction" title="Construction" />
-                                {width>500 && 'Construction'}
-                            </div>
-                            <div className="planetDetailData">
-                                {(Math.round(
-                                    (PlanetStats.infrastructure+(PlanetStats.infrastructure*(PlanetPop.infrastructurePop/100)))
-                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                    *100)/100)?? 'NA'}
-                            </div>
-                        </div>  
-                        <div className="planetDetailStats">
-                            <div>
-                                <img className="planetDetailImg" src={imgProdMetals} alt="Material Production" title="Material Production" />
-                                {width>500 && 'Production'}
-                            </div>
-                            <div className="planetDetailData">
-                                {(Math.round(
-                                    (PlanetStats.infrastructure)
-                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                    *
-                                    (PlanetStats.mining+(PlanetStats.mining*(PlanetPop.metalsPop/100)))                                
-                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)                                
-                                    *100)/100) ?? 'NA'}
-                            </div>
+                            <div className="planetDetailStats">
+                                <div>
+                                    <img className="planetDetailImg" src={imgIndustry} alt="Construction" title="Construction" />
+                                    {width>500 && 'Construction'}
+                                </div>
+                                <div className="planetDetailData">
+                                    {(Math.round(
+                                        (PlanetStats.infrastructure+(PlanetStats.infrastructure*(PlanetPop.infrastructurePop/100)))
+                                        *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
+                                        *100)/100)?? 'NA'}
+                                </div>
+                            </div>  
+                            <div className="planetDetailStats">
+                                <div>
+                                    <img className="planetDetailImg" src={imgProdMetals} alt="Material Production" title="Material Production" />
+                                    {width>500 && 'Production'}
+                                </div>
+                                <div className="planetDetailData">
+                                    {(Math.round(
+                                        (PlanetStats.infrastructure)
+                                        *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
+                                        *
+                                        (PlanetStats.mining+(PlanetStats.mining*(PlanetPop.metalsPop/100)))                                
+                                        *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)                                
+                                        *100)/100) ?? 'NA'}
+                                </div>
+                            </div> 
                         </div> 
-                    </div>
-                </div>
-
-
-                <div className="popup" style={{display:ShowBuildingQue ? 'block' : 'none', backgroundColor:'gray', border: '1px solid blue', 
-                overflow:"auto", fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} >
-                    <div>
-                    {BuildingQueList.length > 0 &&
-                        BuildingQueList.map((building, index) => { 
-                        return(
-                            <div key={"g" + index}>
-                                {index==0 &&
-                                <div style={{fontSize: "10px", paddingBottom: "10px"}}>
-                                    <div style={{ width: "30%", borderBottom: '1px solid red'}}>
-                                        Name
-                                    </div>                                         
+                        <div style={{width:"100%", verticalAlign:"top", padding:"5px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", fontSize:"12px"}}>
+                            <div className="planetDetailStats">
+                                <div>
+                                    <img className="planetDetailImg" src={imgMilitary} alt="Military" title="Military" />
+                                    {width>500 && 'Military'}
                                 </div>
-                                }
-                                 <div style={{fontSize: "10px", paddingBottom: "10px"}}>
-                                    <div style={{ width: "30%"}}>
-                                        {building.buildingName}
-                                    </div>                                         
+                                <div className="planetDetailData">
+                                    {PlanetStats.military ?? 'NA'}
                                 </div>
-                                <div style={{fontSize: "10px", paddingBottom: "10px"}}>
-                                    <div style={{ width: "50%"}}>
-                                        {FormatDate(building.completetionDate)}
-                                    </div>                                         
-                                </div>                                                               
-                            </div>    
-                            ); 
-                        })
-                    }                    
-                    </div>
-                    <div>
-                        <div style={{textAlign: "center", width:"100%", padding: "15px"}} onClick={() => BuildingQueDisplay()}>
-                            CLOSE
+                            </div>
+                            <div className="planetDetailStats">
+                                <div>
+                                    <img className="planetDetailImg" src={imgTradeRoutes} alt="Trade Routes" title="Trade Routes" />
+                                    {width>500 && 'Trade Routes'}
+                                </div>
+                                <div className="planetDetailData">
+                                    {PlanetStats.tradeRoutes ?? 'NA'}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>           
-
-
-
-
+                    }
+                </div>  
             </div> 
         </div>    
     )};

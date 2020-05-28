@@ -5,7 +5,7 @@ import BuildDisplay from "../components/Planet/BuildDisplay";
 import ShipDisplay from "../components/Planet/ShipDisplay";
 import ResearchDisplay from "../components/Planet/ResearchDisplay";
 import '../App.css';
-import {useSelector, useDispatch, useStore} from 'react-redux'
+import {useSelector, useDispatch} from 'react-redux'
 import * as ActionTypes from '../redux/ActionTypes'
 import axios from 'axios';
 import windim from "../components/WindowDimensions";
@@ -21,11 +21,11 @@ function PlanetDetail(props) {
     var { planetType, planetID } =  props.match.params;
     const StatePT = useSelector(state => state.planetTypeReducer.textureNo);
     const UserID = useSelector(state => state.user.UserID);
-    const store = useStore()
     const [tab, setTab] = useState(1);    
     const [planet, setPlanet] = useState({});
     const [PlanetOwner, setPlanetOwner] = useState(); 
     const [BuildingStats, setBuildingStats] = useState([]); 
+    const [ResearchTypes, setResearchTypes] = useState([]); 
     const [BuildingQueList, setBuildingQueList] = useState([]); 
     const [ResearchQueList, setResearchQueList] = useState([]); 
     const [ShipQueList, setShipQueList] = useState([]); 
@@ -40,6 +40,8 @@ function PlanetDetail(props) {
     const [shpduration, setShpDuration] = useState(new Date());
     const [harvestduration, setharvestduration] = useState(new Date());
     const [BldQueID, setBldQueID] = useState(0);
+    const [ResQueID, setResQueID] = useState(0);
+    const [ShipQueID, setShipQueID] = useState(0);
     const [bldName, setbldName] = useState('');
     const [researchName, setresearchName] = useState('');
     const [shipName, setshipName] = useState(''); 
@@ -52,7 +54,7 @@ function PlanetDetail(props) {
     },[planetID]);
 
     useEffect(() => {
-        if (planet.planetID > 0 && RunBldQueList)
+        if (planet.planetID > 0 && RunBldQueList && planet.owner == UserID)
         {  
             axios.get('http://apicall.starshipfleets.com/Planet/GetBuildingQueue/' + planetID )
             .then((response) => {
@@ -60,8 +62,9 @@ function PlanetDetail(props) {
                 setResearchQueList(response.data.researchQue??[]);
                 setShipQueList(response.data.shipQue??[]);
                 setRunBldQueList(false);
-                dispatch({type: ActionTypes.SET_PLANETBUILDQUE,payload:response.data});
-                console.log(response.data)                
+                dispatch({type: ActionTypes.SET_PLANETBUILDQUE,payload:response.data.buildingQue});
+                dispatch({type: ActionTypes.SET_PLANETSHIPQUE,payload:response.data.shipQue});
+                dispatch({type: ActionTypes.SET_PLANETRESEARCHQUE,payload:response.data.researchQue});
             })
             .catch(function (error) {
             })
@@ -71,12 +74,11 @@ function PlanetDetail(props) {
     },[planet, RunBldQueList]); 
 
     useEffect(() => {
-        if (planetID )
-        {
-            BuildingQueDisplay();            
+        if (planet.planetID > 0 )
+        {                       
             axios.get('http://apicall.starshipfleets.com/Planet/GetBuildingTypes/' + planetID)
             .then((response) => {
-                setBuildingStats(response.data);                
+                setBuildingStats(response.data);          
             })
             .catch(function (error) {
             })
@@ -86,30 +88,66 @@ function PlanetDetail(props) {
     },[BuildingQueList]);
 
     useEffect(() => {
-        if (planet.planetID > 0)
-        {  
-            axios.get('http://apicall.starshipfleets.com/Planet/GetPlanetStats/' + planetID )
+        if (planet.planetID > 0 )
+        {            
+            axios.get('http://apicall.starshipfleets.com/Research/GetResearchTypes/' + UserID)
             .then((response) => {
-                setPlanetStats(response.data);
+                setResearchTypes(response.data);                    
             })
             .catch(function (error) {
             })
             .finally(function () {  
             });
         }
-    },[BuildingStats]);   
+    },[ResearchQueList]);
 
+    useEffect(() => {
+        if (planet.planetID > 0)
+        {  
+            BuildingQueDisplay(); 
+            axios.get('http://apicall.starshipfleets.com/Planet/GetPlanetStats/' + planetID )
+            .then((response) => {
+                setPlanetStats(response.data);
+                dispatch({type: ActionTypes.SET_PLANETSTATS,payload:response.data});
+                console.log(response.data)
+            })
+            .catch(function (error) {
+            })
+            .finally(function () {  
+            });
+        }
+    },[ResearchTypes]);  
   
     function BuildingQueDisplay()
     {
-        if (BuildingQueList.length > 0)
-        {
+        if (BuildingQueList.length > 0 && BuildingStats.length > 0)
+        {           
             if (BuildingQueList[0].buildQueID != BldQueID)
             {
                 const name = BuildingStats.filter(x => x.buildingID == BuildingQueList[0].buildingID)[0].name;
                 setbldName(name);
                 setBldDuration(new Date(Date.parse(BuildingQueList[0].completetionDate)));
                 setBldQueID(BuildingQueList[0].buildQueID);
+            }
+        }
+        if (ResearchQueList.length > 0 && ResearchTypes.length > 0)
+        {           
+            if (ResearchQueList[0].buildQueID != ResQueID)
+            {
+                const name = ResearchTypes.filter(x => x.technologyID == ResearchQueList[0].buildingID)[0].name;
+                setresearchName(name);
+                setResDuration(new Date(Date.parse(ResearchQueList[0].completetionDate)));
+                setResQueID(ResearchQueList[0].buildQueID);
+            }
+        }
+        if (ShipQueList.length > 0 && BuildingStats.length > 0)
+        {
+            if (ShipQueList[0].buildQueID != ShipQueID)
+            {
+                const name = ShipQueList.filter(x => x.technologyID == ShipQueList[0].buildingID)[0].name;
+                setshipName(name);
+                setShpDuration(new Date(Date.parse(ShipQueList[0].completetionDate)));
+                setShipQueID(ShipQueList[0].buildQueID);
             }
         }
     }
@@ -147,6 +185,25 @@ function PlanetDetail(props) {
         });
     }
 
+    function AddResearchQue(prod, buildingID, mats)
+    {            
+        axios.post('http://apicall.starshipfleets.com/Research/AddResearchQueue',
+        {
+            PlanetID: planetID,
+            UserID: UserID,
+            BuildingID: buildingID,
+            Seconds: prod,
+            MaterialCost: mats
+        })
+        .then((response) => {            
+            setRunBldQueList(true);            
+        })
+        .catch(function (error) {
+        })
+        .finally(function () {  
+        });
+    }
+
     function UpdatePlanetHarvest(pop, mats)
     {  
         console.log(pop + ":" + mats)      
@@ -169,6 +226,7 @@ function PlanetDetail(props) {
 
     function UpdatePlanet(data)
     {
+        dispatch({type: ActionTypes.SET_PLANET,payload:data});
         setRunBldQueList(true);
         setPlanetOwner(data.owner);
         setPTid(data.planetType);
@@ -192,7 +250,8 @@ function PlanetDetail(props) {
     }
 
     function ResearchStart(prod, buildingID, mats){
-        //AddBuildingQue(prod, name, buildingID, mats);
+        AddResearchQue(prod, buildingID, mats);
+        console.log(prod + ":" + buildingID + ":" +mats)
     }
 
     function ShipStart(prod, buildingID, mats){
@@ -226,6 +285,14 @@ function PlanetDetail(props) {
     {
         return(Math.round(
                 (PlanetStats.infrastructure+(PlanetStats.infrastructure*(PlanetPop.infrastructurePop/100)))
+                *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
+                *100)/100);
+    }
+
+    function GetResearch()
+    {
+        return(Math.round(
+                (PlanetStats.research+(PlanetStats.research*(PlanetPop.researchPop/100)))
                 *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
                 *100)/100);
     }
@@ -294,27 +361,31 @@ function PlanetDetail(props) {
                 }
                 <div style={{width:"100%"}}>
                     <div>
-                        <PlanetDetailDisplay planet={planet} PlanetStats={PlanetStats} PTid={PTid} BuildingStats={BuildingStats} PlanetPop={PlanetPop}
+                        <PlanetDetailDisplay planet={planet} PTid={PTid} BuildingStats={BuildingStats} PlanetPop={PlanetPop}
                         bldName={bldName} bldduration={bldduration} researchName={researchName} resduration={resduration} shpduration={shpduration} shipName={shipName} 
                         setshipName={setshipName} setresearchName={setresearchName} setbldName={setbldName} tab={tab} BuildingQue={BuildingQue} UpdatePlanetHarvest={UpdatePlanetHarvest}
-                        harvestduration={harvestduration} BuildingQueList={BuildingQueList} ShipQueList={ShipQueList} ResearchQueList={ResearchQueList}/>
+                        harvestduration={harvestduration} />
                     </div>
-                    <div style={{display:tab==5?'block':'none'}}>    
-                        <FocusDisplay PlanetPop={PlanetPop} planetID={planetID} UserID={UserID} save={setPlanetPop} setTab={setTab} setPlanetStats={setPlanetStats}
-                        bldName={bldName} researchName={researchName} shipName={shipName} PlanetStats={PlanetStats}/>
+                    {PlanetOwner == UserID &&
+                    <div>
+                        <div style={{display:tab==5?'block':'none'}}>    
+                            <FocusDisplay PlanetPop={PlanetPop} planetID={planetID} UserID={UserID} save={setPlanetPop} setTab={setTab} setPlanetStats={setPlanetStats}
+                            bldName={bldName} researchName={researchName} shipName={shipName} PlanetStats={PlanetStats}/>
+                        </div>
+                        <div style={{display:tab==2?'block':'none'}}>
+                            <BuildDisplay planet={planet} PTid={PTid} BuildingStats={BuildingStats} UserID={UserID} PlanetID={planetID}
+                            BuildingStart={BuildingStart} PlanetPop={PlanetPop} GetCon={GetCon} BuildingQueList={BuildingQueList} ResearchTypes={ResearchTypes} />
+                        </div>
+                        <div style={{display:tab==3?'block':'none'}}>
+                            <ResearchDisplay planet={planet} PlanetStats={PlanetStats} PTid={PTid} ResearchTypes={ResearchTypes} UserID={UserID} PlanetID={planetID}
+                            ResearchStart={ResearchStart} PlanetPop={PlanetPop} GetResearch={GetResearch} ResearchQueList={ResearchQueList}/>
+                        </div>
+                        <div style={{display:tab==4?'block':'none'}}>
+                            <ShipDisplay planet={planet} PlanetStats={PlanetStats} PTid={PTid} BuildingStats={BuildingStats} UserID={UserID} PlanetID={planetID}
+                            setShpDuration={setShpDuration} setshipName={setshipName}/>
+                        </div>
                     </div>
-                    <div style={{display:tab==2?'block':'none'}}>
-                        <BuildDisplay planet={planet} PlanetStats={PlanetStats} PTid={PTid} BuildingStats={BuildingStats} UserID={UserID} PlanetID={planetID}
-                        BuildingStart={BuildingStart} PlanetPop={PlanetPop} GetCon={GetCon} BuildingQueList={BuildingQueList} />
-                    </div>
-                    <div style={{display:tab==3?'block':'none'}}>
-                        <ResearchDisplay planet={planet} PlanetStats={PlanetStats} PTid={PTid} BuildingStats={BuildingStats} UserID={UserID} PlanetID={planetID}
-                        ResearchStart={ResearchStart} PlanetPop={PlanetPop} GetCon={GetCon} BuildingQueList={ResearchQueList}/>
-                    </div>
-                    <div style={{display:tab==4?'block':'none'}}>
-                        <ShipDisplay planet={planet} PlanetStats={PlanetStats} PTid={PTid} BuildingStats={BuildingStats} UserID={UserID} PlanetID={planetID}
-                        setShpDuration={setShpDuration} setshipName={setshipName}/>
-                    </div>
+                    }
                 </div>                 
             </div>            
         </div>

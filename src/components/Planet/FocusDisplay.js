@@ -142,6 +142,7 @@ const FocusDisplay = (props) => {
                         max={100}
                         valueLabelDisplay="auto"
                         aria-labelledby="non-linear-slider"
+                        disabled={bldName + shipName + researchName == '' ? false : true }
                     />
                 </Grid>
                 <Grid item style={{width:"20%"}}>
@@ -163,6 +164,7 @@ const FocusDisplay = (props) => {
                         max={100}
                         valueLabelDisplay="auto"
                         aria-labelledby="non-linear-slider"
+                        disabled={bldName + shipName + researchName == '' ? false : true }
                     />
                 </Grid>
                 <Grid item style={{width:"20%"}}>
@@ -206,6 +208,7 @@ const FocusDisplay = (props) => {
                         max={100}
                         valueLabelDisplay="auto"
                         aria-labelledby="non-linear-slider"
+                        disabled={bldName + shipName + researchName == '' ? false : true }
                     />
                 </Grid>
                 <Grid item style={{width:"20%"}}>
