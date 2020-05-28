@@ -4,6 +4,7 @@ import "../styles/stylesheet.css"
 
 function NavBar() {
     const UserEmail = useSelector(state => state.user.UserEmail);
+    console.log(UserEmail)
     return (
         <div>
             <nav>

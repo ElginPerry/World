@@ -30,7 +30,12 @@ const user = (state = defaultState, {type, payload}) => {
                 IPAddress: payload.ipAddress,
             }    
         case ActionTypes.LOGIN_FAILED:
-            return {...defaultState, errMess: payload}
+            return {...defaultState, errMess: payload
+            }
+
+        case ActionTypes.SET_RESETUSER:
+            return{...defaultState
+            }    
 
         default:
             return state

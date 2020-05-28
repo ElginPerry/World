@@ -78,7 +78,7 @@ function LoginTab(props) {
                 if (posts.userID)
                 {
                     //alert("Loged In");
-                    window.location.assign("/PlanetList");
+                    //window.location.assign("/PlanetList");
                 }
                 else
                 {
@@ -90,7 +90,9 @@ function LoginTab(props) {
         useEffect(() => {
             if (logout == "lo")
             {
-                dispatch({type: ActionTypes.LOGOUT_USER,payload:{}});        
+                dispatch({type: ActionTypes.SET_RESETUSER,payload:{}});        
+                dispatch({type: ActionTypes.SET_RESETPLANET,payload:{}});        
+                dispatch({type: ActionTypes.SET_RESETPLANETYPE,payload:{}});        
                 alert('Logged Out');
                 window.location.assign("/");
             }

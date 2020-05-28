@@ -21,11 +21,8 @@ import HarvestTimer from './HarvestTimer'
 import "../../styles/stylesheet.css"
 import { useSelector } from 'react-redux';
 
-const PlanetDetailDisplay = (props) => { 
-    const [planet, setPlanet] = useState(props.planet);
-    const [PlanetPop, setPlanetPop] = useState(props.PlanetPop);
+const PlanetDetailDisplay = (props) => {
     const [tab, settab] = useState(props.tab);
-    const PTid = props.PTid; 
     const { width } = windim();
     const [bldName, setbldName] = useState('');
     const [researchName, setresearchName] = useState('');
@@ -36,11 +33,13 @@ const PlanetDetailDisplay = (props) => {
     const [harvestduration, setharvestduration] = useState(new Date());
     const [ShowHarvestButton, setShowHarvestButton] = useState(false);    
 
+    const planet = useSelector(state => state.planetReducer.Planet);
     const BuildingQueList = useSelector(state => state.planetReducer.buildingQue)
     const ResearchQueList = useSelector(state => state.planetReducer.researchQue)
     const ShipQueList = useSelector(state => state.planetReducer.shipQue)
     const PlanetStats = useSelector(state => state.planetReducer.planetStats ?? {energy: 0, energyCost: 1, food: 0, infrastructure: 0, mining: 0, populationMax: 0, research: 0} )
     const UserID = useSelector(state => state.user.UserID);
+    const PlanetPop = useSelector(state => state.planetReducer.PlanetPop)
 
     useEffect(() => {
         settab(props.tab);
@@ -78,14 +77,6 @@ const PlanetDetailDisplay = (props) => {
         setBldDuration(props.bldduration);
     }, [props.bldduration]);
 
-    useEffect(() => {
-        setPlanet(props.planet);
-    }, [props.planet]);
-
-    useEffect(() => {
-        setPlanetPop(props.PlanetPop);
-    }, [props.PlanetPop]); 
-
     function HarvestButtonDisplay()
     {
         if (+harvestduration - +new Date()>0)
@@ -99,19 +90,19 @@ const PlanetDetailDisplay = (props) => {
     function RemoveBuilding(item)
     {
         props.setbldName('');
-        props.BuildingQue(item);
+        props.BuildingQue();
     }
 
     function RemoveResearch(item)
     {
         props.setresearchName('');
-        props.BuildingQue(item);
+        props.BuildingQue();
     }
 
     function RemoveShip(item)
     {
         props.setshipName(''); 
-        props.BuildingQue(item);    
+        props.BuildingQue();    
     }
 
     function FormatDate(CompleteDate)
@@ -137,16 +128,14 @@ const PlanetDetailDisplay = (props) => {
                             far: 1000
                         }}>
                             <Suspense fallback={<group />}>
-                                <Planet planetType={PTid} radius={.3} isDetail={true} />
+                                <Planet planetType={planet.planetType} radius={.3} isDetail={true} />
                                 <Lights />
                                 <Environment />
                             </Suspense> 
                         </Canvas>
                     </div>
                     <div style={{width:"60%", display:"inline-block", verticalAlign:"top"}}>
-                        <div style={{padding:"5px",display:tab == 1 || tab == 2? "block" : "none"}} ><BuildTimer timeUp={RemoveBuilding} Date={bldduration} buildingName={bldName} /> </div>
-
-
+                        <div style={{padding:"5px",display:tab == 1 || tab == 2 || tab == 5? "block" : "none"}} ><BuildTimer timeUp={RemoveBuilding} Date={bldduration} buildingName={bldName} /> </div>
                         <div style={{display:tab == 2? "block" : "none", width:"95%", border:"1px solid gray" }}>
                             {BuildingQueList.length > 0 &&
                                 BuildingQueList.map((building, index) => { 
@@ -181,7 +170,7 @@ const PlanetDetailDisplay = (props) => {
                             }                    
                         </div>
 
-                        <div style={{padding:"5px",display:tab == 1 || tab == 3? "block" : "none"}}><ResearchTimer timeUp={RemoveResearch} Date={resduration} buildingName={researchName} /></div>
+                        <div style={{padding:"5px",display:tab == 1 || tab == 3 || tab == 5? "block" : "none"}}><ResearchTimer timeUp={RemoveResearch} Date={resduration} buildingName={researchName} /></div>
                         <div style={{display:tab == 3? "block" : "none", width:"95%", border:"1px solid gray" }}>
                             {ResearchQueList.length > 0 &&
                                 ResearchQueList.map((research, index) => { 
@@ -216,7 +205,7 @@ const PlanetDetailDisplay = (props) => {
                             }
                         </div>
 
-                        <div style={{padding:"5px",display:tab == 1 || tab == 4? "block" : "none"}}><ShipTimer timeUp={RemoveShip} Date={shpduration} buildingName={shipName} /></div>                    
+                        <div style={{padding:"5px",display:tab == 1 || tab == 4 || tab == 5? "block" : "none"}}><ShipTimer timeUp={RemoveShip} Date={shpduration} buildingName={shipName} /></div>                    
                         <div style={{display:tab == 4? "block" : "none", width:"95%", border:"1px solid gray" }}>
                             {ShipQueList.length > 0 &&
                                 ShipQueList.map((ship, index) => { 
@@ -318,10 +307,7 @@ const PlanetDetailDisplay = (props) => {
                                     {width>450 && 'Metals'}
                                 </div>
                                 <div className="planetDetailData">
-                                    {(Math.round(
-                                        (PlanetStats.mining+(PlanetStats.mining*(PlanetPop.metalsPop/100)))                                
-                                        *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                        *100)/100)?? 'NA'}
+                                    {PlanetStats.mining ?? 'NA'}
                                 </div>
                             </div>
                             <div className="planetDetailStats">
@@ -330,10 +316,7 @@ const PlanetDetailDisplay = (props) => {
                                     {width>450 && 'Research'}
                                 </div>
                                 <div className="planetDetailData">
-                                    {(Math.round(
-                                        (PlanetStats.research+(PlanetStats.research*(PlanetPop.researchPop/100)))
-                                        *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                        *100)/100)?? 'NA'}
+                                    {PlanetStats.research ?? 'NA'}
                                 </div>
                             </div>
                             <div className="planetDetailStats">
@@ -342,10 +325,7 @@ const PlanetDetailDisplay = (props) => {
                                     {width>450 && 'Food'}
                                 </div>
                                 <div className="planetDetailData">
-                                    {(Math.round(
-                                        (PlanetStats.food+(PlanetStats.food*(PlanetPop.foodPop/100)))
-                                        *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)    
-                                        *100)/100)?? 'NA'}
+                                    {PlanetStats.food ?? 'NA'}
                                 </div>
                             </div>                                        
                             <div className="planetDetailStats">
@@ -354,9 +334,7 @@ const PlanetDetailDisplay = (props) => {
                                     {width>450 && 'Energy'}
                                 </div>
                                 <div className="planetDetailData">
-                                    {(Math.round(                                
-                                        (PlanetStats.energy+(PlanetStats.energy*(PlanetPop.energyPop/100)))  
-                                        /PlanetStats.energyCost)*100) +'%' ?? 'NA'}
+                                    {(PlanetStats.energyPer * 100)+'%' ?? 'NA'}
                                 </div>
                             </div>                                        
                         </div>
@@ -385,10 +363,7 @@ const PlanetDetailDisplay = (props) => {
                                     {width>500 && 'Construction'}
                                 </div>
                                 <div className="planetDetailData">
-                                    {(Math.round(
-                                        (PlanetStats.infrastructure+(PlanetStats.infrastructure*(PlanetPop.infrastructurePop/100)))
-                                        *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                        *100)/100)?? 'NA'}
+                                    {PlanetStats.infrastructure}
                                 </div>
                             </div>  
                             <div className="planetDetailStats">
@@ -398,11 +373,7 @@ const PlanetDetailDisplay = (props) => {
                                 </div>
                                 <div className="planetDetailData">
                                     {(Math.round(
-                                        (PlanetStats.infrastructure)
-                                        *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                        *
-                                        (PlanetStats.mining+(PlanetStats.mining*(PlanetPop.metalsPop/100)))                                
-                                        *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)                                
+                                        (PlanetStats.infrastructureMetal*PlanetStats.mining)                                                                       
                                         *100)/100) ?? 'NA'}
                                 </div>
                             </div> 
@@ -414,7 +385,7 @@ const PlanetDetailDisplay = (props) => {
                                     {width>500 && 'Military'}
                                 </div>
                                 <div className="planetDetailData">
-                                    {PlanetStats.military ?? 'NA'}
+                                    {PlanetStats.militaryMax ?? 'NA'}
                                 </div>
                             </div>
                             <div className="planetDetailStats">

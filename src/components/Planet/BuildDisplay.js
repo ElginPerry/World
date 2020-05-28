@@ -1,33 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import windim from "../WindowDimensions";
+import { useSelector } from 'react-redux';
 import "../../styles/stylesheet.css"
 
 
 function BuildDisplay(props) {
     const [popup, setPopup] = useState(false);
-    const [BuildingStats, setBuildingStats] = useState(props.BuildingStats);
-    const [planet, setplanet] = useState(props.planet);
     const { width } = windim();
     const [bg, setBg] = useState({});
-    const [BuildingQueList, setBuildingQueList] = useState(props.BuildingQueList); 
-    const [ResearchTypes, setResearchTypes] = useState(props.ResearchTypes);
-    
-
-    useEffect(() => {
-        setBuildingQueList(props.BuildingQueList);
-    }, [props.BuildingQueList]);
- 
-    useEffect(() => {
-        setResearchTypes(props.ResearchTypes);
-    }, [props.ResearchTypes]);
-
-    useEffect(() => {
-        setplanet(props.planet);
-    }, [props.planet]);
-
-    useEffect(() => {
-        setBuildingStats(props.BuildingStats);
-    }, [props.BuildingStats]);
+    const ResearchTypes = useSelector(state => state.planetReducer.ResearchTypes);
+    const BuildingStats = useSelector(state => state.planetReducer.BuildingStats);
+    const BuildingQueList = useSelector(state => state.planetReducer.buildingQue)
+    const planet = useSelector(state => state.planetReducer.Planet)
 
     function ShowInfo(name)
     {
@@ -82,7 +66,7 @@ function BuildDisplay(props) {
     {
         var TechName
         const NeededTech = ResearchTypes.filter(x => x.technologyID == techID).map(x => (TechName=x.name )); 
-        return TechName;
+        return NeededTech;
     }
 
     return (

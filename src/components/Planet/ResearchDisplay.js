@@ -1,32 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import windim from "../WindowDimensions";
+import { useSelector } from 'react-redux';
 import "../../styles/stylesheet.css"
 
 
 function ResearchDisplay(props) {
     const [popup, setPopup] = useState(false);
-    const [ResearchTypes, setResearchTypes] = useState(props.ResearchTypes);
-    const [PlanetStats, setPlanetStats] = useState(props.PlanetStats);
-    const [planet, setplanet] = useState(props.planet);
     const { width } = windim();
-    const [bg, setBg] = useState({});
-    const [ResearchQueList, setResearchQueList] = useState(props.ResearchQueList); 
-
-    useEffect(() => {
-        setResearchQueList(props.ResearchQueList);
-    }, [props.ResearchQueList]);
-
-    useEffect(() => {
-        setPlanetStats(props.PlanetStats);
-    }, [props.PlanetStats]);
-
-    useEffect(() => {
-        setplanet(props.planet);
-    }, [props.planet]);
-
-    useEffect(() => {
-        setResearchTypes(props.ResearchTypes);
-    }, [props.ResearchTypes]);
+    const [bg, setBg] = useState({}); 
+    const ResearchTypes = useSelector(state => state.planetReducer.ResearchTypes);
+    const ResearchQueList = useSelector(state => state.planetReducer.researchQue)
 
     function ShowInfo(name)
     {

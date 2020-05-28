@@ -15,4 +15,16 @@ const ConfigureStore = (persistedState) => {
     return store
 }
 
+// const ConfigureStore = () => {
+//     const store = createStore(
+//         combineReducers({
+//             user,planetTypeReducer,planetReducer
+//         }),
+//         applyMiddleware(thunk, logger),
+//     )
+//     return store
+// }
+
+
+
 export default ConfigureStore

@@ -3,24 +3,31 @@ import Slider from '@material-ui/core/Slider';
 import Grid from '@material-ui/core/Grid';
 import windim from "../WindowDimensions";
 import axios from 'axios';
+import {useSelector, useDispatch} from 'react-redux'
 import imgMetal from '../../assets/Metals.png'
 import imgResearch from '../../assets/Research.png'
 import imgFood from '../../assets/Food.png'
 import imgEnergy from '../../assets/Energy.png'
 import imgIndustry from '../../assets/Industry.png'
 import imgProdMetals from '../../assets/ProdMetals.png'
+import * as ActionTypes from '../../redux/ActionTypes'
 import "../../styles/stylesheet.css"
 
 const FocusDisplay = (props) => { 
-    const PlanetID = props.planetID;
-    const UserID = props.UserID;
-    const [pops, setpops] = useState(props.PlanetPop);
-    const [PlanetStats, setPlanetStats] = useState(props.PlanetStats);
+    const dispatch = useDispatch();
+    const [pops, setpops] = useState({});
+    const [PlanetStats, setPlanetStats] = useState({});
     const [bldName, setbldName] = useState(props.bldName);
     const [researchName, setresearchName] = useState(props.researchName);
     const [shipName, setshipName] = useState(props.shipName);
     const { width } = windim();
-   
+    const BuildingStats = useSelector(state => state.planetReducer.BuildingStats)
+    const PlanetPop = useSelector(state => state.planetReducer.PlanetPop)
+    const ResearchStats = useSelector(state => state.planetReducer.ResearchStats);
+    const PlanetStatsAct = useSelector(state => state.planetReducer.planetStats)
+    const planet = useSelector(state => state.planetReducer.Planet);
+    const UserID = useSelector(state => state.user.UserID);
+  
     useEffect(() => {
         setbldName(props.bldName);
     }, [props.bldName]);
@@ -34,13 +41,61 @@ const FocusDisplay = (props) => {
     }, [props.shipName]);       
 
     useEffect(() => {
-        setpops(props.PlanetPop);
-    }, [props.PlanetPop]);
+        setpops(PlanetPop);
+    }, [PlanetPop]);
 
     useEffect(() => {
-        setPlanetStats(props.PlanetStats);
-    }, [props.PlanetStats]);
+        setPlanetStats(PlanetStatsAct);
+    }, [PlanetStatsAct]);
 
+    useEffect(() => {
+        NewStats();
+    }, [pops])
+
+    function NewStats()
+    {
+        var planetStats=
+            {
+                energy: 0,
+                energyCost: 0,
+                energyPer: 0,
+                food: 0,
+                infrastructure: 0,
+                infrastructureMetal: 0,
+                militaryMax: 0,
+                mining: 0,
+                populationMax: 0,
+                research: 0,
+                tradeRoutes: 0
+            };
+            BuildingStats.map((BLG, index) =>
+            {
+                planetStats.energy=planetStats.energy+(BLG.energy*BLG.bldLevel);
+                planetStats.energyCost=planetStats.energyCost+(BLG.energyCost*BLG.bldLevel);
+                planetStats.food=planetStats.food+(BLG.food*BLG.bldLevel);
+                planetStats.infrastructure=planetStats.infrastructure+(BLG.infrastructure*BLG.bldLevel);
+                planetStats.militaryMax=planetStats.militaryMax+(BLG.military*BLG.bldLevel);
+                planetStats.mining=planetStats.mining+(BLG.mining*BLG.bldLevel);
+                planetStats.populationMax=planetStats.populationMax+(BLG.populationMax*BLG.bldLevel);
+                planetStats.research=planetStats.research+(BLG.research*BLG.bldLevel);
+                planetStats.tradeRoutes=planetStats.tradeRoutes+(BLG.tradeRoutes*BLG.bldLevel);
+            })  
+
+            planetStats.energy=Math.round((planetStats.energy+(planetStats.energy*ResearchStats.energy))*100)/100;
+            planetStats.energy=Math.round((planetStats.energy+(planetStats.energy*(pops.energyPop/100)))*100)/100;
+            planetStats.energyPer = planetStats.energy/planetStats.energyCost>1?1:planetStats.energy/planetStats.energyCost;  
+
+            planetStats.food=Math.round(((((planetStats.food)+(planetStats.food*ResearchStats.food))*planetStats.energyPer)+(planetStats.food*(pops.foodPop/100)))*100)/100;
+            planetStats.infrastructure=Math.round(((((planetStats.infrastructure)+(planetStats.infrastructure
+                *ResearchStats.infrastructure))*planetStats.energyPer)+(planetStats.infrastructure*(pops.infrastructurePop/100)))*100)/100;
+            planetStats.mining=Math.round(((((planetStats.mining)+(planetStats.mining*ResearchStats.mining))*planetStats.energyPer)+(planetStats.mining*(pops.metalsPop/100)))*100)/100;
+            planetStats.research=Math.round(((((planetStats.research)+(planetStats.research
+                *ResearchStats.research))*planetStats.energyPer)+(planetStats.research*(pops.researchPop/100)))*100)/100;
+            planetStats.infrastructureMetal=Math.round((planetStats.infrastructure*planetStats.energyPer)+(planetStats.infrastructure*ResearchStats.food)*100)/100;
+
+            setPlanetStats(planetStats);
+    }    
+    
     function TotalPops(newValue, oldValue)
     {
         var totals =pops.metalsPop+pops.researchPop+pops.foodPop+pops.energyPop+pops.infrastructurePop+pops.infrastructurePopMetal;
@@ -100,10 +155,15 @@ const FocusDisplay = (props) => {
             alert("Total focus should be 100.");
             return;
         }
-        props.save(pops);
+        else if (bldName + shipName + researchName != '')
+        {
+            alert("Cannot adjust population while creating Buildings, Ships or doing Research.");
+            return;
+        }
+        dispatch({type: ActionTypes.SET_PLANETPOP,payload:pops});        
         axios.post('http://apicall.starshipfleets.com/Planet/UpdatePlanetPop',
         {
-            PlanetID:PlanetID,
+            PlanetID:planet.planetID,
             InfrastructurePop:pops.infrastructurePop,
             InfrastructurePopMetal:pops.infrastructurePopMetal,
             EnergyPop:pops.energyPop,
@@ -112,8 +172,7 @@ const FocusDisplay = (props) => {
             ResearchPop:pops.researchPop,
             Owner:UserID
         })
-        .then((response) => {
-            props.setPlanetStats(response.data);
+        .then((response) => {            
         })
         .catch(function (error) {
         })
@@ -142,7 +201,6 @@ const FocusDisplay = (props) => {
                         max={100}
                         valueLabelDisplay="auto"
                         aria-labelledby="non-linear-slider"
-                        disabled={bldName + shipName + researchName == '' ? false : true }
                     />
                 </Grid>
                 <Grid item style={{width:"20%"}}>
@@ -164,7 +222,6 @@ const FocusDisplay = (props) => {
                         max={100}
                         valueLabelDisplay="auto"
                         aria-labelledby="non-linear-slider"
-                        disabled={bldName + shipName + researchName == '' ? false : true }
                     />
                 </Grid>
                 <Grid item style={{width:"20%"}}>
@@ -186,7 +243,6 @@ const FocusDisplay = (props) => {
                         max={100}
                         valueLabelDisplay="auto"
                         aria-labelledby="non-linear-slider"
-                        disabled={bldName + shipName + researchName == '' ? false : true }
                     />
                 </Grid>
                 <Grid item style={{width:"20%"}}>
@@ -208,7 +264,6 @@ const FocusDisplay = (props) => {
                         max={100}
                         valueLabelDisplay="auto"
                         aria-labelledby="non-linear-slider"
-                        disabled={bldName + shipName + researchName == '' ? false : true }
                     />
                 </Grid>
                 <Grid item style={{width:"20%"}}>
@@ -230,7 +285,6 @@ const FocusDisplay = (props) => {
                         max={100}
                         valueLabelDisplay="auto"
                         aria-labelledby="non-linear-slider"
-                        disabled={bldName + shipName + researchName == '' ? false : true }
                     />
                 </Grid>
                 <Grid item style={{width:"20%"}}>
@@ -248,10 +302,7 @@ const FocusDisplay = (props) => {
                                 {width>450 && 'Metals'}                               
                             </div>
                             <div className="planetDetailData">
-                                {(Math.round(
-                                    (PlanetStats.mining+(PlanetStats.mining*(pops.metalsPop/100)))                                
-                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                    *100)/100)?? 'NA'}
+                                {PlanetStats.mining ?? 'NA'}
                             </div>
                         </div>
                         <div className="planetDetailStats">
@@ -260,10 +311,7 @@ const FocusDisplay = (props) => {
                                 {width>450 && 'Res'}                                
                             </div>
                             <div className="planetDetailData">
-                                {(Math.round(
-                                    (PlanetStats.research+(PlanetStats.research*(pops.researchPop/100)))
-                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                    *100)/100)?? 'NA'}
+                                {PlanetStats.research?? 'NA'}
                             </div>
                         </div>
                         <div className="planetDetailStats">
@@ -272,10 +320,7 @@ const FocusDisplay = (props) => {
                                 {width>450 && 'Food'}                               
                             </div>
                             <div className="planetDetailData">
-                                {(Math.round(
-                                    (PlanetStats.food+(PlanetStats.food*(pops.foodPop/100)))
-                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)    
-                                    *100)/100)?? 'NA'}
+                                {PlanetStats.food?? 'NA'}
                             </div>
                         </div>
                     </div>  
@@ -286,9 +331,7 @@ const FocusDisplay = (props) => {
                                 {width>450 && 'Energy'}
                             </div>
                             <div className="planetDetailData">
-                                {(Math.round(                                
-                                    (PlanetStats.energy+(PlanetStats.energy*(pops.energyPop/100)))  
-                                    /PlanetStats.energyCost)*100) +'%' ?? 'NA'}
+                                {(PlanetStats.energyPer * 100) +'%' ?? 'NA'}
                             </div>
                         </div> 
                         <div className="planetDetailStats">
@@ -297,10 +340,7 @@ const FocusDisplay = (props) => {
                                 {width>500 && 'Con'}
                             </div>
                             <div className="planetDetailData">
-                                {(Math.round(
-                                    (PlanetStats.infrastructure+(PlanetStats.infrastructure*(pops.infrastructurePop/100)))
-                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                    *100)/100)?? 'NA'}
+                                {PlanetStats.infrastructure?? 'NA'}
                             </div>
                         </div>  
                         <div className="planetDetailStats">
@@ -309,19 +349,13 @@ const FocusDisplay = (props) => {
                                 {width>500 && 'Prod'}
                             </div>
                             <div className="planetDetailData">
-                                {(Math.round(
-                                    (PlanetStats.infrastructure)
-                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                                    *
-                                    (PlanetStats.mining+(PlanetStats.mining*(pops.metalsPop/100)))                                
-                                    *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)                                
-                                    *100)/100) ?? 'NA'}
+                                {Math.round((PlanetStats.infrastructureMetal*PlanetStats.mining*100)/100) ?? 'NA'}
                             </div>
                         </div> 
                     </div>  
                 </div>
-                {(props.PlanetPop.energyPop!=pops.energyPop || props.PlanetPop.foodPop!=pops.foodPop || props.PlanetPop.infrastructurePop!=pops.infrastructurePop 
-                || props.PlanetPop.metalsPop!=pops.metalsPop || props.PlanetPop.researchPop!=pops.researchPop ) &&
+                {(PlanetPop.energyPop!=pops.energyPop || PlanetPop.foodPop!=pops.foodPop || PlanetPop.infrastructurePop!=pops.infrastructurePop 
+                || PlanetPop.metalsPop!=pops.metalsPop || PlanetPop.researchPop!=pops.researchPop ) &&
                     <div>
                         <div style={{width: "100px", padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "#228B22", cursor: "pointer", textAlign:"center"}} onClick={() => Save()}>
                             SAVE

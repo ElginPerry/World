@@ -26,7 +26,10 @@ const planetTypeReducer = (state = defaultState, {type, payload}) => {
                 mining: payload.mining,
                 energy: payload.energy,
                 barren: payload.barren 
-            }    
+            } 
+        case ActionTypes.SET_RESETPLANETYPE:
+            return {...defaultState
+            }
         default:
             return state
     }
