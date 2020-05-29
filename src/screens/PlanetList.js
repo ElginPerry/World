@@ -1,8 +1,4 @@
-import React, {Suspense} from 'react';
-import { Canvas } from "react-three-fiber";
-import Planet from "../components/Planet/PlanetDisplay";
-import Lights from "../components/Planet/Lights";
-import Environment from "../components/Planet/Enviroment";
+import React, { useEffect, useState} from 'react';
 import '../App.css';
 import PlanetTextureURL1 from "../assets/gas.jpg"
 import PlanetTextureBump1 from "../assets/gas.jpg"
@@ -27,6 +23,8 @@ import PlanetTextureBump10 from "../assets/jupitermap.jpg"
 import PlanetTextureURL11 from "../assets/plutomap1k.jpg"
 import PlanetTextureBump11 from "../assets/venusbump.jpg"
 import { Vector3 } from 'three';
+import axios from 'axios';
+import {useSelector} from 'react-redux'
 
 function PlanetList() {
     const Textures = [{Texture : PlanetTextureURL1, Bump: PlanetTextureBump1, Position: new Vector3(-1.2,0,0), Radius: .1}
@@ -39,37 +37,62 @@ function PlanetList() {
         ,{Texture :PlanetTextureURL8, Bump: PlanetTextureBump8, Position: new Vector3(-.3,-.4,0), Radius: .1}
         ,{Texture :PlanetTextureURL9, Bump: PlanetTextureBump9, Position: new Vector3(0,-.4,0), Radius: .1}
         ,{Texture :PlanetTextureURL10, Bump: PlanetTextureBump10, Position: new Vector3(.3,-.4,0), Radius: .1}
-        ,{Texture :PlanetTextureURL11, Bump: PlanetTextureBump11, Position: new Vector3(.6,-.4,0), Radius: .1}];
+        ,{Texture :PlanetTextureURL11, Bump: PlanetTextureBump11, Position: new Vector3(.6,-.4,0), Radius: .1}];   
+    
+    const UserID = useSelector(state => state.user.UserID);
+    const [Planets, setPlanets] = useState([]); 
 
-    function SetPlanet(Pid) {        
-        var link = "/PlanetDetail/" + Pid;
+    useEffect(() => {                
+        axios.get('http://apicall.starshipfleets.com/User/GetPlanetList/' + UserID)
+        .then((response) => {            
+            setPlanets(response.data);              
+        })
+        .catch(function (error) {
+        })
+        .finally(function () {  
+        });
+    },[UserID]);
+
+    function SetPlanet(PlanetID)
+    {
+        var link = "/PlanetView/" + PlanetID;
         window.location.assign(link);
     }
 
     return (
         <div style={{height:"100%", borderWidth:"2", borderColor:"black"}}> 
-            <div style={{height:"100%", width:"100%", cursor: "pointer"}}>      
-                <Canvas 
-                    camera={{fov:25,
-                    aspect: window.innerWidth / window.innerHeight,
-                    near: 0.1,
-                    far: 1000
-                }}>
-                    <Suspense fallback={<group />}>
-                        {Textures.map((texture, index) => {
-                            return(<Planet key={index} planetType={index} radius={texture.radius} setPlanet={SetPlanet} />);
-                        })}
-                        <Lights />
-                        <Environment />
-                    </Suspense> 
-                </Canvas>
+            <div style={{height:"50px", width:"100%", textAlign:"center", color: "white"}}>Planet List</div>
+            <div style={{height:"100%", width:"100%", fontSize:"14px"}}>
+                {Planets.map((planet, index) => { 
+                    return(
+                        <div key={index} style={{height:"100px", width:"100%"}}>
+                            <div  style={{height:"50px", width:"100%"}}>
+                                <div  style={{height:"40px", width:"50px", border:"3px solid black", cursor: "pointer", 
+                                    display: "inline-block", backgroundImage: 'url(' + Textures[planet.planetType].Texture + ')'}}
+                                    onClick={e => SetPlanet(planet.planetID)}>     
+
+                                </div>
+                                <div  style={{height:"40px", width:"50px", cursor: "pointer", display: "inline-block", color: "white"}}>
+                                    {planet.planetName} 
+                                </div>
+                            </div>
+                            <div  style={{height:"50px", width:"100%"}}>
+                                <div  style={{height:"40px", width:"33%", display: "inline-block", color: "white"}}>     
+                                    {planet.population}
+                                </div>
+                                <div  style={{height:"40px", width:"33%", display: "inline-block", color: "white"}}>
+                                    {planet.military} 
+                                </div>
+                                <div  style={{height:"40px", width:"33%", display: "inline-block", color: "white"}}>
+                                    {planet.materials} 
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
-            <div>
-                OPEN SPACE
-            </div>
-        </div>    
+        </div>           
     );
   }
   
   export default PlanetList;
-  

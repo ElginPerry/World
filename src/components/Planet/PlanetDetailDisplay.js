@@ -244,19 +244,15 @@ const PlanetDetailDisplay = (props) => {
                 {planet.owner == UserID &&
                 <div className={width>450?"harvesttimer":"harvesttimerSmall"}>
                     <div style={{padding:"5px",display:ShowHarvestButton? "block" : "none", color:"gold"}}  onClick={() => props.UpdatePlanetHarvest(
-                        (Math.round(
-                            (PlanetStats.food+(PlanetStats.food*(PlanetPop.foodPop/100)))
-                            *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)    
-                            ))>planet.population?1:-1                           
+                        PlanetStats.populationMax-planet.population                         
                         ,
+                        PlanetStats.militaryMax-planet.military
+                        , 
                         (Math.round(
-                            (PlanetStats.infrastructure)
-                            *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)
-                            *
-                            (PlanetStats.mining+(PlanetStats.mining*(PlanetPop.metalsPop/100)))                                
-                            *(PlanetStats.energy/PlanetStats.energyCost>1?1:PlanetStats.energy/PlanetStats.energyCost)                                
+                            (PlanetStats.infrastructureMetal*PlanetStats.mining)                                                                       
                             *100)/100)
-                        )} >Harvest
+                        )
+                        } >Harvest
                     </div>                    
                     <div style={{padding:"5px",display:!ShowHarvestButton? "block" : "none"}}><HarvestTimer timeUp={HarvestButtonDisplay} Date={harvestduration} buildingName="" /></div>                    
                 </div> 
@@ -385,7 +381,7 @@ const PlanetDetailDisplay = (props) => {
                                     {width>500 && 'Military'}
                                 </div>
                                 <div className="planetDetailData">
-                                    {PlanetStats.militaryMax ?? 'NA'}
+                                    {planet.military + "/" + PlanetStats.militaryMax ?? 'NA'}
                                 </div>
                             </div>
                             <div className="planetDetailStats">

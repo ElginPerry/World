@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import windim from "../WindowDimensions";
 import { useSelector } from 'react-redux';
 import "../../styles/stylesheet.css"
@@ -65,8 +65,8 @@ function BuildDisplay(props) {
     function getTechName(techID)
     {
         var TechName
-        const NeededTech = ResearchTypes.filter(x => x.technologyID == techID).map(x => (TechName=x.name )); 
-        return NeededTech;
+        ResearchTypes.filter(x => x.technologyID == techID).map(x => (TechName=x.name )); 
+        return TechName;
     }
 
     return (

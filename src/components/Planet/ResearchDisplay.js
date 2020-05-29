@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import windim from "../WindowDimensions";
 import { useSelector } from 'react-redux';
 import "../../styles/stylesheet.css"
@@ -40,7 +40,7 @@ function ResearchDisplay(props) {
     function canResearch(tech)
     {
         var NeededLevel
-        const NeededTech = ResearchTypes.filter(x => x.technologyID == tech.techID).map(x => (NeededLevel=x.bldLevel )); 
+        ResearchTypes.filter(x => x.technologyID == tech.techID).map(x => (NeededLevel=x.bldLevel )); 
         if (NeededLevel >= tech.techLevel || tech.techID == 0)
         {
             if (ResearchQueList.length >= 4)
@@ -57,7 +57,7 @@ function ResearchDisplay(props) {
     function getTechName(techID)
     {
         var TechName
-        const NeededTech = ResearchTypes.filter(x => x.technologyID == techID).map(x => (TechName=x.name )); 
+        ResearchTypes.filter(x => x.technologyID == techID).map(x => (TechName=x.name )); 
         return TechName;
     }
 

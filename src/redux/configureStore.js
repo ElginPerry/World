@@ -5,12 +5,20 @@ import user from './user'
 import planetTypeReducer from './PlanetTypeReducer'
 import planetReducer from './PlanetReducer'
 
+let middleware = [];
+if (process.env.NODE_ENV === 'development') {
+  middleware = [...middleware, thunk, logger];
+} else {
+  middleware = [...middleware, thunk];
+}
+
+
 const ConfigureStore = (persistedState) => {
     const store = createStore(
         combineReducers({
             user,planetTypeReducer,planetReducer
         }),persistedState,
-        applyMiddleware(thunk, logger),
+        applyMiddleware(...middleware),
     )
     return store
 }

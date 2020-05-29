@@ -1,7 +1,7 @@
 import * as ActionTypes from './ActionTypes'
 
 const defaultState = {
-    Planet: {planetID: null, planetType: null, planetName: null, position: null, subPosition: null, 
+    Planet: {planetID: null, planetType: null, planetName: null, position: null, subPosition: null, population: null, military: null,
         galaxy: null, sector: null, system: null, sysPosition: null, moon: null, owner: null },
     buildingQue: [],
     shipQue: [],

@@ -9,7 +9,6 @@ import {useSelector, useDispatch} from 'react-redux'
 import * as ActionTypes from '../redux/ActionTypes'
 import axios from 'axios';
 import windim from "../components/WindowDimensions";
-import throttle from 'lodash/throttle';
 import imgResearch from '../assets/Research.png'
 import imgBuildings from '../assets/Buildings.png'
 import imgShips from '../assets/Ships.png'
@@ -31,8 +30,7 @@ function PlanetDetail(props) {
 
     const dispatch = useDispatch();
     var { planetType, planetID } =  props.match.params;
-    const [tab, setTab] = useState(1);    
-    //const [planet, setPlanet] = useState({});
+    const [tab, setTab] = useState(1);
     const [PlanetOwner, setPlanetOwner] = useState(); 
     const [Barren, setBarren] = useState(true); 
     const [RunBldQueList, setRunBldQueList] = useState(true); 
@@ -53,6 +51,15 @@ function PlanetDetail(props) {
     useEffect(() => {
         if (planetID )
         {
+            setbldName('');
+            setBldDuration(new Date());
+            setBldQueID(0);
+            setresearchName('');
+            setResDuration(new Date());
+            setResQueID(0);
+            setshipName('');
+            setShpDuration(new Date());
+            setShipQueID(0);
             GetPlanet(planetID);
         }
     },[planetID]);
@@ -179,19 +186,22 @@ function PlanetDetail(props) {
             planetStats.energyPer = planetStats.energy/planetStats.energyCost>1?1:planetStats.energy/planetStats.energyCost;  
 
             planetStats.food=Math.round(((((planetStats.food)+(planetStats.food*ResearchStats.food))*planetStats.energyPer)+(planetStats.food*(PlanetPop.foodPop/100)))*100)/100;
-            planetStats.infrastructure=Math.round(((((planetStats.infrastructure)+(planetStats.infrastructure*ResearchStats.infrastructure))*planetStats.energyPer)+(planetStats.infrastructure*(PlanetPop.infrastructurePop/100)))*100)/100;
+
+            planetStats.infrastructureMetal=Math.round(((((planetStats.infrastructure)+(planetStats.infrastructure*ResearchStats.infrastructure))*planetStats.energyPer))*100)/100;
+            planetStats.infrastructure=Math.round(((((planetStats.infrastructure)+(planetStats.infrastructure*ResearchStats.infrastructure))*planetStats.energyPer)
+                +(planetStats.infrastructure*(PlanetPop.infrastructurePop/100)))*100)/100;
             planetStats.mining=Math.round(((((planetStats.mining)+(planetStats.mining*ResearchStats.mining))*planetStats.energyPer)+(planetStats.mining*(PlanetPop.metalsPop/100)))*100)/100;
             planetStats.research=Math.round(((((planetStats.research)+(planetStats.research*ResearchStats.research))*planetStats.energyPer)+(planetStats.research*(PlanetPop.researchPop/100)))*100)/100;
-            planetStats.infrastructureMetal=Math.round((planetStats.infrastructure*planetStats.energyPer)+(planetStats.infrastructure*ResearchStats.food)*100)/100;
+            
             dispatch({type: ActionTypes.SET_PLANETSTATS,payload:planetStats});
         }
     },[ResearchStats, PlanetPop]); 
   
     function BuildingQueDisplay()
-    {
+    {        
         if (BuildingQueList.length > 0 && BuildingStats.length > 0)
-        {           
-            if (BuildingQueList[0].buildQueID != BldQueID)
+        {          
+            if (BuildingQueList[0].buildQueID != BldQueID && BuildingQueList[0].planetID == planetID)
             {
                 const name = BuildingStats.filter(x => x.buildingID == BuildingQueList[0].buildingID)[0].name;
                 setbldName(name);
@@ -199,9 +209,9 @@ function PlanetDetail(props) {
                 setBldQueID(BuildingQueList[0].buildQueID);
             }
         }
-        if (ResearchQueList.length > 0 && ResearchTypes.length > 0)
+        if (ResearchQueList.length > 0 && ResearchTypes.length > 0 )
         {           
-            if (ResearchQueList[0].buildQueID != ResQueID)
+            if (ResearchQueList[0].buildQueID != ResQueID && ResearchQueList[0].planetID == planetID)
             {
                 const name = ResearchTypes.filter(x => x.technologyID == ResearchQueList[0].buildingID)[0].name;
                 setresearchName(name);
@@ -211,7 +221,7 @@ function PlanetDetail(props) {
         }
         if (ShipQueList.length > 0 && BuildingStats.length > 0)
         {
-            if (ShipQueList[0].buildQueID != ShipQueID)
+            if (ShipQueList[0].buildQueID != ShipQueID && ShipQueList[0].planetID == planetID)
             {
                 const name = ShipQueList.filter(x => x.technologyID == ShipQueList[0].buildingID)[0].name;
                 setshipName(name);
@@ -271,15 +281,19 @@ function PlanetDetail(props) {
         });
     }
 
-    function UpdatePlanetHarvest(pop, mats)
+    function UpdatePlanetHarvest(pop, mil, mats)
     {  
-        console.log(pop + ":" + mats)      
+        console.log(pop + ":" + mil + ":" + mats)
+        pop = pop=0?0:pop>1?1:-1
+        mil = mil=0?0:mil>1?1:-1
+               
         axios.post('http://apicall.starshipfleets.com/Planet/UpdatePlanetHarvest',
         {
             PlanetID: planetID,
             Owner: UserID,
             Population: pop,
-            Materials: mats
+            Materials: mats,
+            Military: mil
         })
         .then((response) => {  
             UpdatePlanet(response.data);

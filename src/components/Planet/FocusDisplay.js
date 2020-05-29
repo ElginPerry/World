@@ -16,7 +16,8 @@ import "../../styles/stylesheet.css"
 const FocusDisplay = (props) => { 
     const dispatch = useDispatch();
     const [pops, setpops] = useState({});
-    const [PlanetStats, setPlanetStats] = useState({});
+    const [PlanetStats, setPlanetStats] = useState({energy: 0, energyCost: 0, energyPer: 0, food: 0, infrastructure: 0, 
+        infrastructureMetal: 0,  militaryMax: 0, mining: 0, populationMax: 0, research: 0, tradeRoutes: 0});
     const [bldName, setbldName] = useState(props.bldName);
     const [researchName, setresearchName] = useState(props.researchName);
     const [shipName, setshipName] = useState(props.shipName);
@@ -27,6 +28,20 @@ const FocusDisplay = (props) => {
     const PlanetStatsAct = useSelector(state => state.planetReducer.planetStats)
     const planet = useSelector(state => state.planetReducer.Planet);
     const UserID = useSelector(state => state.user.UserID);
+    var planetStats=
+    {
+        energy: 0,
+        energyCost: 0,
+        energyPer: 0,
+        food: 0,
+        infrastructure: 0,
+        infrastructureMetal: 0,
+        militaryMax: 0,
+        mining: 0,
+        populationMax: 0,
+        research: 0,
+        tradeRoutes: 0
+    };
   
     useEffect(() => {
         setbldName(props.bldName);
@@ -54,20 +69,7 @@ const FocusDisplay = (props) => {
 
     function NewStats()
     {
-        var planetStats=
-            {
-                energy: 0,
-                energyCost: 0,
-                energyPer: 0,
-                food: 0,
-                infrastructure: 0,
-                infrastructureMetal: 0,
-                militaryMax: 0,
-                mining: 0,
-                populationMax: 0,
-                research: 0,
-                tradeRoutes: 0
-            };
+
             BuildingStats.map((BLG, index) =>
             {
                 planetStats.energy=planetStats.energy+(BLG.energy*BLG.bldLevel);
@@ -86,12 +88,13 @@ const FocusDisplay = (props) => {
             planetStats.energyPer = planetStats.energy/planetStats.energyCost>1?1:planetStats.energy/planetStats.energyCost;  
 
             planetStats.food=Math.round(((((planetStats.food)+(planetStats.food*ResearchStats.food))*planetStats.energyPer)+(planetStats.food*(pops.foodPop/100)))*100)/100;
+            planetStats.infrastructureMetal=Math.round(((((planetStats.infrastructure)+(planetStats.infrastructure*ResearchStats.infrastructure))*planetStats.energyPer))*100)/100;
             planetStats.infrastructure=Math.round(((((planetStats.infrastructure)+(planetStats.infrastructure
                 *ResearchStats.infrastructure))*planetStats.energyPer)+(planetStats.infrastructure*(pops.infrastructurePop/100)))*100)/100;
             planetStats.mining=Math.round(((((planetStats.mining)+(planetStats.mining*ResearchStats.mining))*planetStats.energyPer)+(planetStats.mining*(pops.metalsPop/100)))*100)/100;
             planetStats.research=Math.round(((((planetStats.research)+(planetStats.research
                 *ResearchStats.research))*planetStats.energyPer)+(planetStats.research*(pops.researchPop/100)))*100)/100;
-            planetStats.infrastructureMetal=Math.round((planetStats.infrastructure*planetStats.energyPer)+(planetStats.infrastructure*ResearchStats.food)*100)/100;
+            
 
             setPlanetStats(planetStats);
     }    
@@ -302,7 +305,7 @@ const FocusDisplay = (props) => {
                                 {width>450 && 'Metals'}                               
                             </div>
                             <div className="planetDetailData">
-                                {PlanetStats.mining ?? 'NA'}
+                                {PlanetStats.mining + '' ?? 'NA'}
                             </div>
                         </div>
                         <div className="planetDetailStats">
@@ -311,7 +314,7 @@ const FocusDisplay = (props) => {
                                 {width>450 && 'Res'}                                
                             </div>
                             <div className="planetDetailData">
-                                {PlanetStats.research?? 'NA'}
+                                {PlanetStats.research + ''?? 'NA'}
                             </div>
                         </div>
                         <div className="planetDetailStats">
@@ -320,7 +323,7 @@ const FocusDisplay = (props) => {
                                 {width>450 && 'Food'}                               
                             </div>
                             <div className="planetDetailData">
-                                {PlanetStats.food?? 'NA'}
+                                {PlanetStats.food + ''?? 'NA'}
                             </div>
                         </div>
                     </div>  
@@ -340,7 +343,7 @@ const FocusDisplay = (props) => {
                                 {width>500 && 'Con'}
                             </div>
                             <div className="planetDetailData">
-                                {PlanetStats.infrastructure?? 'NA'}
+                                {PlanetStats.infrastructure + ''?? 'NA'}
                             </div>
                         </div>  
                         <div className="planetDetailStats">
@@ -349,7 +352,7 @@ const FocusDisplay = (props) => {
                                 {width>500 && 'Prod'}
                             </div>
                             <div className="planetDetailData">
-                                {Math.round((PlanetStats.infrastructureMetal*PlanetStats.mining*100)/100) ?? 'NA'}
+                                {Math.round((PlanetStats.infrastructureMetal*PlanetStats.mining*100)/100) + '' ?? 'NA'}
                             </div>
                         </div> 
                     </div>  
