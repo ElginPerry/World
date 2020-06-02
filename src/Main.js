@@ -1,6 +1,7 @@
 import React from 'react'
 import {BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import PlanetList from './screens/PlanetList';
+import ShipDesign from './screens/ShipDesgn';
 import PlanetType from './screens/PlanetTypes';
 import PlanetDetail from './screens/PlanetDetail';
 import PlanetTypeDetail from './screens/PlaneTypeDetail';
@@ -26,6 +27,7 @@ const Main = () => {
                     <Route exact path="/PlanetTypes" component={PlanetType} />
                     <Route path="/PlanetTypeDetail/:planetType?" component={PlanetTypeDetail} />
                     <Route path="/PlanetView/:planetID?" component={PlanetDetail} />
+                    <Route path="/ShipDesign" component={ShipDesign} />
                     <Route path="/Logout/:logout?" component={Login} /> 
                     <Route path="/" component={Login} /> 
                 </Switch>                

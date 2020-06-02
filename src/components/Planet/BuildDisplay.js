@@ -99,19 +99,19 @@ function BuildDisplay(props) {
                                 </div>
                                 }
                                 <div style={{paddingBottom: "10px"}}>
-                                    <div style={{display: "inline-block", width: "30%", fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} onClick={() => ShowInfo(building.name)}>
+                                    <div style={{display: "inline-block", width: "30%", fontSize: width>450 ? "12px" : "10px", borderBottom: '1px solid blue', cursor:"pointer"}} onClick={() => ShowInfo(building.name)}>
                                         {building.name}
                                     </div> 
-                                    <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px"}}>
+                                    <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px", borderBottom: '1px solid blue'}}>
                                         {building.bldLevel}
                                     </div>
-                                    <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px"}}>
+                                    <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px", borderBottom: '1px solid blue'}}>
                                         {building.populationCost}
                                     </div> 
-                                    <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px"}}>
+                                    <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px", borderBottom: '1px solid blue'}}>
                                         {building.materialCost+((building.bldLevel+building.quedLevel)*building.materialCost*2.5)}
                                     </div>  
-                                    <div style={{display: "inline-block", width: "25%", fontSize: width>450 ? "12px" : "10px", paddingRight: "5px"}}>
+                                    <div style={{display: "inline-block", width: "25%", fontSize: width>450 ? "12px" : "10px", paddingRight: "5px", borderBottom: '1px solid blue'}}>
                                         {
                                             durDisplay(
                                                 Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())<30?30:

@@ -88,16 +88,16 @@ function ResearchDisplay(props) {
                                 </div>
                                 }
                                 <div style={{paddingBottom: "10px"}}>
-                                    <div style={{display: "inline-block", width: "30%", fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} onClick={() => ShowInfo(tech.name)}>
+                                    <div style={{display: "inline-block", width: "30%", fontSize: width>450 ? "12px" : "10px", cursor:"pointer", borderBottom: '1px solid blue'}} onClick={() => ShowInfo(tech.name)}>
                                         {tech.name}
                                     </div> 
-                                    <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px"}}>
+                                    <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px", borderBottom: '1px solid blue'}}>
                                         {tech.bldLevel}
                                     </div>
-                                    <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px"}}>
+                                    <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px", borderBottom: '1px solid blue'}}>
                                         {tech.technologyCost}
                                     </div>  
-                                    <div style={{display: "inline-block", width: "25%", fontSize: width>450 ? "12px" : "10px", paddingRight: "5px"}}>
+                                    <div style={{display: "inline-block", width: "25%", fontSize: width>450 ? "12px" : "10px", paddingRight: "5px", borderBottom: '1px solid blue'}}>
                                         {
                                             durDisplay(
                                                 Math.round(((tech.technologyCost+((tech.bldLevel+tech.quedLevel)*tech.technologyCost))*15)/props.GetResearch())<30?30:

@@ -67,7 +67,7 @@ function PlanetDetail(props) {
     useEffect(() => {
         if (planet.planetID > 0 && RunBldQueList && planet.owner == UserID)
         {  
-            axios.get('http://apicall.starshipfleets.com/Planet/GetBuildingQueue/' + planetID )
+            axios.get('http://apicall.starshipfleets.com/Planet/GetBuildingQueue/' + planetID + "/" + UserID )
             .then((response) => {
                 setRunBldQueList(false);
                 dispatch({type: ActionTypes.SET_PLANETBUILDQUE,payload:response.data.buildingQue});

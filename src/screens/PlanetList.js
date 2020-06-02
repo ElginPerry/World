@@ -25,6 +25,7 @@ import PlanetTextureBump11 from "../assets/venusbump.jpg"
 import { Vector3 } from 'three';
 import axios from 'axios';
 import {useSelector} from 'react-redux'
+import windim from "../components/WindowDimensions";
 
 function PlanetList() {
     const Textures = [{Texture : PlanetTextureURL1, Bump: PlanetTextureBump1, Position: new Vector3(-1.2,0,0), Radius: .1}
@@ -40,7 +41,8 @@ function PlanetList() {
         ,{Texture :PlanetTextureURL11, Bump: PlanetTextureBump11, Position: new Vector3(.6,-.4,0), Radius: .1}];   
     
     const UserID = useSelector(state => state.user.UserID);
-    const [Planets, setPlanets] = useState([]); 
+    const [Planets, setPlanets] = useState([]);
+    const { width } = windim(); 
 
     useEffect(() => {                
         axios.get('http://apicall.starshipfleets.com/User/GetPlanetList/' + UserID)
@@ -60,32 +62,61 @@ function PlanetList() {
     }
 
     return (
-        <div style={{height:"100%", borderWidth:"2", borderColor:"black"}}> 
-            <div style={{height:"50px", width:"100%", textAlign:"center", color: "white"}}>Planet List</div>
-            <div style={{height:"100%", width:"100%", fontSize:"14px"}}>
+        <div style={{width:"95%", borderWidth:"2", borderColor:"black", textAlign:"center"}}> 
+            <div style={{height:"50px", width:"100%", textAlign:"center", color: "gold", fontSize:"18px"}}>Planet List</div>
+            <div style={{width:"100%", fontSize:"14px", textAlign:"center"}}>
                 {Planets.map((planet, index) => { 
                     return(
-                        <div key={index} style={{height:"100px", width:"100%"}}>
-                            <div  style={{height:"50px", width:"100%"}}>
-                                <div  style={{height:"40px", width:"50px", border:"3px solid black", cursor: "pointer", 
+                        <div key={index} style={{width:"95%"}}>
+                            {index == 0 &&
+                            <div  style={{height:"30px", width:"100%", color:"blue"}}>
+                                <div  style={{height:"30px", width:"50px", display: "inline-block"}}>     
+                                      &nbsp;
+                                </div>
+                                <div  style={{height:"30px", width:width > 500 ?"20%":"60%" , paddingLeft: "5px", borderBottom:"1px solid red", display: "inline-block"}}>
+                                    Planet Name 
+                                </div>
+                                {width > 500 &&
+                                <div  style={{height:"30px", width:"20%", paddingLeft: "5px" , borderBottom:"1px solid red", display: "inline-block"}}>
+                                    Population 
+                                </div> 
+                                }
+                                {width > 500 &&
+                                <div  style={{height:"30px", width:"20%", paddingLeft: "5px" , borderBottom:"1px solid red", display: "inline-block"}}>
+                                    Materials
+                                </div>
+                                }
+                                {width > 500 &&
+                                <div  style={{height:"30px", width:"20%", paddingLeft: "5px" , borderBottom:"1px solid red", display: "inline-block"}}>
+                                    Military 
+                                </div>
+                                }                                
+                            </div>
+                            }
+                            <div  style={{height:"45px", width:"100%", color: "white"}}>
+                                <div  style={{height:"40px", width:"50px", border:"1px solid gray", cursor: "pointer", 
                                     display: "inline-block", backgroundImage: 'url(' + Textures[planet.planetType].Texture + ')'}}
                                     onClick={e => SetPlanet(planet.planetID)}>     
-
+                                      &nbsp;
                                 </div>
-                                <div  style={{height:"40px", width:"50px", cursor: "pointer", display: "inline-block", color: "white"}}>
+                                <div  style={{height:"40px", width:width > 500 ?"20%":"60%", paddingLeft: "5px", display: "inline-block", boxShadow:"0 2px 0 0 gray"}}>
                                     {planet.planetName} 
                                 </div>
-                            </div>
-                            <div  style={{height:"50px", width:"100%"}}>
-                                <div  style={{height:"40px", width:"33%", display: "inline-block", color: "white"}}>     
-                                    {planet.population}
+                                {width > 500 &&
+                                <div  style={{height:"40px", width:"20%", paddingLeft: "5px", display: "inline-block", boxShadow:"0 2px 0 0 gray"}}>
+                                    {planet.population} 
                                 </div>
-                                <div  style={{height:"40px", width:"33%", display: "inline-block", color: "white"}}>
+                                } 
+                                {width > 500 &&
+                                <div  style={{height:"40px", width:"20%", paddingLeft: "5px", display: "inline-block", boxShadow:"0 2px 0 0 gray"}}>
+                                    {Math.round(planet.materials*100)/100} 
+                                </div>
+                                }
+                                {width > 500 &&
+                                <div  style={{height:"40px", width:"20%", paddingLeft: "5px", display: "inline-block", boxShadow:"0 2px 0 0 gray"}}>
                                     {planet.military} 
                                 </div>
-                                <div  style={{height:"40px", width:"33%", display: "inline-block", color: "white"}}>
-                                    {planet.materials} 
-                                </div>
+                                }
                             </div>
                         </div>
                     );
