@@ -19,7 +19,11 @@ function PlanetList() {
     const [shipyardNeeded, setshipyardNeeded] = useState(0); 
     const [activeHull, setactiveHull] = useState({});    
     const [activePods, setactivePods] = useState([]);
+    const [currentDesigns, setcurrentDesigns] = useState([]);
     const [designStats, setdesignStats] = useState({});
+    const [buildStats, setbuildStats] = useState({});
+    const [designName, setdesignName] = useState('')
+    const [updateDesign, setupdateDesign] = useState({})
     const { width } = windim(); 
 
     useEffect(() => {                
@@ -43,6 +47,25 @@ function PlanetList() {
         .finally(function () {  
         });
     },[UserID]);
+
+    useEffect(() => {                
+        axios.get('http://apicall.starshipfleets.com/Ships/GetShipDesignbyUser/' + UserID)
+        .then((response) => { 
+            setcurrentDesigns(response.data);
+            console.log(response.data)            
+        })
+        .catch(function (error) {
+        })
+        .finally(function () {  
+        });
+    },[UserID]);
+
+    useEffect(() => {
+        if (updateDesign.hullID)
+        {
+            SelectHull(updateDesign.hullID)
+        }    
+    }, [updateDesign])
 
     useEffect(() => {
         CalculateStats()
@@ -81,13 +104,13 @@ function PlanetList() {
                 newStats.militaryCost= (newStats.militaryCost+apod.militaryCost);
                 newStats.missile= (newStats.missile+apod.missile);
                 newStats.movement= (newStats.movement+apod.movement);                
-                newStats.bays= (newStats.movement+apod.bays);
+                newStats.bays= (newStats.bays+apod.bays);
                 newStats.plasma= (newStats.plasma+apod.plasma);
                 newStats.shields= (newStats.shields+apod.shields);
                 if (newShipYard < apod.buildingLevel)
                     newShipYard = apod.buildingLevel        
             })
-
+            setbuildStats(Object.assign({},newStats));
             newStats.armor= newStats.armor+(newStats.armor*ResearchStats.armor);
             newStats.energy= newStats.energy+(newStats.energy*ResearchStats.energy);
             newStats.laser= newStats.laser+(newStats.laser*ResearchStats.laser);
@@ -109,11 +132,37 @@ function PlanetList() {
     {
         setactivePods([]);
         setactiveHull({});
+        setshipyardNeeded(0);
     }
+
     function SelectHull(hullID)
     {
         setactivePods([]);
         setactiveHull(Hulls.find(x => x.hullID==hullID)); 
+        setdesignName(Hulls.find(x => x.hullID==hullID).hullName)
+        if (hullID != updateDesign.hullID)
+        {
+            setupdateDesign({})
+        }
+    }
+
+    function SelectDesign(designID)
+    {
+        if (designID==0)
+        {
+            setupdateDesign({})
+        }
+        else
+        {
+            const design = currentDesigns.find(x => x.shipDesignID == designID);
+            design.armor= design.armor+(design.armor*ResearchStats.armor);
+            design.energy= design.energy+(design.energy*ResearchStats.energy);
+            design.laser= design.laser+(design.laser*ResearchStats.laser);
+            design.missile= design.missile+(design.missile*ResearchStats.missile);
+            design.plasma= design.plasma+(design.plasma*ResearchStats.plasma);
+            design.shields= design.shields+(design.shields*ResearchStats.shields);
+            setupdateDesign(design)            
+        }
     }
 
     function PickPod(podID)
@@ -207,15 +256,83 @@ function PlanetList() {
             {
                 alert("Not enough Energy to support Pods.")
             }
+            else if (designName == '')
+            {
+                alert("You have not named this design.")
+            }
             else
             {
-                alert("Build")
+                SaveDesign(updateDesign)
             }
         }
         else
         {
             alert("You must select a Hull.")
         }
+    }
+
+    function SaveDesign()
+    {
+        if (updateDesign.shipDesignID)
+        {
+            alert("update" + updateDesign.designName)
+        }
+        else
+        {
+            axios.post('http://apicall.starshipfleets.com/Ships/AddShipDesigns',
+            {
+                UserID:UserID,
+                DesignName:designName,
+                HullID: activeHull.hullID,
+                ShipYardLevel: shipyardNeeded,
+                MaterialCost: buildStats.materialCost,
+                MilitaryCost: buildStats.militaryCost,
+                Laser: buildStats.laser,
+                Energy: buildStats.energy,
+                EnergyCost: buildStats.energyCost,
+                Missile: buildStats.missile,
+                Plasma: buildStats.plasma,
+                Shields: buildStats.shields,
+                Armor: buildStats.armor,
+                Bays: buildStats.bays,
+                Movement: buildStats.movement
+            })
+            .then((response) => {            
+                console.log(response.data);  
+                CalcPodNum(response.data)                    
+            })
+            .catch(function (error) {
+            })
+            .finally(function () {  
+            });
+        }
+    }
+
+    function CalcPodNum(ShipDesignID)
+    {
+        var addpods = []
+        activePods.map((apod, index) => {
+            const ap = addpods.find(x => x.PodID == apod.podID)
+            if (ap)
+            {
+                ap.NumofPods = ap.NumofPods+1
+            }
+            else
+            {
+                addpods.push({ShipDesignID:ShipDesignID, PodID: apod.podID, NumofPods:1})
+            }
+        }) 
+        console.log(addpods)   
+        
+        axios.post('http://apicall.starshipfleets.com/Ships/AddShipDesignPods',
+        addpods)
+        .then((response) => {            
+            console.log(response.data);                    
+        })
+        .catch(function (error) {
+        })
+        .finally(function () {  
+        });
     }
 
     return (
@@ -256,19 +373,33 @@ function PlanetList() {
                 </div>
                 <div style={{flex:1, fontSize:"14px", textAlign:"center", color:"white", display: "inline-block"}}>
                     <div style={{ flex:1,color: "White"}}>
-                        <div style={{width:10}} ></div>
-                        <div  style={{ flex:1, height:30, padding: "5px", cursor: "pointer",
+                        <div  style={{ flex:1, width:245, height:30, padding: "5px", cursor: "pointer", display: "inline-block",
                         backgroundColor: designStats.energyCost>designStats.energy?"red":activePods.length==activeHull.numPods?"green":"darkgray"}} 
                             onClick={e => BuildDesign(activePods.length!=activeHull.numPods?1:designStats.energyCost>designStats.energy?2:3)}>
                             Save Design 
-                        </div>                                                                
+                        </div> 
+                        <div  style={{ flex:1, width:120, height:30, padding: "5px", cursor: "pointer", display: "inline-block"}}>
+                            <select  style={{width:120}} onChange={(e) => SelectDesign(e.target.value)}>
+                                <option value="0">Upgrade Design</option>
+                                {currentDesigns.map((cd, index) => <option key={cd.shipDesignID} value={cd.shipDesignID}>{cd.designName}</option>)}
+                            </select>
+                        </div>                                                               
                     </div>
-                    <div style={{flex:1, paddingBottom:"5px", border:"1px solid white"}}>
+
+                    <div style={{flex:1, paddingBottom:"5px", border:"1px solid white", display: "inline-block"}}>
+                        <div>
+                            <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
+                                Design Name
+                            </div>
+                            <div style={{display: "inline-block"}}>
+                                <input value={designName} onChange={e => setdesignName(e.target.value)} maxLength="15" style={{width:120,fontSize:"12px"}}/>  
+                            </div>
+                        </div>
                         <div>
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Class
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
                                 {activeHull.hullName}
                             </div>
                         </div>
@@ -276,7 +407,7 @@ function PlanetList() {
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Shipyard Level
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
                                 {shipyardNeeded}
                             </div>
                         </div>
@@ -285,7 +416,7 @@ function PlanetList() {
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Hull
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
                                 {activeHull.hull}
                             </div>
                         </div>                        
@@ -293,7 +424,7 @@ function PlanetList() {
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Material Cost
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
                                 {designStats.materialCost}
                             </div>
                         </div>
@@ -301,15 +432,15 @@ function PlanetList() {
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Military Cost
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
-                            {designStats.militaryCost}
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {designStats.militaryCost}
                             </div>
                         </div>
                         <div>
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Energy Cost
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
                                 {designStats.energyCost}
                             </div>
                         </div>
@@ -317,7 +448,7 @@ function PlanetList() {
                             <div style={{width:125,fontSize:"14px", display: "inline-block", color: designStats.energyCost>designStats.energy?"red":"lime"}}>
                                 Energy
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray", color: designStats.energyCost>designStats.energy?"red":"lime"}}>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray", color: designStats.energyCost>designStats.energy?"red":"lime"}}>
                                 {designStats.energy}
                             </div>
                         </div>
@@ -325,7 +456,7 @@ function PlanetList() {
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Armor
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
                                 {designStats.armor}
                             </div>
                         </div>
@@ -333,7 +464,7 @@ function PlanetList() {
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Shields
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
                                 {designStats.shields}
                             </div>
                         </div>
@@ -341,7 +472,7 @@ function PlanetList() {
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Laser
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
                                 {designStats.laser}
                             </div>
                         </div>
@@ -349,15 +480,15 @@ function PlanetList() {
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Missile
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
-                            {designStats.missile}
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {designStats.missile}
                             </div>
                         </div>
                         <div>
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Plasma
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
                                 {designStats.plasma}
                             </div>
                         </div>
@@ -365,7 +496,7 @@ function PlanetList() {
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Bays
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
                                 {designStats.bays}
                             </div>
                         </div>
@@ -373,7 +504,7 @@ function PlanetList() {
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Movement
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
                                 {designStats.movement}
                             </div>
                         </div>
@@ -381,11 +512,96 @@ function PlanetList() {
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Pods
                             </div>
-                            <div style={{width:125,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
                                 {activeHull.numPods && activePods.length + "/" + activeHull.numPods}
                             </div>
                         </div>
                     </div>
+
+                    <div style={{flex:1, paddingBottom:"5px", border:"1px solid white", display: "inline-block"}}>
+                        <div>
+                            <div style={{display: "inline-block", color:"gold"}}>
+                                {updateDesign.designName} 
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.hullName}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.shipYardLevel}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.hullName && activeHull.hull}
+                            </div>
+                        </div>                        
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.materialCost}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.militaryCost}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.energyCost}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray", color: updateDesign.energyCost>updateDesign.energy?"red":"lime"}}>
+                                {updateDesign.energy}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.armor}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.shields}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.laser}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.missile}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.plasma}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.bays}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.movement}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.hullName && activeHull.numPods && activeHull.numPods + "/" + activeHull.numPods}
+                            </div>
+                        </div>
+                    </div>
+
+
                     <div style={{flex:1, color:"white", textAlign:"center", fontSize:"12px", border:"1px solid white", paddingTop:10}}>
                         <div style={{flex:1}}>
                             {

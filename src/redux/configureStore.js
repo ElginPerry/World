@@ -4,6 +4,7 @@ import logger from 'redux-logger'
 import user from './user'
 import planetTypeReducer from './PlanetTypeReducer'
 import planetReducer from './PlanetReducer'
+import shipReducer from './ShipReducer'
 
 let middleware = [];
 if (process.env.NODE_ENV === 'development') {
@@ -16,7 +17,7 @@ if (process.env.NODE_ENV === 'development') {
 const ConfigureStore = (persistedState) => {
     const store = createStore(
         combineReducers({
-            user,planetTypeReducer,planetReducer
+            user,planetTypeReducer,planetReducer,shipReducer
         }),persistedState,
         applyMiddleware(...middleware),
     )

@@ -39,7 +39,8 @@ const PlanetDetailDisplay = (props) => {
     const ShipQueList = useSelector(state => state.planetReducer.shipQue)
     const PlanetStats = useSelector(state => state.planetReducer.planetStats ?? {energy: 0, energyCost: 1, food: 0, infrastructure: 0, mining: 0, populationMax: 0, research: 0} )
     const UserID = useSelector(state => state.user.UserID);
-    const PlanetPop = useSelector(state => state.planetReducer.PlanetPop)
+    const planetFleets = useSelector(state => state.shipReducer.PlanetFleets);
+    const ShipDesigns = useSelector(state => state.shipReducer.ShipDesigns);
 
     useEffect(() => {
         settab(props.tab);
@@ -85,6 +86,21 @@ const PlanetDetailDisplay = (props) => {
         }
         else
             setShowHarvestButton(true)
+    }
+
+    function CancelBuilding(BId,PId)
+    {
+        alert(BId + ":" + PId)
+    }
+
+    function CancelResearch(BId,PId)
+    {
+        alert(BId + ":" + PId)
+    }
+
+    function CancelShip(BId,PId)
+    {
+        alert(BId + ":" + PId)
     }
 
     function RemoveBuilding(item)
@@ -159,7 +175,8 @@ const PlanetDetailDisplay = (props) => {
                                             <div style={{fontSize: "10px", display:"inline-block",  width: "60%"}}>
                                                     {FormatDate(building.completetionDate)}                                       
                                             </div> 
-                                            <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"red"}}>
+                                            <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"red", cursor:"pointer" }}  
+                                                onClick={() => CancelBuilding(building.buildingID,building.planetID)}>
                                                     {width>450 ? 'Cancel' : 'C'}                                       
                                             </div>
                                         </div>
@@ -194,7 +211,8 @@ const PlanetDetailDisplay = (props) => {
                                             <div style={{fontSize: "10px", display:"inline-block",  width: "60%"}}>
                                                     {FormatDate(research.completetionDate)}                                       
                                             </div> 
-                                            <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"red"}}>
+                                            <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"red", cursor:"pointer"}}
+                                                onClick={() => CancelResearch(research.buildingID,research.planetID)}>
                                                     {width>450 ? 'Cancel' : 'C'}                                       
                                             </div>
                                         </div>
@@ -221,15 +239,16 @@ const PlanetDetailDisplay = (props) => {
                                             </div>                                       
                                         </div>
                                         }
-                                        {index>0 &&
+                                        {index>=0 &&
                                         <div style={{width:"95%", paddingBottom: "2px" }}>
                                             <div style={{fontSize: "10px", display:"inline-block",  width: "30%"}}>                                       
-                                                    {ship.buildingName}                                          
+                                                    {ship.shipName}                                          
                                             </div>
                                             <div style={{fontSize: "10px", display:"inline-block",  width: "60%"}}>
                                                     {FormatDate(ship.completetionDate)}                                       
                                             </div> 
-                                            <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"red"}}>
+                                            <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"red", cursor:"pointer"}}
+                                                onClick={() => CancelShip(ship.buildingID,ship.planetID)}>
                                                     {width>450 ? 'Cancel' : 'C'}                                       
                                             </div>
                                         </div>
@@ -396,6 +415,41 @@ const PlanetDetailDisplay = (props) => {
                         </div>
                     </div>
                     }
+                    <div>
+                        {planetFleets.length > 0 &&
+                            planetFleets.map((fleet, index) => { 
+                            return(
+                                <div key={"g" + index} style={{width:"100%", textAlign:"center" }}>
+                                    {index==0 &&
+                                    <div style={{fontSize: "10px", paddingBottom: "3px", width:"95%"}}>
+                                        <div style={{ width: "30%", borderBottom: '1px solid red', display:"inline-block"}}>
+                                            Name
+                                        </div>   
+                                        <div style={{ width: "70%", borderBottom: '1px solid red', display:"inline-block"}}>
+                                            Material Cost
+                                        </div>                                       
+                                    </div>
+                                    }
+                                    {index>=0 &&
+                                    <div style={{width:"95%", paddingBottom: "2px" }}>
+                                        <div style={{fontSize: "10px", display:"inline-block",  width: "30%"}}>                                       
+                                                {fleet.fleetName}                                          
+                                        </div>
+                                        <div style={{fontSize: "10px", display:"inline-block",  width: "60%"}}>
+                                                {fleet.ships.reduce((sum, ship) => {
+                                                      return sum + ShipDesigns.find( x => x.shipDesignID==ship.designID).materialCost * ship.effectiveNumber},0)}                                       
+                                        </div> 
+                                        <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"green", cursor:"pointer"}}
+                                            onClick={() => CancelShip(fleet.planetID)}>
+                                                {width>450 ? 'Details' : 'D'}                                       
+                                        </div>
+                                    </div>
+                                    }                                                              
+                                </div>    
+                                ); 
+                            })
+                        }
+                    </div>
                 </div>  
             </div> 
         </div>    

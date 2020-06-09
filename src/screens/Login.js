@@ -76,9 +76,8 @@ function LoginTab(props) {
             if (posts)
             {
                 if (posts.userID)
-                {
-                    //alert("Loged In");
-                    //window.location.assign("/PlanetList");
+                {                   
+                    window.location.assign("/PlanetList");
                 }
                 else
                 {
