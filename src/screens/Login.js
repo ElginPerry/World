@@ -17,7 +17,7 @@ function LoginTab(props) {
         var {logout} = props.match.params;
         const ButtonGRP = useRef(); 
         const [loginLabel, setLabel] = useState("Login");
-        const [posts, setPosts] = useState(null);
+        const [userdata, setuserdata] = useState(null);
         const [UserID, setUserID] = useState('');
         const [Pwd, setPwd] = useState('');
         const { classes } = props;
@@ -62,8 +62,7 @@ function LoginTab(props) {
             )
             .then(function (response) {                
                 dispatch({type: ActionTypes.LOGIN_USER,payload:response.data});
-                console.log(response.data)
-                setPosts(response.data); 
+                setuserdata(response.data); 
             })
             .catch(function (error) {
                 console.log(error);
@@ -73,9 +72,9 @@ function LoginTab(props) {
         }
 
         useEffect(() => {
-            if (posts)
+            if (userdata)
             {
-                if (posts.userID)
+                if (userdata.userID)
                 {                   
                     window.location.assign("/PlanetList");
                 }
@@ -84,19 +83,16 @@ function LoginTab(props) {
                     alert("No User");
                 }  
             }
-        },[posts]);
+        },[userdata]);
 
         useEffect(() => {
             if (logout == "lo")
             {
-                dispatch({type: ActionTypes.SET_RESETUSER,payload:{}});        
-                dispatch({type: ActionTypes.SET_RESETPLANET,payload:{}});        
-                dispatch({type: ActionTypes.SET_RESETPLANETYPE,payload:{}});        
+                dispatch({type: ActionTypes.LOGOUT_USER,payload:{}});        
                 alert('Logged Out');
                 window.location.assign("/");
             }
         },[logout]);
-
 
         return (
             <div style={{alignItems:"center", width:"100%", margin:"auto"}}>

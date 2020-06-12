@@ -5,17 +5,19 @@ import SunTextureBump from "../assets/generalroughbump.jpg"
 import BlueSunTextureURL from "../assets/gas.jpg"
 import {TextureLoader, Vector3} from 'three';
 import axios from 'axios';
-import {useSelector} from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux'
 import Environment from "../components/Planet/Enviroment";
 import windim from "../components/WindowDimensions";
+import * as Common from "../components/Common"
 import "../styles/stylesheet.css"
 
-function GalaxyView(props){   
-    const [posts, setPosts] = useState({});    
+function GalaxyView(props){  
+    const dispatch = useDispatch(); 
+    const [posts, setPosts] = useState([]);    
     const [selectSector, setselectSector] = useState(false);    
     const [selectZoom, setselectZoom] = useState(new Vector3(0,0,5)); 
     const [uniqueSYSPOS, setSYSPOS] = useState([{}]); 
-    var {Galaxy} = props.match.params;     
+    var {Galaxy} = props.match.params??1;     
     const { width } = windim();
     var SYSPOS = ([]); 
     const cam = useRef();  
@@ -24,20 +26,63 @@ function GalaxyView(props){
     var Bump = new TextureLoader().load( SunTextureBump );
     var BlueSunTexture = new TextureLoader().load( BlueSunTextureURL );
     const UserID = useSelector(state => state.user.UserID);
-
-
+    const Galaxy1 = useSelector(state => state.planetTypeReducer.Galaxy1);
+    const Galaxy2 = useSelector(state => state.planetTypeReducer.Galaxy2);
+    const Galaxy3 = useSelector(state => state.planetTypeReducer.Galaxy3);
     
     useEffect(() => {
-        axios.get("http://apicall.starshipfleets.com/Planet/GetGalaxy/" + (Galaxy??1))
-        .then((response) => {
-            setPosts(response.data);            
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
-        .finally(function () {  
-        });
+        if (Galaxy==3)
+        {
+            if (Galaxy3.length==0)
+                Common.GetGalaxy(dispatch, Galaxy);
+            else
+            {
+                setPosts(Galaxy3)
+            }
+        }
+        else if (Galaxy==2)
+        {
+            if (Galaxy2.length==0)
+                Common.GetGalaxy(dispatch, Galaxy); 
+            else
+            {
+                setPosts(Galaxy2)
+            }                
+        }
+        else
+        {
+            if (Galaxy1.length==0)
+                Common.GetGalaxy(dispatch, Galaxy??1);
+            else
+            {
+                setPosts(Galaxy1)
+            }
+        }        
+        // axios.get("http://apicall.starshipfleets.com/Planet/GetGalaxy/" + (Galaxy??1))
+        // .then((response) => {
+        //     setPosts(response.data);            
+        // })
+        // .catch(function (error) {
+        //     console.log(error);
+        // })
+        // .finally(function () {  
+        // });
     },[Galaxy]);
+
+    useEffect(() => {
+        if (Galaxy??1==1)
+            setPosts(Galaxy1);        
+    },[Galaxy1])
+
+    useEffect(() => {
+        if (Galaxy==2)
+            setPosts(Galaxy2);
+    },[Galaxy2])
+
+    useEffect(() => {
+        if (Galaxy==3)
+            setPosts(Galaxy3);
+    },[Galaxy3])
 
     useEffect(() => {
         if (posts.length > 0)
@@ -59,16 +104,8 @@ function GalaxyView(props){
                     SYSPOS.push({xSysPosition: item.xSysPosition, ySysPosition: item.ySysPosition, sector: item.sector, System: item.system, Owner: item.owner});
             })
             setSYSPOS([...new Set(SYSPOS)]);
-            console.log(SYSPOS)
         }
     },[posts]);
-
-    function GetPosition(xposition, yposition, sector)
-    {
-        var xpos = ((((('' +sector).substr(0,1)-5) * 10))/100*2) + (xposition/10000);
-        var ypos = ((((('' +sector).substr(1)-5) * 10))/100*2) + (yposition/10000);
-        return new Vector3(xpos,ypos,0);       
-    }
     
     const SysSphere = (props) => {        
         const position = GetPosition(props.xSysPosition, props.ySysPosition, props.sector); 
@@ -190,6 +227,15 @@ function GalaxyView(props){
 
     function BacktoGalaxy(){
         setselectSector(false);
+    }
+    
+    function GetPosition(xposition, yposition, sector)
+    {        
+        var xpos = xposition/100;
+        var ypos = yposition/100;
+        //var xpos = .82;
+        //var ypos = -.98;
+        return new Vector3(xpos,ypos,0);       
     }
 
     return (

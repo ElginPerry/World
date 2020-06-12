@@ -31,7 +31,9 @@ const PlanetDetailDisplay = (props) => {
     const [resduration, setResDuration] = useState(new Date());
     const [shpduration, setShpDuration] = useState(new Date());
     const [harvestduration, setharvestduration] = useState(new Date());
-    const [ShowHarvestButton, setShowHarvestButton] = useState(false);    
+    const [ShowHarvestButton, setShowHarvestButton] = useState(false); 
+    const [planetFleets, setPlanetFleets] = useState([]);
+       
 
     const planet = useSelector(state => state.planetReducer.Planet);
     const BuildingQueList = useSelector(state => state.planetReducer.buildingQue)
@@ -39,8 +41,11 @@ const PlanetDetailDisplay = (props) => {
     const ShipQueList = useSelector(state => state.planetReducer.shipQue)
     const PlanetStats = useSelector(state => state.planetReducer.planetStats ?? {energy: 0, energyCost: 1, food: 0, infrastructure: 0, mining: 0, populationMax: 0, research: 0} )
     const UserID = useSelector(state => state.user.UserID);
-    const planetFleets = useSelector(state => state.shipReducer.PlanetFleets);
+    const userFleets = useSelector(state => state.shipReducer.UserFleets);
     const ShipDesigns = useSelector(state => state.shipReducer.ShipDesigns);
+    const PlanetList = useSelector(state => state.planetReducer.PlanetList);
+    const [sectorFleets, setsectorFleets] = useState([]);
+    const [sectorPlanets, setsectorPlanets] = useState([]);
 
     useEffect(() => {
         settab(props.tab);
@@ -57,6 +62,15 @@ const PlanetDetailDisplay = (props) => {
     useEffect(() => {
         HarvestButtonDisplay();
     })
+
+    useEffect(() => {
+        setPlanetFleets(userFleets.filter(x => x.planetID == planet.planetID && x.status == 0))
+        setsectorFleets(userFleets.filter(x => x.sector == planet.sector))
+    }, [userFleets,planet])
+
+    useEffect(() => {
+        setsectorPlanets(PlanetList.filter(x => x.sector == planet.sector))
+    },[PlanetList,planet])
 
     useEffect(() => {
         setShpDuration(props.shpduration);
@@ -124,12 +138,18 @@ const PlanetDetailDisplay = (props) => {
     function FormatDate(CompleteDate)
     {
         var ts_hms = new Date(Date.parse(CompleteDate));
-        return ts_hms.getFullYear() + '-' + 
-        ("0" + (ts_hms.getMonth() + 1)).slice(-2) + '-' + 
+        return("0" + (ts_hms.getMonth() + 1)).slice(-2) + '-' + 
         ("0" + (ts_hms.getDate())).slice(-2) + ' ' +
         ("0" + ts_hms.getHours()).slice(-2) + ':' +
         ("0" + ts_hms.getMinutes()).slice(-2) + ':' +
         ("0" + ts_hms.getSeconds()).slice(-2);
+
+        // return ts_hms.getFullYear() + '-' + 
+        // ("0" + (ts_hms.getMonth() + 1)).slice(-2) + '-' + 
+        // ("0" + (ts_hms.getDate())).slice(-2) + ' ' +
+        // ("0" + ts_hms.getHours()).slice(-2) + ':' +
+        // ("0" + ts_hms.getMinutes()).slice(-2) + ':' +
+        // ("0" + ts_hms.getSeconds()).slice(-2);
     }
 
     return (
@@ -144,7 +164,7 @@ const PlanetDetailDisplay = (props) => {
                             far: 1000
                         }}>
                             <Suspense fallback={<group />}>
-                                <Planet planetType={planet.planetType} radius={.3} isDetail={true} />
+                                <Planet planetType={planet.planetType} radius={.3} isDetail={true} isVisible={sectorPlanets.length > 0 || sectorFleets.length > 0 } />
                                 <Lights />
                                 <Environment />
                             </Suspense> 
@@ -305,10 +325,10 @@ const PlanetDetailDisplay = (props) => {
                         </div>
                         <div style={{display:"inline-block"}}>
                             <div style={{padding:"5px",color:"blue"}}>
-                                Barren 
+                                Type 
                             </div>
                             <div style={{boxShadow:"2px 2px 0 0 gray" }}>
-                                {planet.barren ? "True" : "False"}
+                                {sectorPlanets.length > 0 || sectorFleets.length > 0 ? planet.typeName : 'unknown'}
                             </div> 
                         </div>                                   
                     </div>
@@ -414,42 +434,44 @@ const PlanetDetailDisplay = (props) => {
                             </div>
                         </div>
                     </div>
+                    } 
+                </div>
+                <div style={{display:tab == 1 ? "block" : "none" }}>
+                    {planetFleets.length > 0 &&
+                        planetFleets.map((fleet, index) => { 
+                        return(
+                            <div key={"g" + index} style={{width:"100%", textAlign:"center", paddingTop:5 }}>
+                                {index==0 &&
+                                <div style={{fontSize: "10px", paddingBottom: "3px", width:"95%", borderBottom: '1px solid red'}}>
+                                    <div style={{ width: "30%", display:"inline-block"}}>
+                                        Name
+                                    </div>   
+                                    <div style={{ width: "60%", display:"inline-block"}}>
+                                        Material Cost
+                                    </div>  
+                                    <div style={{display:"inline-block", width: "10%"}}>                                                                                
+                                    </div>                                     
+                                </div>
+                                }
+                                {index>=0 &&
+                                <div style={{flex:1 ,width:"95%", paddingBottom: "2px" }}>
+                                    <div style={{fontSize: "10px", display:"inline-block",  width: "30%", textAlign:"center"}}>                                       
+                                            {fleet.fleetName}                                          
+                                    </div>
+                                    <div style={{fontSize: "10px", display:"inline-block",  width: "60%", textAlign:"center"}}>
+                                            {fleet.ships.reduce((sum, ship) => {
+                                                    return sum + ShipDesigns.find( x => x.shipDesignID==ship.designID).materialCost * ship.effectiveNumber},0)}                                       
+                                    </div> 
+                                    <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"green", cursor:"pointer"}}
+                                        onClick={() => CancelShip(fleet.planetID)}>
+                                            {width>450 ? 'Details' : 'D'}                                       
+                                    </div>
+                                </div>
+                                }                                                              
+                            </div>    
+                            ); 
+                        })
                     }
-                    <div>
-                        {planetFleets.length > 0 &&
-                            planetFleets.map((fleet, index) => { 
-                            return(
-                                <div key={"g" + index} style={{width:"100%", textAlign:"center" }}>
-                                    {index==0 &&
-                                    <div style={{fontSize: "10px", paddingBottom: "3px", width:"95%"}}>
-                                        <div style={{ width: "30%", borderBottom: '1px solid red', display:"inline-block"}}>
-                                            Name
-                                        </div>   
-                                        <div style={{ width: "70%", borderBottom: '1px solid red', display:"inline-block"}}>
-                                            Material Cost
-                                        </div>                                       
-                                    </div>
-                                    }
-                                    {index>=0 &&
-                                    <div style={{width:"95%", paddingBottom: "2px" }}>
-                                        <div style={{fontSize: "10px", display:"inline-block",  width: "30%"}}>                                       
-                                                {fleet.fleetName}                                          
-                                        </div>
-                                        <div style={{fontSize: "10px", display:"inline-block",  width: "60%"}}>
-                                                {fleet.ships.reduce((sum, ship) => {
-                                                      return sum + ShipDesigns.find( x => x.shipDesignID==ship.designID).materialCost * ship.effectiveNumber},0)}                                       
-                                        </div> 
-                                        <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"green", cursor:"pointer"}}
-                                            onClick={() => CancelShip(fleet.planetID)}>
-                                                {width>450 ? 'Details' : 'D'}                                       
-                                        </div>
-                                    </div>
-                                    }                                                              
-                                </div>    
-                                ); 
-                            })
-                        }
-                    </div>
                 </div>  
             </div> 
         </div>    

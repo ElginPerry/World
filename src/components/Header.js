@@ -15,14 +15,7 @@ function Header() {
     const { height, width } = windim();
 
     useEffect(()=>{
-        if (ShipDesigns.length ==0)
-        {
-            //GetShipDesigns();
-        }
-        else
-        {
-            //console.log(BuildingStats.length)
-        }
+        //console.log(window.location.href)
     },[UserID])
 
     return (

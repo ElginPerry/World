@@ -28,7 +28,8 @@ function PlanetDetail(props) {
     const PlanetPop = useSelector(state => state.planetReducer.PlanetPop)
     const ResearchStats = useSelector(state => state.planetReducer.ResearchStats);
     const planet = useSelector(state => state.planetReducer.Planet);
-    const planetFleets = useSelector(state => state.shipReducer.PlanetFleets);
+    const UserFleets = useSelector(state => state.shipReducer.UserFleets);
+    const PlanetList = useSelector(state => state.planetReducer.PlanetList);
 
     const dispatch = useDispatch();
     var { planetType, planetID } =  props.match.params;
@@ -48,6 +49,10 @@ function PlanetDetail(props) {
     const [bldName, setbldName] = useState('');
     const [researchName, setresearchName] = useState('');
     const [shipName, setshipName] = useState(''); 
+    const [moveTo, setmoveTo] = useState(false); 
+    const [hulls, setHulls] = useState([]); 
+    const [sectorFleets, setsectorFleets] = useState([]);
+    const [sectorPlanets, setsectorPlanets] = useState([]);
 
     
     useEffect(() => {
@@ -66,6 +71,17 @@ function PlanetDetail(props) {
         }
     },[planetID]);
 
+    useEffect(() => {                
+        axios.get('http://apicall.starshipfleets.com/Ships/GetShipHulls')
+        .then((response) => {            
+            setHulls(response.data);                      
+        })
+        .catch(function (error) {
+        })
+        .finally(function () {  
+        });
+    },[planetID]);
+
     useEffect(() => {
         axios.get('http://apicall.starshipfleets.com/Ships/GetShipDesignbyUser/' + UserID)
         .then((response) => { 
@@ -78,16 +94,23 @@ function PlanetDetail(props) {
     },[planet]); 
 
     useEffect(() => {
-        axios.get('http://apicall.starshipfleets.com/Ships/GetPlanetFleets/' + UserID +'/' + planetID)
+        axios.get('http://apicall.starshipfleets.com/Ships/GetUserFleets/' + UserID)
         .then((response) => { 
-            dispatch({type: ActionTypes.SET_PLANETFLEETS,payload:response.data}); 
-            console.log(response.data)          
+            dispatch({type: ActionTypes.SET_USERFLEETS,payload:response.data}); 
         })
         .catch(function (error) {
         })
         .finally(function () {  
         });
-    },[planet]);     
+    },[planet, ShipQueList]); 
+    
+    useEffect(() => {
+        setsectorFleets(UserFleets.filter(x => x.sector == planet.sector))
+    },[UserFleets], [planet])
+
+    useEffect(() => {
+        setsectorPlanets(PlanetList.filter(x => x.sector == planet.sector))
+    },[PlanetList], [planet])
 
     useEffect(() => {
         if (planet.planetID > 0 && RunBldQueList && planet.owner == UserID)
@@ -208,7 +231,7 @@ function PlanetDetail(props) {
 
             planetStats.energy=Math.round((planetStats.energy+(planetStats.energy*ResearchStats.energy))*100)/100;
             planetStats.energy=Math.round((planetStats.energy+(planetStats.energy*(PlanetPop.energyPop/100)))*100)/100;
-            planetStats.energyPer = planetStats.energy/planetStats.energyCost>1?1:planetStats.energy/planetStats.energyCost;  
+            planetStats.energyPer = Math.round((planetStats.energy/planetStats.energyCost>1?1:planetStats.energy/planetStats.energyCost)*100)/100;  
 
             planetStats.food=Math.round(((((planetStats.food)+(planetStats.food*ResearchStats.food))*planetStats.energyPer)+(planetStats.food*(PlanetPop.foodPop/100)))*100)/100;
 
@@ -268,6 +291,19 @@ function PlanetDetail(props) {
         });
     }
 
+    function BuildingStart(prod, buildingID, mats){       
+        AddBuildingQue(prod, buildingID, mats);
+    }
+
+    function ResearchStart(prod, buildingID, mats){
+        AddResearchQue(prod, buildingID, mats);
+    }
+
+    function ShipStart(prod, buildingID, mats, movement){
+        console.log("Movement :" + movement)
+        AddShipQue(prod, buildingID, mats, movement);
+    }
+
     function AddBuildingQue(prod, buildingID, mats)
     {            
         axios.post('http://apicall.starshipfleets.com/Planet/AddBuildingQueue',
@@ -306,8 +342,9 @@ function PlanetDetail(props) {
         });
     }
 
-    function AddShipQue(prod, buildingID, mats)
-    {            
+    function AddShipQue(prod, buildingID, mats, movement)
+    {         
+        console.log("Movement :" + movement)   
         axios.post('http://apicall.starshipfleets.com/Ships/AddShipQueue',
         {
             PlanetID: planetID,
@@ -315,7 +352,7 @@ function PlanetDetail(props) {
             BuildingID: buildingID,
             Seconds: prod,
             MaterialCost: mats,
-            UpgradeDesignID: 0
+            Movement: movement
         })
         .then((response) => {            
             UpdatePlanet(response.data);            
@@ -325,6 +362,7 @@ function PlanetDetail(props) {
         .finally(function () {  
         });
     }
+
     function UpdatePlanetHarvest(pop, mil, mats)
     {  
         console.log(pop + ":" + mil + ":" + mats)
@@ -369,18 +407,6 @@ function PlanetDetail(props) {
         });
     }
 
-    function BuildingStart(prod, buildingID, mats){       
-        AddBuildingQue(prod, buildingID, mats);
-    }
-
-    function ResearchStart(prod, buildingID, mats){
-        AddResearchQue(prod, buildingID, mats);
-    }
-
-    function ShipStart(prod, buildingID, mats){
-        AddShipQue(prod, buildingID, mats);
-    }
-
     function BuildingQue()
     {
         setRunBldQueList(true);
@@ -388,6 +414,11 @@ function PlanetDetail(props) {
 
     function BacktoSystem(){
         var link = "/SystemView/" + (planet.galaxy??1) + "/" + (planet.sector??'11') + "/" + (planet.system??1);
+        window.location.assign(link);
+    }
+
+    function BacktoGalaxy(){
+        var link = "/GalaxyView/" + (planet.galaxy??1);
         window.location.assign(link);
     }
 
@@ -430,9 +461,8 @@ function PlanetDetail(props) {
             Population: 3,
             Materials: 25
         })
-        .then((response) => {            
-            dispatch({type: ActionTypes.SET_PLANET,payload:response.data});
-            setPlanetOwner(response.data.owner); 
+        .then((response) => {  
+            UpdatePlanet(response.data)
         })
         .catch(function (error) {
         })
@@ -440,12 +470,44 @@ function PlanetDetail(props) {
         });
     }
     
+    function selectMoveTo()
+    {
+        setmoveTo(true)
+    }
+
+    function HideFleets()
+    {
+        setmoveTo(false)
+    }
+
+    function SelectFleet(fleetID)
+    {
+        alert(fleetID)
+    }
+
+    function Distance(fleet)
+    {
+        var xdis = Math.pow(fleet.xSysPosition-planet.xSysPosition,2)
+        var ydis = Math.pow(fleet.ySysPosition-planet.ySysPosition,2)
+        return Math.round((Math.sqrt(xdis+ydis))*10)/10
+    }
+
+    function Movement(fleet)
+    {
+        return Math.min(...fleet.ships.map(o => o.movement));        
+    }
+    
     return (
-        <div style={{height:"100%", width:"100%", textAlign: "center", color: "white"}} >
-            <div style={{ height:"90%", width:"100%", verticalAlign:"top", backgroundColor:'black',
+        <div style={{height:"90%", width:"100%", textAlign: "center", color: "white"}} >
+            <div style={{ height:"100%", width:"100%", verticalAlign:"top", backgroundColor:'black',
                 padding:"10px", fontWeight:"bold", textAlign: "center", overflow: "auto"}}>
                 <div style={{padding: "5px"}}>
-                    <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "#228B22", cursor: "pointer"}} onClick={() => BacktoSystem()}>System</div>
+                    <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "mediumblue", cursor: "pointer"}} onClick={() => selectMoveTo()}>
+                        Move To
+                    </div>
+                    <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "#228B22", cursor: "pointer"}} onClick={() => BacktoSystem()}>
+                        {width>500 ? 'System' : 'S'}
+                    </div>
                     <div style={{width:"100px", padding: "5px", fontSize: "12px", display: "inline-block", cursor: "pointer", title: "Back to System"}} onClick={ChangeName}>
                         {planet.planetName??'NA'}
                     </div>
@@ -457,6 +519,9 @@ function PlanetDetail(props) {
                         <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "mediumblue", cursor: "pointer"}} 
                         onClick={() => Colonize()}>Colonize</div>
                     }
+                    <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "#228B22", cursor: "pointer"}} onClick={() => BacktoGalaxy()}>
+                        {width>500 ? 'Galaxy' : 'G'}
+                    </div>
                 </div>
                 {PlanetOwner == UserID &&
                     <div className={tab==1?"tab-button-Active":"tab-button-Inactive"} onClick={() => ChangeTab(1)}>
@@ -505,7 +570,67 @@ function PlanetDetail(props) {
                     </div>
                     }
                 </div>                 
-            </div>            
+            </div>
+
+            <div className="popupShips" style={{display:moveTo ? 'block' : 'none', backgroundColor:'gray', border: '1px solid blue', 
+            overflow:"auto", fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}}>
+                {UserFleets.length > 0 &&
+                    UserFleets.filter(x => x.planetID != planetID).map((fleet, index) => { 
+                    return(
+                        <div key={"g" + index} style={{width:"100%", textAlign:"center", paddingTop:5 }}>
+                            {index==0 &&
+                            <div style={{fontSize: "10px", paddingBottom: "3px", width:"95%", borderBottom: '1px solid red'}}>
+                                <div style={{ width: "25%", display:"inline-block"}}>
+                                    Name
+                                </div>   
+                                <div style={{ width: "20%", display:"inline-block"}}>
+                                    Material Cost
+                                </div>  
+                                <div style={{ width: "20%", display:"inline-block"}}>
+                                    Distance
+                                </div>
+                                <div style={{ width: "25%", display:"inline-block"}}>
+                                    Time
+                                </div>                                  
+                                <div style={{display:"inline-block", width: "10%"}}>                                                                                
+                                </div>                                     
+                            </div>
+                            }
+                            {index>=0 &&
+                            <div style={{flex:1 ,width:"95%", paddingBottom: "2px" }}>
+                                <div style={{fontSize: "10px", display:"inline-block",  width: "25%", textAlign:"center"}}>                                       
+                                        {fleet.fleetName}                                          
+                                </div>
+                                <div style={{fontSize: "10px", display:"inline-block",  width: "20%", textAlign:"center"}}>
+                                        {fleet.ships.reduce((sum, ship) => {
+                                                return sum + ShipDesigns.find( x => x.shipDesignID==ship.designID).materialCost * ship.effectiveNumber},0)}                                       
+                                </div>
+                                <div style={{fontSize: "10px", display:"inline-block",  width: "20%", textAlign:"center"}}>
+                                        {Distance(fleet)}                                       
+                                </div>
+                                <div style={{fontSize: "10px", display:"inline-block",  width: "25%", textAlign:"center"}}>
+                                        {Movement(fleet)>0? Math.round(Distance(fleet)/Movement(fleet)): 'NA'}                                       
+                                </div>                                 
+                                <div style={{fontSize: "10px", display:Movement(fleet)>0?"inline-block":"none",  width: "10%", backgroundColor:"green", cursor:"pointer"}}
+                                    onClick={() => SelectFleet(fleet.planetID)}>
+                                        {width>450 ? 'Select' : 'S'}                                       
+                                </div>
+                                <div style={{fontSize: "10px", display:Movement(fleet)>0?'none':"inline-block",  width: "10%", backgroundColor:"red"}}>
+                                        NA                                      
+                                </div>
+                            </div>
+                            }
+                        </div>    
+                        ); 
+                    })
+                } 
+                <div>
+                    <div style={{textAlign: "center", width:"100%", padding: "15px"}} onClick={() => HideFleets()}>
+                        CLOSE
+                    </div>
+                </div> 
+            </div>
+
         </div>
     );
   }

@@ -41,7 +41,7 @@ const PlanetTypeDetail = (props) => {
                             far: 1000
                         }}>
                             <Suspense fallback={<group />}>
-                                <Planet planetType={planetType} radius={.3} isDetail={true} />
+                                <Planet planetType={planetType} radius={.3} isDetail={true} isVisible={true} />
                                 <Lights />
                                 <Environment />
                             </Suspense> 

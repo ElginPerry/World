@@ -42,29 +42,34 @@ function ShipDisplay(props) {
 
     function canBuild(design)
     {
-        if (
-            design.materialCost
-            <
-            Math.round(planet.materials*100)/100
-            &&
-            design.militaryCost
-            <=
-            planet.military
-            &&
-            BuildingStats.find( x => x.buildingID == 7).bldLevel 
-            >=
-            design.shipYardLevel
-        )
-        {    
-            if (ShipQueList.length >= 4)
-            {
-                return false
+        if (BuildingStats.length>0)
+        {
+            if (
+                design.materialCost
+                <
+                Math.round(planet.materials*100)/100
+                &&
+                design.militaryCost
+                <=
+                planet.military
+                &&
+                BuildingStats.find( x => x.buildingID == 7).bldLevel 
+                >=
+                design.shipYardLevel
+            )
+            {    
+                if (ShipQueList.length >= 4)
+                {
+                    return false
+                }
+                else
+                    return true
             }
             else
-                return true
+                return false
         }
         else
-            return false    
+            return false  
     }
 
     function getTechName(techID)
@@ -135,6 +140,7 @@ function ShipDisplay(props) {
                                                 Math.round(design.materialCost/props.GetCon())
                                              , design.shipDesignID
                                              , design.materialCost
+                                             , design.movement
                                              )
                                              }>
                                             {width>450 ? 'Build' : ' + '}

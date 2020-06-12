@@ -69,34 +69,33 @@ const FocusDisplay = (props) => {
 
     function NewStats()
     {
+        BuildingStats.map((BLG, index) =>
+        {
+            planetStats.energy=planetStats.energy+(BLG.energy*BLG.bldLevel);
+            planetStats.energyCost=planetStats.energyCost+(BLG.energyCost*BLG.bldLevel);
+            planetStats.food=planetStats.food+(BLG.food*BLG.bldLevel);
+            planetStats.infrastructure=planetStats.infrastructure+(BLG.infrastructure*BLG.bldLevel);
+            planetStats.militaryMax=planetStats.militaryMax+(BLG.military*BLG.bldLevel);
+            planetStats.mining=planetStats.mining+(BLG.mining*BLG.bldLevel);
+            planetStats.populationMax=planetStats.populationMax+(BLG.populationMax*BLG.bldLevel);
+            planetStats.research=planetStats.research+(BLG.research*BLG.bldLevel);
+            planetStats.tradeRoutes=planetStats.tradeRoutes+(BLG.tradeRoutes*BLG.bldLevel);
+        })  
 
-            BuildingStats.map((BLG, index) =>
-            {
-                planetStats.energy=planetStats.energy+(BLG.energy*BLG.bldLevel);
-                planetStats.energyCost=planetStats.energyCost+(BLG.energyCost*BLG.bldLevel);
-                planetStats.food=planetStats.food+(BLG.food*BLG.bldLevel);
-                planetStats.infrastructure=planetStats.infrastructure+(BLG.infrastructure*BLG.bldLevel);
-                planetStats.militaryMax=planetStats.militaryMax+(BLG.military*BLG.bldLevel);
-                planetStats.mining=planetStats.mining+(BLG.mining*BLG.bldLevel);
-                planetStats.populationMax=planetStats.populationMax+(BLG.populationMax*BLG.bldLevel);
-                planetStats.research=planetStats.research+(BLG.research*BLG.bldLevel);
-                planetStats.tradeRoutes=planetStats.tradeRoutes+(BLG.tradeRoutes*BLG.bldLevel);
-            })  
+        planetStats.energy=Math.round((planetStats.energy+(planetStats.energy*ResearchStats.energy))*100)/100;
+        planetStats.energy=Math.round((planetStats.energy+(planetStats.energy*(pops.energyPop/100)))*100)/100;
+        planetStats.energyPer = Math.round((planetStats.energy/planetStats.energyCost>1?1:planetStats.energy/planetStats.energyCost)*100)/100;  
 
-            planetStats.energy=Math.round((planetStats.energy+(planetStats.energy*ResearchStats.energy))*100)/100;
-            planetStats.energy=Math.round((planetStats.energy+(planetStats.energy*(pops.energyPop/100)))*100)/100;
-            planetStats.energyPer = planetStats.energy/planetStats.energyCost>1?1:planetStats.energy/planetStats.energyCost;  
+        planetStats.food=Math.round(((((planetStats.food)+(planetStats.food*ResearchStats.food))*planetStats.energyPer)+(planetStats.food*(pops.foodPop/100)))*100)/100;
+        planetStats.infrastructureMetal=Math.round(((((planetStats.infrastructure)+(planetStats.infrastructure*ResearchStats.infrastructure))*planetStats.energyPer))*100)/100;
+        planetStats.infrastructure=Math.round(((((planetStats.infrastructure)+(planetStats.infrastructure
+            *ResearchStats.infrastructure))*planetStats.energyPer)+(planetStats.infrastructure*(pops.infrastructurePop/100)))*100)/100;
+        planetStats.mining=Math.round(((((planetStats.mining)+(planetStats.mining*ResearchStats.mining))*planetStats.energyPer)+(planetStats.mining*(pops.metalsPop/100)))*100)/100;
+        planetStats.research=Math.round(((((planetStats.research)+(planetStats.research
+            *ResearchStats.research))*planetStats.energyPer)+(planetStats.research*(pops.researchPop/100)))*100)/100;
+        
 
-            planetStats.food=Math.round(((((planetStats.food)+(planetStats.food*ResearchStats.food))*planetStats.energyPer)+(planetStats.food*(pops.foodPop/100)))*100)/100;
-            planetStats.infrastructureMetal=Math.round(((((planetStats.infrastructure)+(planetStats.infrastructure*ResearchStats.infrastructure))*planetStats.energyPer))*100)/100;
-            planetStats.infrastructure=Math.round(((((planetStats.infrastructure)+(planetStats.infrastructure
-                *ResearchStats.infrastructure))*planetStats.energyPer)+(planetStats.infrastructure*(pops.infrastructurePop/100)))*100)/100;
-            planetStats.mining=Math.round(((((planetStats.mining)+(planetStats.mining*ResearchStats.mining))*planetStats.energyPer)+(planetStats.mining*(pops.metalsPop/100)))*100)/100;
-            planetStats.research=Math.round(((((planetStats.research)+(planetStats.research
-                *ResearchStats.research))*planetStats.energyPer)+(planetStats.research*(pops.researchPop/100)))*100)/100;
-            
-
-            setPlanetStats(planetStats);
+        setPlanetStats(planetStats);
     }    
     
     function TotalPops(newValue, oldValue)
@@ -186,7 +185,7 @@ const FocusDisplay = (props) => {
 
     function Reset()
     {
-        setpops(props.PlanetPop);  
+        setpops(PlanetPop);  
     }
 
     return (

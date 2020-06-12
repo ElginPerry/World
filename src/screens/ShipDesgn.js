@@ -1,6 +1,7 @@
 import React, { useEffect, useState} from 'react';
 import axios from 'axios';
 import windim from "../components/WindowDimensions";
+import * as Common from "../components/Common"
 import {useSelector, useDispatch} from 'react-redux'
 import imgQuestion from '../assets/Question.png';
 import "../styles/stylesheet.css"
@@ -9,11 +10,11 @@ function PlanetList() {
     const ResearchTypes = useSelector(state => state.planetReducer.ResearchTypes)
     const BuildingStats = useSelector(state => state.planetReducer.BuildingStats)
     const ResearchStats = useSelector(state => state.planetReducer.ResearchStats)
+    const Hulls = useSelector(state => state.shipReducer.ShipHulls)
+    const Pods = useSelector(state => state.shipReducer.ShipPods)
     const UserID = useSelector(state => state.user.UserID);
     const [Shippopup, setShipPopup] = useState(false);
     const [Hullpopup, setHullPopup] = useState(false);
-    const [Hulls, setHulls] = useState([]);    
-    const [Pods, setPods] = useState([]);    
     const [displayPod, setdisplayPod] = useState({});    
     const [displayHull, setdisplayHull] = useState({}); 
     const [shipyardNeeded, setshipyardNeeded] = useState(0); 
@@ -25,34 +26,22 @@ function PlanetList() {
     const [designName, setdesignName] = useState('')
     const [updateDesign, setupdateDesign] = useState({})
     const { width } = windim(); 
+    const dispatch = useDispatch();
 
-    useEffect(() => {                
-        axios.get('http://apicall.starshipfleets.com/Ships/GetShipHulls')
-        .then((response) => {            
-            setHulls(response.data);                      
-        })
-        .catch(function (error) {
-        })
-        .finally(function () {  
-        });
+    useEffect(() => {   
+        if (Hulls.length==0)
+            Common.GetShipHulls(dispatch);            
     },[UserID]);
 
-    useEffect(() => {                
-        axios.get('http://apicall.starshipfleets.com/Ships/GetShipPods')
-        .then((response) => { 
-            setPods(response.data);            
-        })
-        .catch(function (error) {
-        })
-        .finally(function () {  
-        });
+    useEffect(() => {   
+        if (Pods.length==0)             
+            Common.GetShipPods(dispatch);
     },[UserID]);
 
     useEffect(() => {                
         axios.get('http://apicall.starshipfleets.com/Ships/GetShipDesignbyUser/' + UserID)
         .then((response) => { 
-            setcurrentDesigns(response.data);
-            console.log(response.data)            
+            setcurrentDesigns(response.data);    
         })
         .catch(function (error) {
         })
@@ -110,6 +99,7 @@ function PlanetList() {
                 if (newShipYard < apod.buildingLevel)
                     newShipYard = apod.buildingLevel        
             })
+            newStats.movement= Math.round((newStats.movement/activeHull.hull)*100)/100
             setbuildStats(Object.assign({},newStats));
             newStats.armor= newStats.armor+(newStats.armor*ResearchStats.armor);
             newStats.energy= newStats.energy+(newStats.energy*ResearchStats.energy);
@@ -133,6 +123,8 @@ function PlanetList() {
         setactivePods([]);
         setactiveHull({});
         setshipyardNeeded(0);
+        setdesignName('')
+        SelectDesign(0)
     }
 
     function SelectHull(hullID)
@@ -142,7 +134,7 @@ function PlanetList() {
         setdesignName(Hulls.find(x => x.hullID==hullID).hullName)
         if (hullID != updateDesign.hullID)
         {
-            setupdateDesign({})
+            SelectDesign(0)
         }
     }
 
@@ -155,12 +147,12 @@ function PlanetList() {
         else
         {
             const design = currentDesigns.find(x => x.shipDesignID == designID);
-            design.armor= design.armor+(design.armor*ResearchStats.armor);
-            design.energy= design.energy+(design.energy*ResearchStats.energy);
-            design.laser= design.laser+(design.laser*ResearchStats.laser);
-            design.missile= design.missile+(design.missile*ResearchStats.missile);
-            design.plasma= design.plasma+(design.plasma*ResearchStats.plasma);
-            design.shields= design.shields+(design.shields*ResearchStats.shields);
+            design.armor= Math.round((design.armor+(design.armor*ResearchStats.armor))*100)/100;
+            design.energy= Math.round((design.energy+(design.energy*ResearchStats.energy))*100)/100;
+            design.laser= Math.round((design.laser+(design.laser*ResearchStats.laser))*100)/100;
+            design.missile= Math.round((design.missile+(design.missile*ResearchStats.missile))*100)/100;
+            design.plasma= Math.round((design.plasma+(design.plasma*ResearchStats.plasma))*100)/100;
+            design.shields=Math.round(( design.shields+(design.shields*ResearchStats.shields))*100)/100;
             setupdateDesign(design)            
         }
     }
@@ -279,33 +271,37 @@ function PlanetList() {
         }
         else
         {
-            axios.post('http://apicall.starshipfleets.com/Ships/AddShipDesigns',
-            {
-                UserID:UserID,
-                DesignName:designName,
-                HullID: activeHull.hullID,
-                ShipYardLevel: shipyardNeeded,
-                MaterialCost: buildStats.materialCost,
-                MilitaryCost: buildStats.militaryCost,
-                Laser: buildStats.laser,
-                Energy: buildStats.energy,
-                EnergyCost: buildStats.energyCost,
-                Missile: buildStats.missile,
-                Plasma: buildStats.plasma,
-                Shields: buildStats.shields,
-                Armor: buildStats.armor,
-                Bays: buildStats.bays,
-                Movement: buildStats.movement
-            })
-            .then((response) => {            
-                console.log(response.data);  
-                CalcPodNum(response.data)                    
-            })
-            .catch(function (error) {
-            })
-            .finally(function () {  
-            });
+
         }
+        axios.post('http://apicall.starshipfleets.com/Ships/AddShipDesigns',
+        {
+            UserID:UserID,
+            DesignName:designName,
+            HullID: activeHull.hullID,
+            ShipYardLevel: shipyardNeeded,
+            MaterialCost: buildStats.materialCost,
+            MilitaryCost: buildStats.militaryCost,
+            Laser: buildStats.laser,
+            Energy: buildStats.energy,
+            EnergyCost: buildStats.energyCost,
+            Missile: buildStats.missile,
+            Plasma: buildStats.plasma,
+            Shields: buildStats.shields,
+            Armor: buildStats.armor,
+            Bays: buildStats.bays,
+            Movement: buildStats.movement
+        })
+        .then((response) => {
+            setcurrentDesigns(response.data);            
+            console.log(response.data);
+            const shipDesignID = Math.max(...response.data.map(o => o.shipDesignID));  
+            CalcPodNum(shipDesignID)
+            Reset()                    
+        })
+        .catch(function (error) {
+        })
+        .finally(function () {  
+        });
     }
 
     function CalcPodNum(ShipDesignID)
@@ -380,7 +376,7 @@ function PlanetList() {
                         </div> 
                         <div  style={{ flex:1, width:120, height:30, padding: "5px", cursor: "pointer", display: "inline-block"}}>
                             <select  style={{width:120}} onChange={(e) => SelectDesign(e.target.value)}>
-                                <option value="0">Upgrade Design</option>
+                                <option value="0">Compare Design</option>
                                 {currentDesigns.map((cd, index) => <option key={cd.shipDesignID} value={cd.shipDesignID}>{cd.designName}</option>)}
                             </select>
                         </div>                                                               

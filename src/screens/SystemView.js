@@ -27,12 +27,17 @@ import PlanetTextureURL10 from "../assets/jupitermap.jpg"
 import PlanetTextureBump10 from "../assets/jupitermap.jpg"
 import PlanetTextureURL11 from "../assets/plutomap1k.jpg"
 import PlanetTextureBump11 from "../assets/venusbump.jpg"
+import PlanetTextureURL0 from "../assets/uranusmap.jpg"
 import "../styles/stylesheet.css"
 
 function SectorView(props){ 
     const [posts, setPosts] = useState({});    
     const UserID = useSelector(state => state.user.UserID);
+    const userFleets = useSelector(state => state.shipReducer.UserFleets);
+    const PlanetList = useSelector(state => state.planetReducer.PlanetList);
     const [uniqueSystem, setSystems] = useState([]);
+    const [sectorFleets, setsectorFleets] = useState([]);
+    const [sectorPlanets, setsectorPlanets] = useState([]);
     const { height, width } = windim();
     const Textures = [{Texture : PlanetTextureURL1, Bump: PlanetTextureBump1, Position: new Vector3(-1.2,0,0), Radius: .1}
         ,{Texture :PlanetTextureURL2, Bump: PlanetTextureBump2, Position: new Vector3(-.9,0,0), Radius: .1}
@@ -49,9 +54,17 @@ function SectorView(props){
     var {sectorNumber, Galaxy, systemNumber} = props.match.params; 
 
     useEffect(() => {
+        setsectorFleets(userFleets.filter(x => x.sector == sectorNumber))
+    },[userFleets])
+
+    useEffect(() => {
+        setsectorPlanets(PlanetList.filter(x => x.sector == sectorNumber))
+    },[PlanetList])
+
+    useEffect(() => {
         axios.get("http://apicall.starshipfleets.com/Planet/GetSystem/" + (Galaxy??1) + "/" + (sectorNumber??'11') + '/' + (systemNumber??1))
         .then((response) => {
-            setPosts(response.data);                        
+            setPosts(response.data);                                    
         })
         .catch(function (error) {
             console.log(error);
@@ -64,6 +77,7 @@ function SectorView(props){
         if (posts.length > 0)
         {
             setSystems(posts.filter(x => x.system == (systemNumber??1)));
+            console.log(posts.filter(x => x.system == (systemNumber??1)))
         }
     },[posts]);
 
@@ -107,10 +121,14 @@ function SectorView(props){
             React.createRef(), React.createRef(), React.createRef(), React.createRef(),
             React.createRef(), React.createRef(), React.createRef(), React.createRef(), 
             React.createRef(), React.createRef(), React.createRef(), React.createRef()]);
+        console.log(props.planet.moon)    
         const position = GetPosition(props.planet.position, props.planet.subPosition);
-        const [planetTexture, Bump] = useLoader( TextureLoader, [Textures[props.planet.planetType].Texture, Textures[props.planet.planetType].Bump]);
+        var texture = sectorPlanets.length > 0 || sectorFleets.length > 0  ? Textures[props.planet.planetType].Texture : PlanetTextureURL0
+        var bump = sectorPlanets.length > 0 || sectorFleets.length > 0 ? Textures[props.planet.planetType].Bump : PlanetTextureURL0
+        const [planetTexture, Bump] = useLoader( TextureLoader, [texture, bump]);
         const radius = props.planet.subPosition == 1 ? .1 : .05;
-        useFrame(({ clock }) => (refs.current[props.index].current.rotation.y = clock.getElapsedTime() / 4) * Math.PI); 
+        var speed = props.planet.moon ? 2 : 8
+        useFrame(({ clock }) => (refs.current[props.index].current.rotation.y = clock.getElapsedTime() / speed) * Math.PI); 
         return (             
             <mesh   ref={refs.current[props.index]}                    
                     position={position}  onClick={(sectorNumber) => PlanetClick(props.planet.planetID)}>  
@@ -179,9 +197,14 @@ function SectorView(props){
     }
 
     return (
-        <div style={{height:"90%", width:"100%", textAlign: "center"}} >
-            <div className="button" onClick={BacktoGalaxy} >
-                    Back to Galaxy
+        <div style={{height:"90%", width:"100%", textAlign: "center"}}>
+            <div>
+                <div className="button" onClick={BacktoGalaxy} style={{display:"inline-block"}}>
+                        Back to Galaxy
+                </div>
+                <div onClick={BacktoGalaxy} style={{display:"inline-block", color:"gold"}}>
+                        -- Gal:{Galaxy} Sec:{sectorNumber} Sys:{systemNumber} --
+                </div>
             </div>
             <div style={{height:"75%", width:"95%", borderWidth:"2", borderColor:"black", display:"inline-block"}}>        
                 <Canvas 

@@ -16,7 +16,7 @@ const user = (state = defaultState, {type, payload}) => {
     switch (type) {
         case ActionTypes.LOGOUT_USER:
             return {
-                ...state, ...defaultState
+                ...defaultState
             }
         case ActionTypes.LOGIN_USER:
             return {

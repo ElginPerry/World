@@ -27,7 +27,7 @@ const ConfigureStore = (persistedState) => {
 // const ConfigureStore = () => {
 //     const store = createStore(
 //         combineReducers({
-//             user,planetTypeReducer,planetReducer
+//             user,planetTypeReducer,planetReducer,shipReducer
 //         }),
 //         applyMiddleware(thunk, logger),
 //     )

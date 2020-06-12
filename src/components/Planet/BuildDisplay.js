@@ -74,7 +74,7 @@ function BuildDisplay(props) {
         padding:"20px", backgroundColor:"black", fontWeight:"bold", textAlign: "center", overflow: "auto"}}>
             <div style={{width:"100%", paddingLeft: "5px"}}>
                 {BuildingStats.length > 0 &&
-                    BuildingStats.map((building, index) => { 
+                    BuildingStats.filter(x => x.showFlag).map((building, index) => { 
                         return(
                             <div key={"g" + index}>
                                 {index==0 &&
@@ -109,13 +109,13 @@ function BuildDisplay(props) {
                                         {building.populationCost}
                                     </div> 
                                     <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px", borderBottom: '1px solid blue'}}>
-                                        {building.materialCost+((building.bldLevel+building.quedLevel)*building.materialCost*2.5)}
+                                        {building.materialCost+((building.quedLevel*2)*building.materialCost*2.5)}
                                     </div>  
                                     <div style={{display: "inline-block", width: "25%", fontSize: width>450 ? "12px" : "10px", paddingRight: "5px", borderBottom: '1px solid blue'}}>
                                         {
                                             durDisplay(
-                                                Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())<30?30:
-                                                Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())
+                                                Math.round(((building.productionCost+((building.quedLevel*2)*building.productionCost))*15)/props.GetCon())<30?30:
+                                                Math.round(((building.productionCost+((building.quedLevel*2)*building.productionCost))*15)/props.GetCon())
                                             )
                                         }
                                     </div>
@@ -126,10 +126,10 @@ function BuildDisplay(props) {
                                          fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} 
                                          onClick={() => 
                                              props.BuildingStart(
-                                                 Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())<30?30:
-                                                 Math.round(((building.productionCost+((building.bldLevel+building.quedLevel)*building.productionCost))*15)/props.GetCon())
+                                                 Math.round(((building.productionCost+((building.quedLevel*2)*building.productionCost))*15)/props.GetCon())<30?30:
+                                                 Math.round(((building.productionCost+((building.quedLevel*2)*building.productionCost))*15)/props.GetCon())
                                              , building.buildingID
-                                             ,building.materialCost+((building.bldLevel+building.quedLevel)*building.materialCost*2.5)
+                                             ,building.materialCost+((building.quedLevel*2)*building.materialCost*2.5)
                                              )
                                              }>
                                             {width>450 ? 'Build' : ' + '}

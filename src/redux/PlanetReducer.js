@@ -3,6 +3,7 @@ import * as ActionTypes from './ActionTypes'
 const defaultState = {
     Planet: {planetID: null, planetType: null, planetName: null, position: null, subPosition: null, population: null, military: null,
         galaxy: null, sector: null, system: null, sysPosition: null, moon: null, owner: null },
+    PlanetList: [],    
     buildingQue: [],
     shipQue: [],
     researchQue: [],
@@ -10,6 +11,7 @@ const defaultState = {
     BuildingStats:[],
     ResearchTypes:[],
     ResearchStats:[],
+    UserPlanets:[],
     PlanetPop:{metalsPop:0, researchPop:0, foodPop:0, energyPop:0, infrastructurePop:0, infrastructureMetalPop:0}     
 }
 
@@ -17,6 +19,10 @@ const defaultState = {
 // This is an example
 const planetReducer = (state = defaultState, {type, payload}) => {
     switch (type) {
+        case ActionTypes.LOGOUT_USER:
+            return {
+                ...defaultState
+            }
         case ActionTypes.SET_PLANET:
             return {
                 ...state,                
@@ -63,6 +69,10 @@ const planetReducer = (state = defaultState, {type, payload}) => {
             case ActionTypes.SET_PLANETPOP:
                 return {...state, 
                     PlanetPop:payload
+                }
+            case ActionTypes.SET_PLANETLIST:
+                return {...state,
+                    PlanetList:payload 
                 }
         default:
             return state

@@ -57,7 +57,7 @@ function PlanetTypes() {
                 }}>
                     <Suspense fallback={<group />}>
                         {Textures.map((texture, index) => {
-                            return(<Planet key={index} planetType={index} radius={texture.radius} setPlanet={SetPlanet} />);
+                            return(<Planet key={index} planetType={index} radius={texture.radius} setPlanet={SetPlanet} isVisible={true} />);
                         })}
                         <Lights />
                         <Environment />

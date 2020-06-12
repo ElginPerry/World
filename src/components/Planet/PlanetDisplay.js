@@ -1,8 +1,10 @@
-    import React, {useRef} from "react";
+    import React, {useRef, useState, useEffect} from "react";
+    import {useSelector, useDispatch} from 'react-redux'
     import {
         TextureLoader,
         Vector3
-    } from 'three';    
+    } from 'three'; 
+    import { useLoader, useFrame } from 'react-three-fiber'   
     import PlanetTextureURL1 from "../../assets/gas.jpg"
     import PlanetTextureBump1 from "../../assets/gas.jpg"
     import PlanetTextureURL2 from "../../assets/gasred.jpg"
@@ -25,9 +27,10 @@
     import PlanetTextureBump10 from "../../assets/jupitermap.jpg"
     import PlanetTextureURL11 from "../../assets/plutomap1k.jpg"
     import PlanetTextureBump11 from "../../assets/plutomap1k.jpg"
-    import { useLoader, useFrame } from 'react-three-fiber'
+    import PlanetTextureURL0 from "../../assets/uranusmap.jpg"    
 
-    const PlanetDisplay = (props) => {   
+    const PlanetDisplay = (props) => { 
+      
         const Textures = [{Texture : PlanetTextureURL1, Bump: PlanetTextureBump1, Position: new Vector3(-.3,.6,0), Radius: .1}
             ,{Texture :PlanetTextureURL2, Bump: PlanetTextureBump2, Position: new Vector3(0,.6,0), Radius: .1}
             ,{Texture : PlanetTextureURL3, Bump: PlanetTextureBump3, Position: new Vector3(.3,.6,0), Radius: .1}
@@ -41,7 +44,8 @@
             ,{Texture :PlanetTextureURL11, Bump: PlanetTextureBump11, Position: new Vector3(.2,-.6,0), Radius: .1}];
 
         const mesh = useRef();    
-        const isDetail = props.isDetail ?? false;
+        const isDetail = props.isDetail ?? false;        
+        const isVisible = props.isVisible ?? false;        
         const PlanetType = props.planetType ?? 2;
         const radius = !isDetail ? .1 : .7;
         
@@ -52,7 +56,9 @@
             }
         };
 
-        const [planetTexture, Bump] = useLoader( TextureLoader, [Textures[PlanetType].Texture, Textures[PlanetType].Bump]);
+        var texture = isVisible ? Textures[PlanetType].Texture : PlanetTextureURL0
+        var bump = isVisible ? Textures[PlanetType].Bump : PlanetTextureURL0        
+        const [planetTexture, Bump] = useLoader( TextureLoader, [texture, bump]);
         useFrame(({ clock }) => (mesh.current.rotation.y = clock.getElapsedTime() / 4) * Math.PI);   
     
         return (
