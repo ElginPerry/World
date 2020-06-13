@@ -63,3 +63,55 @@ export const GetGalaxy = function(dispatch, GalaxyID)
     .finally(function () {  
     });
 }
+
+export const GetFleets = function(dispatch,UserID)
+{
+    axios.get('http://apicall.starshipfleets.com/Ships/GetUserFleets/' + UserID)
+    .then((response) => { 
+        dispatch({type: ActionTypes.SET_USERFLEETS,payload:response.data}); 
+    })
+    .catch(function (error) {
+    })
+    .finally(function () {  
+    });
+}
+
+export const GetUserDesigns = function(dispatch, UserID)
+{
+    axios.get('http://apicall.starshipfleets.com/Ships/GetShipDesignbyUser/' + UserID)
+    .then((response) => { 
+        dispatch({type: ActionTypes.SET_SHIPDESIGNS,payload:response.data});
+    })
+    .catch(function (error) {
+    })
+    .finally(function () {  
+    });
+}
+
+export const MoveFleet = function(dispatch,UserID, FleetID, PlanetID)
+{
+    axios.get('http://apicall.starshipfleets.com/Ships/MoveFleet/' + UserID + '/' + FleetID + '/' + PlanetID)
+    .then((response) => { 
+        dispatch({type: ActionTypes.SET_USERFLEETS,payload:response.data}); 
+    })
+    .catch(function (error) {
+    })
+    .finally(function () {  
+    });
+}
+
+export const durDisplay = function(totalSeconds)
+{
+    var hours = Math.floor(totalSeconds / 3600);
+    totalSeconds %= 3600;
+    var minutes = Math.floor(totalSeconds / 60);
+    var seconds = totalSeconds % 60;
+    return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
+}
+
+function pad(num) {
+    var s = num+"";
+    while (s.length < 2) s = "0" + s;
+    return s;
+}
+

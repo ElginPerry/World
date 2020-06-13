@@ -8,25 +8,8 @@ function BuildTimer(props) {
   const [finishTick, setFinishTick] = useState(false);
   const { width } = windim();
   const [timeLeft, setTimeLeft] = useState(null);  
-  const calculateTimeLeft = () => {  
-    const difference = +date - +new Date();
-    let timeLeftchk = null;
-    if (difference > 0) {
-      timeLeftchk = {
-        d: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        h: Math.floor((difference / (1000 * 60 * 60)) % 24),
-        m: Math.floor((difference / 1000 / 60) % 60),
-        s: Math.floor((difference / 1000) % 60)
-      };
-    }
-    else if (timeLeft)
-    {
-      if (!finishTick)
-        setFinishTick(true);
-    } 
-    return timeLeftchk;
-  };    
-  
+
+
   useEffect(() => {  
     setDate(props.Date); 
   }, [props.Date]);
@@ -39,6 +22,25 @@ function BuildTimer(props) {
     setTimeLeft(calculateTimeLeft());
   },[date]);
 
+  const calculateTimeLeft = () => {  
+    const difference = +date - +new Date();
+    let timeLeftchk = null;
+    if (difference > 0) {
+        timeLeftchk = {
+          d: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          h: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          m: Math.floor((difference / 1000 / 60) % 60),
+          s: Math.floor((difference / 1000) % 60)
+        };
+    }
+    else if (timeLeft)
+    {
+      if (!finishTick)
+        setFinishTick(true);
+    } 
+    return timeLeftchk;
+  };    
+  
   useEffect(() => {
     if (timeLeft)
     {

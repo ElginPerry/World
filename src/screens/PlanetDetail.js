@@ -7,6 +7,7 @@ import ResearchDisplay from "../components/Planet/ResearchDisplay";
 import '../App.css';
 import {useSelector, useDispatch} from 'react-redux'
 import * as ActionTypes from '../redux/ActionTypes'
+import * as Common from "../components/Common"
 import axios from 'axios';
 import windim from "../components/WindowDimensions";
 import imgResearch from '../assets/Research.png'
@@ -34,7 +35,7 @@ function PlanetDetail(props) {
     const dispatch = useDispatch();
     var { planetType, planetID } =  props.match.params;
     const [tab, setTab] = useState(1);
-    const [PlanetOwner, setPlanetOwner] = useState(); 
+    //const [PlanetOwner, setPlanetOwner] = useState(); 
     const [Barren, setBarren] = useState(true); 
     const [RunBldQueList, setRunBldQueList] = useState(true); 
     const [PTid, setPTid] = useState(planetType ?? StatePT ?? 2);
@@ -52,7 +53,7 @@ function PlanetDetail(props) {
     const [moveTo, setmoveTo] = useState(false); 
     const [hulls, setHulls] = useState([]); 
     const [sectorFleets, setsectorFleets] = useState([]);
-    const [sectorPlanets, setsectorPlanets] = useState([]);
+    const [sectorPlanets, setsectorPlanets] = useState([]);   
 
     
     useEffect(() => {
@@ -83,25 +84,11 @@ function PlanetDetail(props) {
     },[planetID]);
 
     useEffect(() => {
-        axios.get('http://apicall.starshipfleets.com/Ships/GetShipDesignbyUser/' + UserID)
-        .then((response) => { 
-            dispatch({type: ActionTypes.SET_SHIPDESIGNS,payload:response.data});
-        })
-        .catch(function (error) {
-        })
-        .finally(function () {  
-        });
+        Common.GetUserDesigns(dispatch, UserID)
     },[planet]); 
 
     useEffect(() => {
-        axios.get('http://apicall.starshipfleets.com/Ships/GetUserFleets/' + UserID)
-        .then((response) => { 
-            dispatch({type: ActionTypes.SET_USERFLEETS,payload:response.data}); 
-        })
-        .catch(function (error) {
-        })
-        .finally(function () {  
-        });
+        Common.GetFleets(dispatch,UserID)
     },[planet, ShipQueList]); 
     
     useEffect(() => {
@@ -390,7 +377,7 @@ function PlanetDetail(props) {
     {
         dispatch({type: ActionTypes.SET_PLANET,payload:data});
         setRunBldQueList(true);
-        setPlanetOwner(data.owner);
+        //setPlanetOwner(data.owner);
         setPTid(data.planetType);
         setBarren(data.barren); 
         if (harvestduration != data.lastHarvest)
@@ -429,7 +416,7 @@ function PlanetDetail(props) {
 
     function ChangeName()
     {
-        if (PlanetOwner == UserID)
+        if (planet.owner == UserID)
         {
             alert(planet.planetName);
         }
@@ -480,11 +467,6 @@ function PlanetDetail(props) {
         setmoveTo(false)
     }
 
-    function SelectFleet(fleetID)
-    {
-        alert(fleetID)
-    }
-
     function Distance(fleet)
     {
         var xdis = Math.pow(fleet.xSysPosition-planet.xSysPosition,2)
@@ -495,6 +477,12 @@ function PlanetDetail(props) {
     function Movement(fleet)
     {
         return Math.min(...fleet.ships.map(o => o.movement));        
+    }
+    
+    function SelectFleet(fleet)
+    {
+        Common.MoveFleet(dispatch,UserID, fleet.fleetID, planetID);
+        setmoveTo(false)
     }
     
     return (
@@ -511,11 +499,11 @@ function PlanetDetail(props) {
                     <div style={{width:"100px", padding: "5px", fontSize: "12px", display: "inline-block", cursor: "pointer", title: "Back to System"}} onClick={ChangeName}>
                         {planet.planetName??'NA'}
                     </div>
-                    {PlanetOwner == UserID &&
+                    {planet.owner == UserID &&
                         <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "mediumblue", cursor: "pointer"}} 
                         onClick={() => ChangeTab(5)}>Focus</div>
                     }
-                    {PlanetOwner == 0 && !Barren &&
+                    {planet.owner == 0 && !Barren &&
                         <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "mediumblue", cursor: "pointer"}} 
                         onClick={() => Colonize()}>Colonize</div>
                     }
@@ -523,25 +511,25 @@ function PlanetDetail(props) {
                         {width>500 ? 'Galaxy' : 'G'}
                     </div>
                 </div>
-                {PlanetOwner == UserID &&
+                {planet.owner == UserID &&
                     <div className={tab==1?"tab-button-Active":"tab-button-Inactive"} onClick={() => ChangeTab(1)}>
                         <img className="planetDetailImg" src={imgWorld} alt="Planet" title="Planet" />
                         {width>500 ? 'Planet' : ''}
                     </div>
                 }
-                {PlanetOwner == UserID &&
+                {planet.owner == UserID &&
                     <div className={tab==2?"tab-button-Active":"tab-button-Inactive"} onClick={() => ChangeTab(2)}>
                         <img className="planetDetailImg" src={imgBuildings} alt="Buildings" title="Buildings" />                    
                         {width>500 ? 'Buildings' : ''}
                     </div>
                 }
-                {PlanetOwner == UserID &&
+                {planet.owner == UserID &&
                     <div className={tab==3?"tab-button-Active":"tab-button-Inactive"} onClick={() => ChangeTab(3)}>
                         <img className="planetDetailImg" src={imgResearch} alt="Research" title="Research" />
                         {width>500 ? 'Research' : ''}
                     </div>
                 }
-                {PlanetOwner == UserID &&
+                {planet.owner == UserID &&
                     <div className={tab==4?"tab-button-Active":"tab-button-Inactive"} onClick={() => ChangeTab(4)}>
                         <img className="planetDetailImg" src={imgShips} alt="Ships" title="Ships" />
                         {width>500 ? 'Ships' : ''}
@@ -553,7 +541,7 @@ function PlanetDetail(props) {
                         shpduration={shpduration} shipName={shipName} setshipName={setshipName} setresearchName={setresearchName} setbldName={setbldName} 
                         tab={tab} BuildingQue={BuildingQue} UpdatePlanetHarvest={UpdatePlanetHarvest} harvestduration={harvestduration} GetCon={GetCon}/>
                     </div>
-                    {PlanetOwner == UserID &&
+                    {planet.owner == UserID &&
                     <div>
                         <div style={{display:tab==5?'block':'none'}}>    
                             <FocusDisplay setTab={setTab} bldName={bldName} researchName={researchName} shipName={shipName} />
@@ -575,7 +563,7 @@ function PlanetDetail(props) {
             <div className="popupShips" style={{display:moveTo ? 'block' : 'none', backgroundColor:'gray', border: '1px solid blue', 
             overflow:"auto", fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}}>
                 {UserFleets.length > 0 &&
-                    UserFleets.filter(x => x.planetID != planetID).map((fleet, index) => { 
+                    UserFleets.filter(x => x.planetID != planetID && x.status == 0).map((fleet, index) => { 
                     return(
                         <div key={"g" + index} style={{width:"100%", textAlign:"center", paddingTop:5 }}>
                             {index==0 &&
@@ -609,10 +597,10 @@ function PlanetDetail(props) {
                                         {Distance(fleet)}                                       
                                 </div>
                                 <div style={{fontSize: "10px", display:"inline-block",  width: "25%", textAlign:"center"}}>
-                                        {Movement(fleet)>0? Math.round(Distance(fleet)/Movement(fleet)): 'NA'}                                       
+                                        {Movement(fleet)>0? Common.durDisplay(Math.round(Distance(fleet)/Movement(fleet))): 'NA'}                                       
                                 </div>                                 
                                 <div style={{fontSize: "10px", display:Movement(fleet)>0?"inline-block":"none",  width: "10%", backgroundColor:"green", cursor:"pointer"}}
-                                    onClick={() => SelectFleet(fleet.planetID)}>
+                                    onClick={() => SelectFleet(fleet)}>
                                         {width>450 ? 'Select' : 'S'}                                       
                                 </div>
                                 <div style={{fontSize: "10px", display:Movement(fleet)>0?'none':"inline-block",  width: "10%", backgroundColor:"red"}}>

@@ -10,6 +10,7 @@ import SystemView from './screens/SystemView';
 import NavBar from './components/NavBar';
 import Login from './screens/Login';
 import Header from './components/Header';
+import FleetList from './screens/FleetList';
 
 const Main = () => {
     return (
@@ -24,6 +25,7 @@ const Main = () => {
                     <Route exact path="/GalaxyView/:Galaxy?" component={GalaxyView} />
                     <Route path="/SystemView/:Galaxy?/:sectorNumber?/:systemNumber?" component={SystemView} />
                     <Route exact path="/PlanetList" component={PlanetList} />
+                    <Route exact path="/FleetList" component={FleetList} />
                     <Route exact path="/PlanetTypes" component={PlanetType} />
                     <Route path="/PlanetTypeDetail/:planetType?" component={PlanetTypeDetail} />
                     <Route path="/PlanetView/:planetID?" component={PlanetDetail} />

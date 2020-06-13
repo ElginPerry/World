@@ -24,6 +24,7 @@ function NavBar() {
                             </li>
                             <li className='has-submenu'><a className='prett' href='#' title='Dropdown 1'>Ships</a>
                             <ul className='submenu'>
+                                <li><a href="/FleetList" title="Sub Menu">Fleet List</a></li>
                                 <li><a href="/ShipDesign" title="Sub Menu">Ship Design</a></li>
                             </ul>                    
                             </li>

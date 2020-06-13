@@ -121,7 +121,7 @@ function SectorView(props){
             React.createRef(), React.createRef(), React.createRef(), React.createRef(),
             React.createRef(), React.createRef(), React.createRef(), React.createRef(), 
             React.createRef(), React.createRef(), React.createRef(), React.createRef()]);
-        console.log(props.planet.moon)    
+         
         const position = GetPosition(props.planet.position, props.planet.subPosition);
         var texture = sectorPlanets.length > 0 || sectorFleets.length > 0  ? Textures[props.planet.planetType].Texture : PlanetTextureURL0
         var bump = sectorPlanets.length > 0 || sectorFleets.length > 0 ? Textures[props.planet.planetType].Bump : PlanetTextureURL0
@@ -187,7 +187,7 @@ function SectorView(props){
 
     function CamComponent() {
         const { camera } = useThree()
-        camera.aspect = 1;//width/height; 
+        camera.aspect = 1;
         camera.updateProjectionMatrix();
         return <mesh />
     }
