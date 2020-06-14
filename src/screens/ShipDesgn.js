@@ -2,6 +2,7 @@ import React, { useEffect, useState} from 'react';
 import axios from 'axios';
 import windim from "../components/WindowDimensions";
 import * as Common from "../components/Common"
+import * as Calcs from "../components/Calcs"
 import {useSelector, useDispatch} from 'react-redux'
 import imgQuestion from '../assets/Question.png';
 import "../styles/stylesheet.css"
@@ -36,6 +37,27 @@ function PlanetList() {
     useEffect(() => {   
         if (Pods.length==0)             
             Common.GetShipPods(dispatch);
+    },[UserID]);
+
+    useEffect(() => {
+        if (ResearchTypes.length == 0 )
+        {            
+            Common.GetResearchTypes(dispatch,UserID)
+        }
+    },[UserID]);
+
+     useEffect(() => {
+        if (ResearchStats.length == 0)
+        {
+            Calcs.GetResearchStats(dispatch,ResearchTypes);           
+        }
+    },[ResearchTypes]);
+
+    useEffect(() => {
+        if (BuildingStats.length == 0 )
+        {                       
+            Common.GetBuildingStats(dispatch,-1)
+        }
     },[UserID]);
 
     useEffect(() => {                
@@ -80,7 +102,8 @@ function PlanetList() {
                 bays: 0,
                 movement: 0,
                 plasma: 0,
-                shields: 0,         
+                shields: 0,
+                colony: 0         
             }
 
             activePods.forEach(function(pod) {
@@ -96,6 +119,7 @@ function PlanetList() {
                 newStats.bays= (newStats.bays+apod.bays);
                 newStats.plasma= (newStats.plasma+apod.plasma);
                 newStats.shields= (newStats.shields+apod.shields);
+                newStats.colony= (newStats.colony+apod.colony);
                 if (newShipYard < apod.buildingLevel)
                     newShipYard = apod.buildingLevel        
             })
@@ -289,7 +313,8 @@ function PlanetList() {
             Shields: buildStats.shields,
             Armor: buildStats.armor,
             Bays: buildStats.bays,
-            Movement: buildStats.movement
+            Movement: buildStats.movement,
+            Colony: buildStats.colony
         })
         .then((response) => {
             setcurrentDesigns(response.data);            
@@ -350,14 +375,14 @@ function PlanetList() {
                                 </div>
                                 {ChkTechLevel(pod.techID,pod.techLevel) && ChkMass(pod.shipPodID) &&                            
                                 <div style={{ width:100, color: "white",borderBottom:"1px solid gray", display: "inline-block"}}>
-                                    <div  style={{ height:30,  marginTop: 10, cursor:"pointer"}} onClick={e => PickPod(pod.shipPodID)}> 
+                                    <div  style={{ height:25,  marginTop: 10, cursor:"pointer"}} onClick={e => PickPod(pod.shipPodID)}> 
                                         {pod.podName} 
                                     </div>                                
                                 </div>
                                 }
                                {(!ChkTechLevel(pod.techID,pod.techLevel) || !ChkMass(pod.shipPodID)) &&                           
                                 <div style={{ width:100, color: "red", borderBottom:"1px solid gray", display: "inline-block"}}>
-                                    <div  style={{ height:30,  marginTop: 10}}> 
+                                    <div  style={{ height:25,  marginTop: 10}}> 
                                         {pod.podName} 
                                     </div>                                
                                 </div>
@@ -506,6 +531,14 @@ function PlanetList() {
                         </div>
                         <div>
                             <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
+                                Colony
+                            </div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {designStats.colony}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{width:125,fontSize:"14px", display: "inline-block"}}>
                                 Pods
                             </div>
                             <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
@@ -592,6 +625,11 @@ function PlanetList() {
                         </div>
                         <div>
                             <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
+                                {updateDesign.colony}
+                            </div>
+                        </div>                       
+                        <div>
+                            <div style={{width:120,fontSize:"14px", display: "inline-block", boxShadow:"2px 2px 0 0 gray"}}>
                                 {updateDesign.hullName && activeHull.numPods && activeHull.numPods + "/" + activeHull.numPods}
                             </div>
                         </div>
@@ -631,14 +669,14 @@ function PlanetList() {
                             <div key={index} >                                
                                 {ChkTechLevel(hull.techID,hull.techLevel) &&                            
                                 <div style={{ width:100, color: "white", borderBottom:"1px solid gray", display: "inline-block"}}>
-                                    <div  style={{ height:30,  marginTop: 10, cursor:"pointer"}} onClick={e => SelectHull(hull.hullID)}> 
+                                    <div  style={{ height:25,  marginTop: 10, cursor:"pointer"}} onClick={e => SelectHull(hull.hullID)}> 
                                         {hull.hullName} 
                                     </div>                                
                                 </div>
                                 }
                                {!ChkTechLevel(hull.techID,hull.techLevel) &&                            
                                 <div style={{ width:100, color: "red", borderBottom:"1px solid gray", display: "inline-block"}}>
-                                    <div  style={{ height:30,  marginTop: 10}}> 
+                                    <div  style={{ height:25,  marginTop: 10}}> 
                                         {hull.hullName} 
                                     </div>                                
                                 </div>

@@ -1,4 +1,5 @@
 import * as ActionTypes from '../redux/ActionTypes'
+import * as Calcs from '../components/Calcs'
 import axios from 'axios';
 
 export const  GetShipHulls = function(dispatch)
@@ -113,5 +114,30 @@ function pad(num) {
     var s = num+"";
     while (s.length < 2) s = "0" + s;
     return s;
+}
+
+
+export const GetBuildingStats = function(dispatch, PlanetID)
+{
+    axios.get('http://apicall.starshipfleets.com/Planet/GetBuildingTypes/' + PlanetID)
+    .then((response) => {
+        dispatch({type: ActionTypes.SET_BUILDINGSTATS,payload:response.data});        
+    })
+    .catch(function (error) {
+    })
+    .finally(function () {  
+    });
+}
+
+export const GetResearchTypes = function(dispatch, UserID)
+{
+    axios.get('http://apicall.starshipfleets.com/Research/GetResearchTypes/' + UserID)
+    .then((response) => {
+        dispatch({type: ActionTypes.SET_RESEARCHTYPES,payload:response.data});                
+    })
+    .catch(function (error) {
+    })
+    .finally(function () {  
+    });
 }
 

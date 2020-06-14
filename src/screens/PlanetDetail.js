@@ -8,6 +8,7 @@ import '../App.css';
 import {useSelector, useDispatch} from 'react-redux'
 import * as ActionTypes from '../redux/ActionTypes'
 import * as Common from "../components/Common"
+import * as Calcs from '../components/Calcs'
 import axios from 'axios';
 import windim from "../components/WindowDimensions";
 import imgResearch from '../assets/Research.png'
@@ -31,14 +32,14 @@ function PlanetDetail(props) {
     const planet = useSelector(state => state.planetReducer.Planet);
     const UserFleets = useSelector(state => state.shipReducer.UserFleets);
     const PlanetList = useSelector(state => state.planetReducer.PlanetList);
+    const hulls = useSelector(state => state.shipReducer.ShipHulls);
+    const Pods = useSelector(state => state.shipReducer.ShipPods);
 
     const dispatch = useDispatch();
     var { planetType, planetID } =  props.match.params;
     const [tab, setTab] = useState(1);
-    //const [PlanetOwner, setPlanetOwner] = useState(); 
     const [Barren, setBarren] = useState(true); 
     const [RunBldQueList, setRunBldQueList] = useState(true); 
-    const [PTid, setPTid] = useState(planetType ?? StatePT ?? 2);
     const { width } = windim();
     const [bldduration, setBldDuration] = useState(new Date());
     const [resduration, setResDuration] = useState(new Date());
@@ -50,10 +51,10 @@ function PlanetDetail(props) {
     const [bldName, setbldName] = useState('');
     const [researchName, setresearchName] = useState('');
     const [shipName, setshipName] = useState(''); 
-    const [moveTo, setmoveTo] = useState(false); 
-    const [hulls, setHulls] = useState([]); 
+    const [moveTo, setmoveTo] = useState(false);    
     const [sectorFleets, setsectorFleets] = useState([]);
     const [sectorPlanets, setsectorPlanets] = useState([]);   
+    const [colonyShip, setcolonyShip] = useState(false);   
 
     
     useEffect(() => {
@@ -73,14 +74,13 @@ function PlanetDetail(props) {
     },[planetID]);
 
     useEffect(() => {                
-        axios.get('http://apicall.starshipfleets.com/Ships/GetShipHulls')
-        .then((response) => {            
-            setHulls(response.data);                      
-        })
-        .catch(function (error) {
-        })
-        .finally(function () {  
-        });
+        if (hulls.length==0)
+            Common.GetShipHulls(dispatch);    
+    },[planetID]);
+
+    useEffect(() => {   
+        if (Pods.length==0)             
+            Common.GetShipPods(dispatch);
     },[planetID]);
 
     useEffect(() => {
@@ -93,6 +93,14 @@ function PlanetDetail(props) {
     
     useEffect(() => {
         setsectorFleets(UserFleets.filter(x => x.sector == planet.sector))
+        var colony = 0
+        UserFleets.filter(x => x.planetID == planet.planetID).map((fleet,index)=> {
+            if (Math.max(...fleet.ships.map(o => o.colony)) >colony)
+            {
+                colony = Math.max(...fleet.ships.map(o => o.colony));
+            }            
+        })
+        setcolonyShip(colony>0)
     },[UserFleets], [planet])
 
     useEffect(() => {
@@ -114,74 +122,26 @@ function PlanetDetail(props) {
             .finally(function () {  
             });
         }
-    },[planet, RunBldQueList]); 
+    },[planet, RunBldQueList]);  
 
     useEffect(() => {
         if (planet.planetID > 0 )
         {                       
-            axios.get('http://apicall.starshipfleets.com/Planet/GetBuildingTypes/' + planetID)
-            .then((response) => {
-                dispatch({type: ActionTypes.SET_BUILDINGSTATS,payload:response.data});        
-            })
-            .catch(function (error) {
-            })
-            .finally(function () {  
-            });
+            Common.GetBuildingStats(dispatch,planetID)
         }
     },[BuildingQueList]);
 
     useEffect(() => {
         if (planet.planetID > 0 )
         {            
-            axios.get('http://apicall.starshipfleets.com/Research/GetResearchTypes/' + UserID)
-            .then((response) => {
-                dispatch({type: ActionTypes.SET_RESEARCHTYPES,payload:response.data});                
-            })
-            .catch(function (error) {
-            })
-            .finally(function () {  
-            });
+            Common.GetResearchTypes(dispatch,UserID)
         }
     },[ResearchQueList]);
 
      useEffect(() => {
         if (planet.planetID > 0)
         {
-            var TechStats=
-            {
-                armor: 0,
-                bodyArmor: 0,
-                energy: 0,
-                food: 0,
-                infrastructure: 0,
-                laser: 0,
-                military: 0,
-                mining: 0,
-                missile: 0,
-                plasma: 0,
-                populationMax: 0,
-                research: 0,
-                shields: 0,
-                weapons: 0
-            };
-            ResearchTypes.map((res, index) =>
-            {
-                TechStats.armor=TechStats.armor+(res.armor*res.bldLevel);
-                TechStats.bodyArmor=TechStats.bodyArmor+(res.bodyArmor*res.bldLevel);
-                TechStats.energy=TechStats.energy+(res.energy*res.bldLevel);
-                TechStats.food=TechStats.food+(res.food*res.bldLevel);
-                TechStats.infrastructure=TechStats.infrastructure+(res.infrastructure*res.bldLevel);
-                TechStats.laser=TechStats.laser+(res.laser*res.bldLevel);
-                TechStats.military=TechStats.military+(res.military*res.bldLevel);
-                TechStats.mining=TechStats.mining+(res.mining*res.bldLevel);
-                TechStats.missile=TechStats.missile+(res.missile*res.bldLevel);
-                TechStats.plasma=TechStats.plasma+(res.plasma*res.bldLevel);
-                TechStats.populationMax=TechStats.populationMax+(res.populationMax*res.bldLevel);
-                TechStats.research=TechStats.research+(res.research*res.bldLevel);
-                TechStats.shields=TechStats.shields+(res.shields*res.bldLevel);
-                TechStats.weapons=TechStats.weapons+(res.weapons*res.bldLevel);
-            })
-            dispatch({type: ActionTypes.SET_RESEARCHSTATS,payload:TechStats});            
+            Calcs.GetResearchStats(dispatch,ResearchTypes);           
         }
     },[ResearchTypes]);
 
@@ -189,46 +149,7 @@ function PlanetDetail(props) {
         if (planet.planetID > 0)
         {  
             BuildingQueDisplay();
-            var planetStats=
-            {
-                energy: 0,
-                energyCost: 0,
-                energyPer: 0,
-                food: 0,
-                infrastructure: 0,
-                infrastructureMetal: 0,
-                militaryMax: 0,
-                mining: 0,
-                populationMax: 0,
-                research: 0,
-                tradeRoutes: 0
-            };
-            BuildingStats.map((BLG, index) =>
-            {
-                planetStats.energy=planetStats.energy+(BLG.energy*BLG.bldLevel);
-                planetStats.energyCost=planetStats.energyCost+(BLG.energyCost*BLG.bldLevel);
-                planetStats.food=planetStats.food+(BLG.food*BLG.bldLevel);
-                planetStats.infrastructure=planetStats.infrastructure+(BLG.infrastructure*BLG.bldLevel);
-                planetStats.militaryMax=planetStats.militaryMax+(BLG.military*BLG.bldLevel);
-                planetStats.mining=planetStats.mining+(BLG.mining*BLG.bldLevel);
-                planetStats.populationMax=planetStats.populationMax+(BLG.populationMax*BLG.bldLevel);
-                planetStats.research=planetStats.research+(BLG.research*BLG.bldLevel);
-                planetStats.tradeRoutes=planetStats.tradeRoutes+(BLG.tradeRoutes*BLG.bldLevel);
-            })  
-
-            planetStats.energy=Math.round((planetStats.energy+(planetStats.energy*ResearchStats.energy))*100)/100;
-            planetStats.energy=Math.round((planetStats.energy+(planetStats.energy*(PlanetPop.energyPop/100)))*100)/100;
-            planetStats.energyPer = Math.round((planetStats.energy/planetStats.energyCost>1?1:planetStats.energy/planetStats.energyCost)*100)/100;  
-
-            planetStats.food=Math.round(((((planetStats.food)+(planetStats.food*ResearchStats.food))*planetStats.energyPer)+(planetStats.food*(PlanetPop.foodPop/100)))*100)/100;
-
-            planetStats.infrastructureMetal=Math.round(((((planetStats.infrastructure)+(planetStats.infrastructure*ResearchStats.infrastructure))*planetStats.energyPer))*100)/100;
-            planetStats.infrastructure=Math.round(((((planetStats.infrastructure)+(planetStats.infrastructure*ResearchStats.infrastructure))*planetStats.energyPer)
-                +(planetStats.infrastructure*(PlanetPop.infrastructurePop/100)))*100)/100;
-            planetStats.mining=Math.round(((((planetStats.mining)+(planetStats.mining*ResearchStats.mining))*planetStats.energyPer)+(planetStats.mining*(PlanetPop.metalsPop/100)))*100)/100;
-            planetStats.research=Math.round(((((planetStats.research)+(planetStats.research*ResearchStats.research))*planetStats.energyPer)+(planetStats.research*(PlanetPop.researchPop/100)))*100)/100;
-            
-            dispatch({type: ActionTypes.SET_PLANETSTATS,payload:planetStats});
+            Calcs.GetPlanetStats(dispatch, BuildingStats, PlanetPop, ResearchStats);
         }
     },[ResearchStats, PlanetPop]); 
   
@@ -377,8 +298,7 @@ function PlanetDetail(props) {
     {
         dispatch({type: ActionTypes.SET_PLANET,payload:data});
         setRunBldQueList(true);
-        //setPlanetOwner(data.owner);
-        setPTid(data.planetType);
+        //setPTid(data.planetType);
         setBarren(data.barren); 
         if (harvestduration != data.lastHarvest)
             setharvestduration(new Date(Date.parse(data.lastHarvest)));
@@ -503,7 +423,7 @@ function PlanetDetail(props) {
                         <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "mediumblue", cursor: "pointer"}} 
                         onClick={() => ChangeTab(5)}>Focus</div>
                     }
-                    {planet.owner == 0 && !Barren &&
+                    {planet.owner == 0 && !Barren && colonyShip &&
                         <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "mediumblue", cursor: "pointer"}} 
                         onClick={() => Colonize()}>Colonize</div>
                     }
