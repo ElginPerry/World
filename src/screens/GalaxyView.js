@@ -3,6 +3,7 @@ import { useLoader, Canvas, useThree } from 'react-three-fiber';
 import SunTextureURL from "../assets/Fire2.jpg"
 import SunTextureBump from "../assets/generalroughbump.jpg"
 import BlueSunTextureURL from "../assets/gas.jpg"
+import RedSunTextureURL from "../assets/lava.jpg"
 import {TextureLoader, Vector3} from 'three';
 import axios from 'axios';
 import {useSelector, useDispatch} from 'react-redux'
@@ -24,11 +25,13 @@ function GalaxyView(props){
     const panesPoints = [-.9,-.7,-.5,-.3,-.1,.1,.3,.5,.7,.9]; 
     var SunTexture = new TextureLoader().load( SunTextureURL );
     var Bump = new TextureLoader().load( SunTextureBump );
+    var RedSunTexture = new TextureLoader().load( RedSunTextureURL );
     var BlueSunTexture = new TextureLoader().load( BlueSunTextureURL );
     const UserID = useSelector(state => state.user.UserID);
     const Galaxy1 = useSelector(state => state.planetTypeReducer.Galaxy1);
     const Galaxy2 = useSelector(state => state.planetTypeReducer.Galaxy2);
     const Galaxy3 = useSelector(state => state.planetTypeReducer.Galaxy3);
+    const UserFleets = useSelector(state => state.shipReducer.UserFleets);
     
     useEffect(() => {
         if (Galaxy==3)
@@ -57,16 +60,7 @@ function GalaxyView(props){
             {
                 setPosts(Galaxy1)
             }
-        }        
-        // axios.get("http://apicall.starshipfleets.com/Planet/GetGalaxy/" + (Galaxy??1))
-        // .then((response) => {
-        //     setPosts(response.data);            
-        // })
-        // .catch(function (error) {
-        //     console.log(error);
-        // })
-        // .finally(function () {  
-        // });
+        }   
     },[Galaxy]);
 
     useEffect(() => {
@@ -109,7 +103,8 @@ function GalaxyView(props){
     
     const SysSphere = (props) => {        
         const position = GetPosition(props.xSysPosition, props.ySysPosition, props.sector); 
-        const UseTexture = props.Owner == UserID ? BlueSunTexture : SunTexture;
+        const UseTexture = props.Owner == UserID ? BlueSunTexture :
+            UserFleets.find(x => x.sector == props.sector && x.status == 0 && x.system == props.System) ? RedSunTexture : SunTexture;
         return (             
             <mesh   
                     position={position}  onClick={() => PlanetClick( props.sector, props.System )}>  

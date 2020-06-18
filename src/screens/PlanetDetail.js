@@ -94,7 +94,7 @@ function PlanetDetail(props) {
     useEffect(() => {
         setsectorFleets(UserFleets.filter(x => x.sector == planet.sector))
         var colony = 0
-        UserFleets.filter(x => x.planetID == planet.planetID).map((fleet,index)=> {
+        UserFleets.filter(x => x.planetID == planet.planetID && x.status == 0).map((fleet,index)=> {
             if (Math.max(...fleet.ships.map(o => o.colony)) >colony)
             {
                 colony = Math.max(...fleet.ships.map(o => o.colony));
@@ -298,7 +298,6 @@ function PlanetDetail(props) {
     {
         dispatch({type: ActionTypes.SET_PLANET,payload:data});
         setRunBldQueList(true);
-        //setPTid(data.planetType);
         setBarren(data.barren); 
         if (harvestduration != data.lastHarvest)
             setharvestduration(new Date(Date.parse(data.lastHarvest)));
@@ -396,7 +395,25 @@ function PlanetDetail(props) {
 
     function Movement(fleet)
     {
-        return Math.min(...fleet.ships.map(o => o.movement));        
+        var Bays = 0
+        var Mass = 0
+        {fleet.ships.filter(x => x.hull < 500).map((ship, index) => {
+            Mass = Mass + (ship.hull * ship.effectiveNumber)
+        
+        })}
+
+        {fleet.ships.reduce((sum, ship) => {
+            Bays = sum + ShipDesigns.find( x => x.shipDesignID==ship.designID).bays * ship.effectiveNumber},0)}  
+        console.log(Bays + ":" + Mass)    
+        if (Bays>=Mass)
+        {
+            return Math.min(...fleet.ships.filter(x => x.hull >= 500).map(o => o.movement)); 
+        } 
+        else
+        {
+            return Math.min(...fleet.ships.map(o => o.movement)); 
+        }
+               
     }
     
     function SelectFleet(fleet)
@@ -517,7 +534,9 @@ function PlanetDetail(props) {
                                         {Distance(fleet)}                                       
                                 </div>
                                 <div style={{fontSize: "10px", display:"inline-block",  width: "25%", textAlign:"center"}}>
-                                        {Movement(fleet)>0? Common.durDisplay(Math.round(Distance(fleet)/Movement(fleet))): 'NA'}                                       
+                                        {Movement(fleet)>0? Common.durDisplay(Math.round(Distance(fleet)/Movement(fleet))>=30?
+                                        Math.round(Distance(fleet)/Movement(fleet))
+                                        :30): 'NA'}                                       
                                 </div>                                 
                                 <div style={{fontSize: "10px", display:Movement(fleet)>0?"inline-block":"none",  width: "10%", backgroundColor:"green", cursor:"pointer"}}
                                     onClick={() => SelectFleet(fleet)}>

@@ -1,5 +1,6 @@
 import React, {Suspense, useEffect, useState} from 'react';
 import { Canvas } from "react-three-fiber";
+import ShipDetailDisplay from "../Details/ShipDetailDisplay"
 import Planet from "./PlanetDisplay";
 import Lights from "./Lights";
 import Environment from "./Enviroment";
@@ -29,6 +30,7 @@ const PlanetDetailDisplay = (props) => {
     const { width } = windim();
     const [bldName, setbldName] = useState('');
     const [researchName, setresearchName] = useState('');
+    const [popup, setPopup] = useState(false);
     const [shipName, setshipName] = useState(''); 
     const [bldduration, setBldDuration] = useState(new Date());
     const [resduration, setResDuration] = useState(new Date());
@@ -48,6 +50,8 @@ const PlanetDetailDisplay = (props) => {
     const [sectorFleets, setsectorFleets] = useState([]);
     const [arrivalFleets, setarrivalFleets] = useState([]);
     const [sectorPlanets, setsectorPlanets] = useState([]);
+    const [selectedFleet, setselectedFleet] = useState();
+
     var LastUserFleets = new Date()
 
     useEffect(() => {
@@ -163,6 +167,17 @@ const PlanetDetailDisplay = (props) => {
             LastUserFleets = new Date()
             Common.GetFleets(dispatch, UserID)
         }
+    }
+
+    function ShipInfo(fleet)
+    {
+        setselectedFleet(fleet)
+        setPopup(true)
+    }
+
+    function HideInfo()
+    {
+        setPopup(false)
     }
 
     return (
@@ -476,7 +491,7 @@ const PlanetDetailDisplay = (props) => {
                                                 return sum + ShipDesigns.find( x => x.shipDesignID==ship.designID).materialCost * ship.effectiveNumber},0)}                                       
                                     </div> 
                                     <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"green", cursor:"pointer"}}
-                                        onClick={() => CancelShip(fleet.planetID)}>
+                                        onClick={() => ShipInfo(fleet)}>
                                             {width>450 ? 'Details' : 'D'}                                       
                                     </div>
                                 </div>
@@ -513,7 +528,7 @@ const PlanetDetailDisplay = (props) => {
                                             return sum + ShipDesigns.find( x => x.shipDesignID==ship.designID).materialCost * ship.effectiveNumber},0)}                                  
                                     </div> 
                                     <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:"green", cursor:"pointer"}}
-                                        onClick={() => CancelShip(fleet.planetID)}>
+                                        onClick={() => ShipInfo(fleet)}>
                                             {width>450 ? 'Details' : 'D'}                                       
                                     </div>
                                 </div>                                                                                              
@@ -521,6 +536,53 @@ const PlanetDetailDisplay = (props) => {
                             ); 
                         })
                     }
+                </div>  
+            </div>
+
+            <div className="popupShips" style={{display:popup ? 'block' : 'none', backgroundColor:'gray', border: '1px solid blue', overflow:"auto", fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} 
+            onClick={() => HideInfo()}>
+
+                {selectedFleet &&
+                    selectedFleet.ships.map((ship, index) => { 
+                    return(
+                        <div key={"g" + index} style={{width:"100%", textAlign:"center", paddingTop:5 }}>
+                            {selectedFleet && index==0 &&
+                            <div style={{fontSize: "10px", paddingBottom: "3px", width:"95%", borderBottom: '1px solid red'}}>
+                                <div style={{ width: "40%", display:"inline-block"}}>
+                                    Name
+                                </div>  
+                                <div style={{ width: "25%", display:"inline-block"}}>
+                                    #
+                                </div> 
+                                <div style={{ width: "15%", display:"inline-block"}}>
+                                    Move
+                                </div>  
+                                <div style={{display:"inline-block", width: "20%"}}>
+                                    Colony                                                                                
+                                </div>                                     
+                            </div>
+                            }
+                            <div style={{flex:1 ,width:"95%", paddingBottom: "2px" }}>
+                                <div style={{fontSize: "10px", display:"inline-block",  width: "40%", textAlign:"center"}}>                                       
+                                    {ship.designName}                                        
+                                </div>
+                                <div style={{fontSize: "10px", display:"inline-block",  width: "25%", textAlign:"center"}}>
+                                    {ship.effectiveNumber + '/' + ship.actualNumber}                                  
+                                </div> 
+                                <div style={{fontSize: "10px", display:"inline-block",  width: "15%", textAlign:"center"}}>
+                                    {ship.movement}                                  
+                                </div> 
+                                <div style={{fontSize: "10px", display:"inline-block",  width: "15%", textAlign:"center"}}>
+                                    {ship.colony}                                      
+                                </div>
+                            </div>                                                                                            
+                        </div>    
+                        ); 
+                    })
+                }
+                <div style={{fontSize: "10px", width: "100%", cursor:"pointer", paddingTop:25}}
+                        onClick={() => HideInfo()}>
+                            CLOSE                                      
                 </div>  
             </div> 
         </div>    

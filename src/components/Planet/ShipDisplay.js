@@ -1,14 +1,14 @@
 import React, {useState} from 'react';
 import windim from "../WindowDimensions";
 import { useSelector } from 'react-redux';
+import ShipDetailDisplay from "../Details/ShipDetailDisplay"
 import "../../styles/stylesheet.css"
 
 
 function ShipDisplay(props) {
     const [popup, setPopup] = useState(false);
     const { width } = windim();
-    const [bg, setBg] = useState({});
-    const ResearchTypes = useSelector(state => state.planetReducer.ResearchTypes);
+    const [bg, setBg] = useState({});    
     const BuildingStats = useSelector(state => state.planetReducer.BuildingStats);
     const ShipQueList = useSelector(state => state.planetReducer.shipQue)
     const ShipDesigns = useSelector(state => state.shipReducer.ShipDesigns);
@@ -16,7 +16,7 @@ function ShipDisplay(props) {
 
     function ShowInfo(name)
     {
-        setBg(BuildingStats.filter(x => x.name == name));
+        setBg(ShipDesigns.filter(x => x.designName == name));
         setPopup(true)
     }
 
@@ -72,12 +72,7 @@ function ShipDisplay(props) {
             return false  
     }
 
-    function getTechName(techID)
-    {
-        var TechName
-        ResearchTypes.filter(x => x.technologyID == techID).map(x => (TechName=x.name )); 
-        return TechName;
-    }
+
 
     return (
         <div style={{display:"inline-block", height:"90%", width:"100%", verticalAlign:"top", 
@@ -109,7 +104,7 @@ function ShipDisplay(props) {
                                 </div>
                                 }
                                 <div style={{paddingBottom: "10px"}}>
-                                    <div style={{display: "inline-block", width: "30%", fontSize: width>450 ? "12px" : "10px", borderBottom: '1px solid blue', cursor:"pointer"}} onClick={() => ShowInfo(design.name)}>
+                                    <div style={{display: "inline-block", width: "30%", fontSize: width>450 ? "12px" : "10px", borderBottom: '1px solid blue', cursor:"pointer"}} onClick={() => ShowInfo(design.designName)}>
                                         {design.designName}
                                     </div> 
                                     <div style={{display: "inline-block", width: "10%", fontSize: width>450 ? "12px" : "10px", borderBottom: '1px solid blue'}}>
@@ -163,114 +158,7 @@ function ShipDisplay(props) {
             </div> 
             <div className="popup" style={{display:popup ? 'block' : 'none', backgroundColor:'gray', border: '1px solid blue', overflow:"auto", fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} 
             onClick={() => HideInfo()}>
-                <div style={{textAlign: "center", display: "inline-block", width:"100%", paddingBottom: "10px", borderBottom: '1px solid red'}}>
-                    {bg.length> 0 && bg[0].name}
-                </div>
-                {bg.length> 0 && bg[0].energy>0 &&
-                <div>
-                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Energy:
-                    </div>
-                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg[0].energy}
-                    </div>
-                </div>
-                }
-                {bg.length> 0 && bg[0].food>0 &&
-                <div>
-                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Food:
-                    </div>
-                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg[0].food}
-                    </div>
-                </div>
-                }
-                {bg.length> 0 && bg[0].infrastructure>0 &&
-                <div>
-                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Infrastructure:
-                    </div>
-                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg[0].infrastructure}
-                    </div>
-                </div>
-                }
-                {bg.length> 0 && bg[0].mining>0 &&
-                <div>
-                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Mining:
-                    </div>
-                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg[0].mining}
-                    </div>
-                </div>
-                }
-                {bg.length> 0 && bg[0].populationMax>0 &&
-                <div>
-                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Population Max:
-                    </div>
-                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg[0].populationMax}
-                    </div>
-                </div>
-                }
-                {bg.length> 0 && bg[0].research>0 &&
-                <div>
-                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Research:
-                    </div>
-                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg[0].research}
-                    </div>
-                </div>
-                }
-                {bg.length> 0 && bg[0].energyCost>0 &&
-                <div>
-                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Energy Cost:
-                    </div>
-                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg[0].energyCost}
-                    </div>
-                </div>
-                }
-                {bg.length> 0 && bg[0].populationCost>0 &&
-                <div>
-                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Population Cost:
-                    </div>
-                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg[0].populationCost}
-                    </div>
-                </div>
-                }                       
-                {bg.length> 0 && bg[0].techID>0 &&
-                <div>
-                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Research Needed:
-                    </div>
-                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {getTechName(bg[0].techID)}
-                    </div>
-                </div>
-                }
-                {bg.length> 0 && bg[0].techLevel>0 &&
-                <div>
-                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Research Level:
-                    </div>
-                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
-                        {bg.length> 0 && bg[0].techLevel}
-                    </div>
-                </div>
-                }
-                <div>
-                    <div style={{textAlign: "center", width:"100%", padding: "15px"}} onClick={() => HideInfo()}>
-                        CLOSE
-                    </div>
-                </div>
+                <ShipDetailDisplay bg={bg} HideInfo={HideInfo} />
             </div>           
         </div>
 

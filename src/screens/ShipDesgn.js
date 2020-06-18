@@ -40,17 +40,11 @@ function PlanetList() {
     },[UserID]);
 
     useEffect(() => {
-        if (ResearchTypes.length == 0 )
-        {            
-            Common.GetResearchTypes(dispatch,UserID)
-        }
+        Common.GetResearchTypes(dispatch,UserID)        
     },[UserID]);
 
      useEffect(() => {
-        if (ResearchStats.length == 0)
-        {
-            Calcs.GetResearchStats(dispatch,ResearchTypes);           
-        }
+        Calcs.GetResearchStats(dispatch,ResearchTypes);   
     },[ResearchTypes]);
 
     useEffect(() => {
@@ -206,8 +200,9 @@ function PlanetList() {
         setShipPopup(true)
     }
 
-    function HullInfoPod(hullID)
+    function HullInfo(hullID)
     { 
+        console.log(Hulls.find(x => x.hullID==hullID))
         setdisplayHull(Hulls.find(x => x.hullID==hullID)); 
         setHullPopup(true)
     }
@@ -681,7 +676,7 @@ function PlanetList() {
                                     </div>                                
                                 </div>
                                 } 
-                                <div style={{width:15, display: "inline-block", backgroundColor:"darkorange", cursor:"pointer"}} onClick={e => HullInfoPod(hull.hullID)}>
+                                <div style={{width:15, display: "inline-block", backgroundColor:"darkorange", cursor:"pointer"}} onClick={e => HullInfo(hull.hullID)}>
                                     <img src={imgQuestion} width="15px" height="15px" />
                                 </div>                             
                             </div>
@@ -789,7 +784,7 @@ function PlanetList() {
                 {Pods.length> 0 && displayPod.bays>0 &&
                 <div>
                     <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Bays:
+                        Bays:(Hull Mass)
                     </div>
                     <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
                         {displayPod.bays}
@@ -881,13 +876,23 @@ function PlanetList() {
                 {Hulls.length> 0 && displayHull.hull>0 &&
                 <div>
                     <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
-                        Hull:
+                        Hull Mass:
                     </div>
                     <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
                         {displayHull.hull}
                     </div>
                 </div>
                 }
+                {Hulls.length> 0 &&
+                <div>
+                    <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>
+                        Requires Bay:
+                    </div>
+                    <div style={{textAlign: "center", display: "inline-block", width:"35%", color:"gold"}}>
+                        {displayHull.requiresBay ? 'True' : 'False'}
+                    </div>
+                </div> 
+                }               
                 {Hulls.length> 0 && displayHull.numPods>0 &&
                 <div>
                     <div style={{textAlign: "left", display: "inline-block", width:"65%", paddingLeft: "5px"}}>

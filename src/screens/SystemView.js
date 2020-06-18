@@ -77,7 +77,6 @@ function SectorView(props){
         if (posts.length > 0)
         {
             setSystems(posts.filter(x => x.system == (systemNumber??1)));
-            console.log(posts.filter(x => x.system == (systemNumber??1)))
         }
     },[posts]);
 
@@ -159,7 +158,7 @@ function SectorView(props){
 
     const ShipSphere = (props) => {        
         const position = GetPosition(props.planet.position, props.planet.subPosition);
-        const color = (props.planet.owner == UserID) ? "blue" : "black";
+        const color = (userFleets.find(x => x.planetID == props.planet.planetID && x.status == 0)) ? "blue" : "black";
             return (             
                 <mesh  position={[position.x+.2,position.y,position.z]}>  
                         <boxBufferGeometry args={[0.02, 0.05, 0.00001]} attach="geometry" />   
