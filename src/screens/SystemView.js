@@ -2,9 +2,10 @@ import React, {Suspense, useEffect, useState, useRef } from "react";
 import { useLoader, useFrame, useThree, Canvas } from 'react-three-fiber';
 import {TextureLoader, Vector3} from 'three';
 import axios from 'axios';
-import {useSelector} from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux';
 import Environment from "../components/Planet/Enviroment";
 import windim from "../components/WindowDimensions";
+import * as Common from "../components/Common"
 import PlanetTextureURL1 from "../assets/gas.jpg"
 import PlanetTextureBump1 from "../assets/gas.jpg"
 import PlanetTextureURL2 from "../assets/gasred.jpg"
@@ -31,9 +32,11 @@ import PlanetTextureURL0 from "../assets/uranusmap.jpg"
 import "../styles/stylesheet.css"
 
 function SectorView(props){ 
+    const dispatch = useDispatch();
     const [posts, setPosts] = useState({});    
     const UserID = useSelector(state => state.user.UserID);
     const userFleets = useSelector(state => state.shipReducer.UserFleets);
+    const systemFleets = useSelector(state => state.shipReducer.SystemFleets)
     const PlanetList = useSelector(state => state.planetReducer.PlanetList);
     const [uniqueSystem, setSystems] = useState([]);
     const [sectorFleets, setsectorFleets] = useState([]);
@@ -78,6 +81,7 @@ function SectorView(props){
         {
             setSystems(posts.filter(x => x.system == (systemNumber??1)));
         }
+        Common.GetSystemFleets(dispatch, systemNumber)
     },[posts]);
 
 
@@ -171,8 +175,8 @@ function SectorView(props){
     };
 
     const OpponentSphere = (props) => {        
-        const position = GetPosition(props.planet.position, props.planet.subPosition);
-        const color = (props.planet.owner == UserID) ? "red" : "black";
+        const position = GetPosition(props.planet.position, props.planet.subPosition);        
+        const color = (systemFleets.length > 0 && systemFleets.find(x => x.userID != UserID && x.planetID==props.planet.planetID)) ? "red" : "black";
             return (             
                 <mesh  position={[position.x+.25,position.y,position.z]}>  
                         <boxBufferGeometry args={[0.02, 0.05, 0.00001]} attach="geometry" />   

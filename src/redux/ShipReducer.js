@@ -5,6 +5,8 @@ const defaultState = {
     ShipPods: [],
     ShipHulls: [],
     UserFleets: [],
+    PlanetFleets: [],
+    SystemFleets:[],
     CurrentDesigns: [] 
 }
 
@@ -37,6 +39,16 @@ const shipReducer = (state = defaultState, {type, payload}) => {
                 ...state,
                 UserFleets:payload
             } 
+        case ActionTypes.SET_PLANETFLEETS:
+            return {
+                ...state,
+                PlanetFleets:payload
+            } 
+        case ActionTypes.SET_SYSTEMFLEETS:
+            return {
+                ...state,
+                SystemFleets:payload
+            }
         case ActionTypes.SET_CURRENTDESIGNS:
             return {
                 ...state,

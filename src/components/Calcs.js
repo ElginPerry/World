@@ -84,3 +84,26 @@ export const GetPlanetStats = function(dispatch, BuildingStats, PlanetPop, Resea
     
     dispatch({type: ActionTypes.SET_PLANETSTATS,payload:planetStats});
 }
+
+export const FightersBays = function(fleet, ShipDesigns)
+{
+    var Bays = 0
+    var Mass = 0
+    {fleet.ships.map((ship, index) => {
+        if (ship.hull < 500)
+        {
+            Mass = Mass + (ship.hull * ship.effectiveNumber)
+        }
+        Bays = Bays + (ShipDesigns.find( x => x.shipDesignID==ship.designID).bays * ship.effectiveNumber)
+    })}
+
+    return Bays-Mass;
+    // if (Bays>=Mass)
+    // {
+    //     return true; 
+    // } 
+    // else
+    // {
+    //     return false;
+    // }
+}

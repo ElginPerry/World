@@ -26,7 +26,9 @@ import { Vector3 } from 'three';
 import axios from 'axios';
 import {useSelector, useDispatch} from 'react-redux'
 import * as ActionTypes from '../redux/ActionTypes'
+import * as Common from "../components/Common"
 import windim from "../components/WindowDimensions";
+import { common } from '@material-ui/core/colors';
 
 function PlanetList() {  
     const UserID = useSelector(state => state.user.UserID);
@@ -47,38 +49,10 @@ function PlanetList() {
         ,{Texture :PlanetTextureURL11, Bump: PlanetTextureBump11, Position: new Vector3(.6,-.4,0), Radius: .1}];
 
     useEffect(() => {                
-        axios.get('http://apicall.starshipfleets.com/User/GetPlanetList/' + UserID)
-        .then((response) => {
-            dispatch({type: ActionTypes.SET_PLANETLIST,payload:response.data})
-            setPlanets(response.data);
-            if (response.data.length == 0)
-            {
-                noPlanets();
-            }              
-        })
-        .catch(function (error) {
-        })
-        .finally(function () {  
-        });
+        Common.GetPlanetList(dispatch, UserID)
+        Common.GetFleets(dispatch, UserID)
     },[UserID]);
-
-    function noPlanets()
-    {
-        axios.get('http://apicall.starshipfleets.com/User/GetFirstPlanet/' + UserID)
-        .then((response) => {
-            dispatch({type: ActionTypes.SET_PLANETLIST,payload:response.data})
-            setPlanets(response.data);
-            if (response.data.length == 0)
-            {
-                noPlanets();
-            }              
-        })
-        .catch(function (error) {
-        })
-        .finally(function () {  
-        });
-    }
-
+ 
     function SetPlanet(PlanetID)
     {
         var link = "/PlanetView/" + PlanetID;
@@ -89,7 +63,7 @@ function PlanetList() {
         <div style={{width:"95%", borderWidth:"2", borderColor:"black", textAlign:"center"}}> 
             <div style={{height:"50px", width:"100%", textAlign:"center", color: "gold", fontSize:"18px"}}>Planet List</div>
             <div style={{width:"100%", fontSize:"14px", textAlign:"center"}}>
-                {Planets.map((planet, index) => { 
+                {PlanetList.map((planet, index) => { 
                     return(
                         <div key={index} style={{width:"95%"}}>
                             {index == 0 &&

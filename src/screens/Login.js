@@ -1,7 +1,7 @@
 import React, {useState, useRef, useEffect} from 'react';
 import { Paper, withStyles, Grid, TextField, Button, FormControlLabel, Checkbox, RadioGroup, Radio  } from '@material-ui/core';
 import axios from 'axios';
-import { useDispatch} from 'react-redux'
+import { useSelector, useDispatch} from 'react-redux'
 import * as ActionTypes from '../redux/ActionTypes'
 
 const styles = theme => ({
@@ -22,6 +22,14 @@ function LoginTab(props) {
         const [Pwd, setPwd] = useState('');
         const { classes } = props;
         const dispatch = useDispatch();
+        const LoggedIn = useSelector(state => state.user.UserID);
+
+        useEffect(()=>{
+            if (LoggedIn)
+            {
+                window.location.assign("/PlanetList");
+            }
+        },[LoggedIn])
                
         function setLoginLabel(ev) {
             if (ev.target.value === "Login")

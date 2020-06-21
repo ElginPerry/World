@@ -32,6 +32,7 @@ function GalaxyView(props){
     const Galaxy2 = useSelector(state => state.planetTypeReducer.Galaxy2);
     const Galaxy3 = useSelector(state => state.planetTypeReducer.Galaxy3);
     const UserFleets = useSelector(state => state.shipReducer.UserFleets);
+    const PlanetList = useSelector(state => state.planetReducer.PlanetList);
     
     useEffect(() => {
         if (Galaxy==3)
@@ -40,7 +41,7 @@ function GalaxyView(props){
                 Common.GetGalaxy(dispatch, Galaxy);
             else
             {
-                setPosts(Galaxy3)
+                setSYSPOS(Galaxy3)
             }
         }
         else if (Galaxy==2)
@@ -49,7 +50,7 @@ function GalaxyView(props){
                 Common.GetGalaxy(dispatch, Galaxy); 
             else
             {
-                setPosts(Galaxy2)
+                setSYSPOS(Galaxy2)
             }                
         }
         else
@@ -58,52 +59,32 @@ function GalaxyView(props){
                 Common.GetGalaxy(dispatch, Galaxy??1);
             else
             {
-                setPosts(Galaxy1)
+                setSYSPOS(Galaxy1)
             }
-        }   
+        }      
+        Common.GetFleets(dispatch, UserID)
+        Common.GetPlanetList(dispatch, UserID)
+
     },[Galaxy]);
 
     useEffect(() => {
         if (Galaxy??1==1)
-            setPosts(Galaxy1);        
+        setSYSPOS(Galaxy1);        
     },[Galaxy1])
 
     useEffect(() => {
         if (Galaxy==2)
-            setPosts(Galaxy2);
+        setSYSPOS(Galaxy2);
     },[Galaxy2])
 
     useEffect(() => {
         if (Galaxy==3)
-            setPosts(Galaxy3);
+        setSYSPOS(Galaxy3);
     },[Galaxy3])
-
-    useEffect(() => {
-        if (posts.length > 0)
-        {         
-            posts.map((item,index) => {
-                if (item.owner == UserID)
-                {                    
-                    if (SYSPOS.filter(obj => obj.xSysPosition == item.xSysPosition && obj.sector == item.sector ).length == 0)
-                    {                        
-                        SYSPOS.push({xSysPosition: item.xSysPosition, ySysPosition: item.ySysPosition, sector: item.sector, System: item.system, Owner: item.owner});
-                    }
-                    else if (SYSPOS.filter(obj => obj.xSysPosition == item.xSysPosition && obj.sector == item.sector).Owner != UserID) 
-                    {
-                        const mySystem = SYSPOS.find(obj => obj.xSysPosition == item.xSysPosition && obj.sector == item.sector);
-                        mySystem.Owner = UserID
-                    }   
-                }
-                else if (SYSPOS.filter(obj => obj.xSysPosition == item.xSysPosition && obj.sector == item.sector ).length == 0)
-                    SYSPOS.push({xSysPosition: item.xSysPosition, ySysPosition: item.ySysPosition, sector: item.sector, System: item.system, Owner: item.owner});
-            })
-            setSYSPOS([...new Set(SYSPOS)]);
-        }
-    },[posts]);
     
     const SysSphere = (props) => {        
         const position = GetPosition(props.xSysPosition, props.ySysPosition, props.sector); 
-        const UseTexture = props.Owner == UserID ? BlueSunTexture :
+        const UseTexture = PlanetList.find(x => x.sector == props.sector && x.system == props.System) ? BlueSunTexture :
             UserFleets.find(x => x.sector == props.sector && x.status == 0 && x.system == props.System) ? RedSunTexture : SunTexture;
         return (             
             <mesh   
@@ -251,7 +232,7 @@ function GalaxyView(props){
                         uniqueSYSPOS.map((item, index) => { 
                             return(
                                     <group key={"g" + index}>
-                                        <SysSphere key={"p" + index} index={index} xSysPosition={item.xSysPosition} ySysPosition={item.ySysPosition} sector={item.sector} System={item.System} Owner={item.Owner} />
+                                        <SysSphere key={"p" + index} index={index} xSysPosition={item.xSysPosition} ySysPosition={item.ySysPosition} sector={item.sector} System={item.system}  />
                                     </group>                                    
                                 ); 
                         })

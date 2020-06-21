@@ -2,6 +2,34 @@ import * as ActionTypes from '../redux/ActionTypes'
 import * as Calcs from '../components/Calcs'
 import axios from 'axios';
 
+export const GetPlanetList = function(dispatch, UserID)
+{
+    axios.get('http://apicall.starshipfleets.com/User/GetPlanetList/' + UserID)
+    .then((response) => {
+        dispatch({type: ActionTypes.SET_PLANETLIST,payload:response.data})
+        if (response.data.length == 0)
+        {
+            noPlanets(dispatch, UserID);
+        }              
+    })
+    .catch(function (error) {
+    })
+    .finally(function () {  
+    });
+}
+
+function noPlanets(dispatch, UserID)
+{
+    axios.get('http://apicall.starshipfleets.com/User/GetFirstPlanet/' + UserID)
+    .then((response) => {
+        dispatch({type: ActionTypes.SET_PLANETLIST,payload:response.data})             
+    })
+    .catch(function (error) {
+    })
+    .finally(function () {  
+    });
+}
+
 export const  GetShipHulls = function(dispatch)
 {         
     axios.get('http://apicall.starshipfleets.com/Ships/GetShipHulls')
@@ -65,6 +93,30 @@ export const GetGalaxy = function(dispatch, GalaxyID)
     });
 }
 
+export const GetPlanetFleets = function(dispatch,UserID, planetID)
+{
+    axios.get('http://apicall.starshipfleets.com/Ships/GetPlanetFleets/' + UserID + '/' + planetID)
+    .then((response) => { 
+        dispatch({type: ActionTypes.SET_PLANETFLEETS,payload:response.data}); 
+    })
+    .catch(function (error) {
+    })
+    .finally(function () {  
+    });
+}
+
+export const GetSystemFleets = function(dispatch, System)
+{
+    axios.get('http://apicall.starshipfleets.com/Ships/GetSystemFleets/' + System )
+    .then((response) => { 
+        dispatch({type: ActionTypes.SET_SYSTEMFLEETS,payload:response.data}); 
+    })
+    .catch(function (error) {
+    })
+    .finally(function () {  
+    });
+}
+
 export const GetFleets = function(dispatch,UserID)
 {
     axios.get('http://apicall.starshipfleets.com/Ships/GetUserFleets/' + UserID)
@@ -99,6 +151,8 @@ export const MoveFleet = function(dispatch,UserID, FleetID, PlanetID)
     })
     .finally(function () {  
     });
+
+    GetPlanetFleets(dispatch,UserID, PlanetID)
 }
 
 export const durDisplay = function(totalSeconds)

@@ -54,7 +54,7 @@ function PlanetDetail(props) {
     const [moveTo, setmoveTo] = useState(false);    
     const [sectorFleets, setsectorFleets] = useState([]);
     const [sectorPlanets, setsectorPlanets] = useState([]);   
-    const [colonyShip, setcolonyShip] = useState(false);   
+    const [colonyShip, setcolonyShip] = useState(false);  
 
     
     useEffect(() => {
@@ -89,6 +89,7 @@ function PlanetDetail(props) {
 
     useEffect(() => {
         Common.GetFleets(dispatch,UserID)
+        Common.GetPlanetFleets(dispatch,UserID,planet.planetID)
     },[planet, ShipQueList]); 
     
     useEffect(() => {
@@ -187,18 +188,6 @@ function PlanetDetail(props) {
         }
     }
 
-    function GetPlanet()
-    {            
-        axios.get('http://apicall.starshipfleets.com/Planet/GetPlanet/' + planetID + '/' + UserID)
-        .then((response) => {
-            UpdatePlanet(response.data);
-        })
-        .catch(function (error) {
-        })
-        .finally(function () {  
-        });
-    }
-
     function BuildingStart(prod, buildingID, mats){       
         AddBuildingQue(prod, buildingID, mats);
     }
@@ -293,6 +282,18 @@ function PlanetDetail(props) {
         .finally(function () {  
         });
     }
+    
+    function GetPlanet()
+    {            
+        axios.get('http://apicall.starshipfleets.com/Planet/GetPlanet/' + planetID + '/' + UserID)
+        .then((response) => {
+            UpdatePlanet(response.data);
+        })
+        .catch(function (error) {
+        })
+        .finally(function () {  
+        });
+    }
 
     function UpdatePlanet(data)
     {
@@ -333,14 +334,6 @@ function PlanetDetail(props) {
         setTab(t);
     }
 
-    function ChangeName()
-    {
-        if (planet.owner == UserID)
-        {
-            alert(planet.planetName);
-        }
-    }
-
     function GetCon()
     {
         var con=(PlanetStats.infrastructure+(PlanetStats.infrastructure*(PlanetPop.infrastructurePop/100)))
@@ -369,6 +362,7 @@ function PlanetDetail(props) {
         })
         .then((response) => {  
             UpdatePlanet(response.data)
+            Common.GetPlanetList(dispatch, UserID)
         })
         .catch(function (error) {
         })
@@ -394,18 +388,8 @@ function PlanetDetail(props) {
     }
 
     function Movement(fleet)
-    {
-        var Bays = 0
-        var Mass = 0
-        {fleet.ships.filter(x => x.hull < 500).map((ship, index) => {
-            Mass = Mass + (ship.hull * ship.effectiveNumber)
-        
-        })}
-
-        {fleet.ships.reduce((sum, ship) => {
-            Bays = sum + ShipDesigns.find( x => x.shipDesignID==ship.designID).bays * ship.effectiveNumber},0)}  
-        console.log(Bays + ":" + Mass)    
-        if (Bays>=Mass)
+    { 
+        if (Calcs.FightersBays(fleet, ShipDesigns)>=0)
         {
             return Math.min(...fleet.ships.filter(x => x.hull >= 500).map(o => o.movement)); 
         } 
@@ -421,6 +405,12 @@ function PlanetDetail(props) {
         Common.MoveFleet(dispatch,UserID, fleet.fleetID, planetID);
         setmoveTo(false)
     }
+
+    function SelectPlanet(PlanetID)
+    {
+        var link = "/PlanetView/" + PlanetID;
+        window.location.assign(link);
+    }
     
     return (
         <div style={{height:"90%", width:"100%", textAlign: "center", color: "white"}} >
@@ -433,8 +423,11 @@ function PlanetDetail(props) {
                     <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "#228B22", cursor: "pointer"}} onClick={() => BacktoSystem()}>
                         {width>500 ? 'System' : 'S'}
                     </div>
-                    <div style={{width:"100px", padding: "5px", fontSize: "12px", display: "inline-block", cursor: "pointer", title: "Back to System"}} onClick={ChangeName}>
-                        {planet.planetName??'NA'}
+                    <div style={{width:"130px", padding: "5px", fontSize: "12px", display: "inline-block", cursor: "pointer", title: "Back to System"}}>                        
+                       
+                        <select  style={{width:120}} onChange={(e) => SelectPlanet(e.target.value)} value={planet.planetID} >                                
+                            {PlanetList.map((planet, index) => <option key={index} value={planet.planetID}>{planet.planetName}</option>)}
+                        </select>
                     </div>
                     {planet.owner == UserID &&
                         <div style={{padding: "5px", fontSize: "12px", display: "inline-block", backgroundColor: "mediumblue", cursor: "pointer"}} 
@@ -472,7 +465,7 @@ function PlanetDetail(props) {
                         {width>500 ? 'Ships' : ''}
                     </div>
                 }
-                <div style={{width:"100%"}}>
+                <div style={{width:"100%", height:"85%", overflow:"auto"}}>
                     <div>
                         <PlanetDetailDisplay bldName={bldName} bldduration={bldduration} researchName={researchName} resduration={resduration} 
                         shpduration={shpduration} shipName={shipName} setshipName={setshipName} setresearchName={setresearchName} setbldName={setbldName} 
@@ -499,7 +492,7 @@ function PlanetDetail(props) {
 
             <div className="popupShips" style={{display:moveTo ? 'block' : 'none', backgroundColor:'gray', border: '1px solid blue', 
             overflow:"auto", fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}}>
-                {UserFleets.length > 0 &&
+                {UserFleets.length > 0 && ShipDesigns.length > 0 &&
                     UserFleets.filter(x => x.planetID != planetID && x.status == 0).map((fleet, index) => { 
                     return(
                         <div key={"g" + index} style={{width:"100%", textAlign:"center", paddingTop:5 }}>
