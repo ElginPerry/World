@@ -98,12 +98,21 @@ export const FightersBays = function(fleet, ShipDesigns)
     })}
 
     return Bays-Mass;
-    // if (Bays>=Mass)
-    // {
-    //     return true; 
-    // } 
-    // else
-    // {
-    //     return false;
-    // }
+}
+
+export const RepairCost = function(fleet, ShipDesigns)
+{
+    var Mil = 0
+    var Mats = 0
+    {fleet.ships.map((ship, index) => {
+        if (ship.effectiveNumber != ship.actualNumber)
+        {
+            Mats = Mats + (ShipDesigns.find( x => x.shipDesignID==ship.designID).materialCost*(ship.effectiveNumber - ship.actualNumber))
+            Mil = Mil + (ShipDesigns.find( x => x.shipDesignID==ship.designID).militaryCost*(ship.effectiveNumber - ship.actualNumber))
+        }
+    })}
+    return{
+        militaryCost: Mil,
+        materialCost: Mats
+    }
 }

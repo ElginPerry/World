@@ -12,15 +12,21 @@ const PlanetDetailDisplay = (props) => {
     const planetFleets = useSelector(state => state.shipReducer.PlanetFleets);
     const planet = useSelector(state => state.planetReducer.Planet);
     const ShipDesigns = useSelector(state => state.shipReducer.ShipDesigns);
+    const selectedFleet = useSelector(state => state.shipReducer.SelectedFleet);
     const { width } = windim();
     const [popup, setPopup] = useState(false);
-    const [selectedFleet, setselectedFleet] = useState();
     var LastUserFleets = new Date()
 
     function ShipInfo(fleet)
     {
-        setselectedFleet(fleet)
+        Common.SetSelectedFleet(dispatch, fleet)
         setPopup(true)
+    }
+
+    function FleetManage(fleet)
+    {
+        Common.SetSelectedFleet(dispatch, fleet)
+        window.location.assign("/FleetDetail");
     }
 
     function HideInfo()
@@ -36,7 +42,12 @@ const PlanetDetailDisplay = (props) => {
             Common.GetPlanetFleets(dispatch, UserID, planet.planetID)
         }
     }
-    
+
+    function AttackFleet(fleet)
+    {
+        alert(fleet.fleetID)
+    }    
+
     return (
         <div >            
             {planetFleets.length > 0 && ShipDesigns.length > 0 &&
@@ -67,16 +78,14 @@ const PlanetDetailDisplay = (props) => {
                                 <div style={{display:fleet.status==1?"block":"none"}}>
                                     {<ArrivalTimer key={index} timeUp={() => FleetArrived(fleet.fleetID)} Date={new Date(Date.parse(fleet.arrival))} buildingName={fleet.fleetName}/>} 
                                 </div>                                       
-                                    {/* {fleet.status == 0 ? fleet.fleetName :
-                                    <ArrivalTimer key={index} timeUp={() => FleetArrived(fleet.fleetID)} Date={new Date(Date.parse(fleet.arrival))} buildingName={fleet.fleetName}/>}                                           */}
                             </div>
                             <div style={{fontSize: "10px", display:"inline-block",  width: "45%", textAlign:"center"}}>
                                     {fleet.materialCost}
                             </div>                             
-                            <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:fleet.userID==UserID?"green":"black"
+                            <div style={{fontSize: "10px", display:"inline-block",  width: "10%", backgroundColor:fleet.userID==UserID?"green":"red"
                                     , cursor:fleet.userID==UserID?"pointer":"default"}}
-                                onClick={() => fleet.userID==UserID?ShipInfo(fleet):false}>
-                                    {fleet.userID==UserID?width>450 ? 'Split' : 'S':''}                                       
+                                onClick={() => fleet.userID==UserID?FleetManage(fleet):AttackFleet(fleet)}>
+                                    {fleet.userID==UserID?width>450 ? 'Manage' : 'M': width>450 ? 'Attack' : 'A'}                                       
                             </div> 
                         </div>
                         }                                                              
@@ -88,7 +97,7 @@ const PlanetDetailDisplay = (props) => {
             <div className="popupShips" style={{display:popup ? 'block' : 'none', backgroundColor:'gray', border: '1px solid blue', overflow:"auto", fontSize: width>450 ? "12px" : "10px", cursor:"pointer"}} 
                 onClick={() => HideInfo()}>
 
-                {selectedFleet &&
+                {selectedFleet.ships &&
                     selectedFleet.ships.map((ship, index) => { 
                     return(
                         <div key={"g" + index} style={{width:"100%", textAlign:"center", paddingTop:5 }}>
@@ -125,10 +134,12 @@ const PlanetDetailDisplay = (props) => {
                         </div>    
                         ); 
                     })                                        
-                }                
+                } 
+                {selectedFleet.ships &&               
                 <div style={{fontSize: "10px", width: "100%", paddingTop:5}}>
                     {selectedFleet && "Bay Mass Open: " + Calcs.FightersBays(selectedFleet, ShipDesigns)}                                      
-                </div> 
+                </div>
+                } 
                 <div style={{fontSize: "10px", width: "100%", cursor:"pointer", paddingTop:25}}
                         onClick={() => HideInfo()}>
                             CLOSE                                      

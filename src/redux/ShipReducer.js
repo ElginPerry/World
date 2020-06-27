@@ -7,7 +7,8 @@ const defaultState = {
     UserFleets: [],
     PlanetFleets: [],
     SystemFleets:[],
-    CurrentDesigns: [] 
+    CurrentDesigns: [],
+    SelectedFleet:{} 
 }
 
 // This is where you manipulate the state. The state is immutable so you need to return a new state vs changing the state directly.
@@ -53,7 +54,12 @@ const shipReducer = (state = defaultState, {type, payload}) => {
             return {
                 ...state,
                 CurrentDesigns:payload
-            }                 
+            }
+        case ActionTypes.SET_SELECTEDFLEET:
+            return {
+                ...state,
+                SelectedFleet:payload
+            }                     
         default:
             return state
     }

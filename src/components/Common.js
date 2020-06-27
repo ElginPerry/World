@@ -117,6 +117,11 @@ export const GetSystemFleets = function(dispatch, System)
     });
 }
 
+export const SetSelectedFleet = function(dispatch, Fleet)
+{
+    dispatch({type: ActionTypes.SET_SELECTEDFLEET,payload:Fleet}); 
+}
+
 export const GetFleets = function(dispatch,UserID)
 {
     axios.get('http://apicall.starshipfleets.com/Ships/GetUserFleets/' + UserID)

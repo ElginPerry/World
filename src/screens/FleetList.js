@@ -25,6 +25,12 @@ function FleetList() {
         window.location.assign(link);
     }
 
+    function FleetManage(fleet)
+    {
+        Common.SetSelectedFleet(dispatch, fleet)
+        window.location.assign("/FleetDetail");
+    }
+
     return (
         <div style={{width:"95%", borderWidth:"2", borderColor:"black", textAlign:"center"}}> 
             <div style={{height:"50px", width:"100%", textAlign:"center", color: "gold", fontSize:"18px"}}>Planet List</div>
@@ -47,9 +53,9 @@ function FleetList() {
                                 }                           
                             </div>
                             }
-                            <div  style={{height:"45px", width:"100%", color: "white", display:"flex", cursor: "pointer"}} onClick={e => SetPlanet(fleet.planetID)}>
+                            <div  style={{height:"45px", width:"100%", color: "white", display:"flex"}} >
                                 <div  style={{flex:1, height:"40px", width:"50px", boxShadow:"0 2px 0 0 gray", 
-                                    display: "inline-block"}}>     
+                                    display: "inline-block", cursor: "pointer"}} onClick={e => SetPlanet(fleet.planetID)}>     
                                     {fleet.planetID}
                                 </div>
                                 <div  style={{flex:1,height:"40px", width:width > 500 ?"20%":"60%", paddingLeft: "5px", display: "inline-block", boxShadow:"0 2px 0 0 gray"}}>
@@ -60,7 +66,11 @@ function FleetList() {
                                     {fleet.ships.reduce((sum, ship) => {
                                                 return sum + ShipDesigns.find( x => x.shipDesignID==ship.designID).materialCost * ship.effectiveNumber},0)} 
                                 </div>
-                                } 
+                                }
+                                <div style={{flex:1, height:"40px", width:"20%", paddingLeft: "5px", display: "inline-block", boxShadow:"0 2px 0 0 gray", backgroundColor:"green"
+                                    , cursor:"pointer"}} onClick={() => FleetManage(fleet)}>
+                                        {width>450 ? 'Manage' : 'M'}
+                                </div> 
                             </div>
                         </div>
                     );
