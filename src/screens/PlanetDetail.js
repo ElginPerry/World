@@ -262,7 +262,6 @@ function PlanetDetail(props) {
 
     function UpdatePlanetHarvest(pop, mil, mats)
     {  
-        console.log(pop + ":" + mil + ":" + mats)
         pop = pop=0?0:pop>1?1:-1
         mil = mil=0?0:mil>1?1:-1
                

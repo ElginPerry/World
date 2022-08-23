@@ -117,6 +117,18 @@ export const GetSystemFleets = function(dispatch, System)
     });
 }
 
+export const MergeFleets = function(dispatch, UserID, FleetID, MergeID)
+{
+    axios.get('http://apicall.starshipfleets.com/Ships/MergeFleets/' + UserID + '/' + FleetID + '/' + MergeID)
+    .then((response) => { 
+        dispatch({type: ActionTypes.SET_USERFLEETS,payload:response.data}); 
+    })
+    .catch(function (error) {
+    })
+    .finally(function () {  
+    });
+}
+
 export const SetSelectedFleet = function(dispatch, Fleet)
 {
     dispatch({type: ActionTypes.SET_SELECTEDFLEET,payload:Fleet}); 
